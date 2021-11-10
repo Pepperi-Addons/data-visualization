@@ -1,0 +1,31 @@
+{
+  "AddonUUID": "00000000-0000-0000-0000-0da1a0de41e5",
+  "AddonVersion": "0.0.25",
+  "DebugPort": 4500,
+  "WebappBaseUrl": "https://app.sandbox.pepperi.com",
+  "DefaultEditor": "main",
+  "Endpoints": [
+    "installation.ts",
+    "api.ts",
+    "elastic.ts"
+  ],
+  "Editors": [
+    "main"
+  ],
+  "Assets": [
+    "en.json",
+    "en.ngx-lib.json"
+  ],
+  "PublishConfig": {
+    "ClientStack": "ng10",
+    "Editors": [
+      {
+        "ParentPackageName": "Queries",
+        "PackageName": "queries",
+        "Description": "Data queries"
+      }
+    ],
+    "Dependencies": {},
+    "CPISide": []
+  }
+}

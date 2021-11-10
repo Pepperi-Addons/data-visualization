@@ -1,0 +1,29 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "baseUrl": "./",
+        "outDir": "./dist/out-tsc",
+        "sourceMap": true,
+        "declaration": false,
+        "downlevelIteration": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "module": "ES2020",
+        "allowJs": true,
+        "moduleResolution": "node",
+        "importHelpers": false,
+        "target": "ES2015",
+        "lib": [
+            "es2018",
+            "dom"
+        ],
+        "paths": {
+            "test": [
+                "dist/test/test",
+                "dist/test"
+            ]
+        },
+        "jsx": "react"
+    }
+
+}
