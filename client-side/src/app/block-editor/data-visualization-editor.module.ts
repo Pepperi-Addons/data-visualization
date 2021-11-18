@@ -14,6 +14,11 @@ import { config } from '../addon.config';
 import { AddonService } from '../addon.service';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
+import { PepIconRegistry, pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
+
+const pepIcons = [
+    pepIconSystemBin,
+];
 
 @NgModule({
     declarations: [DataVisualizationEditorComponent],
@@ -47,8 +52,12 @@ import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 export class DataVisualizationEditorModule {
     constructor(
         translate: TranslateService,
-        private pepAddonService: PepAddonService
+        private pepAddonService: PepAddonService,
+        private pepperiIconRegistry: PepIconRegistry
+
     ) {
         this.pepAddonService.setDefaultTranslateLang(translate);
+        this.pepperiIconRegistry.registerIcons(pepIcons);
+
     }
 }

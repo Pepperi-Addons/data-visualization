@@ -23,9 +23,11 @@ export interface GroupBy {
 
 export interface Serie {
     Name: string,
+    Label: string,
     Resource: ResourceType,
     GroupBy?: GroupBy[],
     AggregatedFields: AggregatedField[];
+    AggregatedParams?: AggregatedParam[],
     Interval?: number;
     IntervalUnit?: IntervalUnit;
     BreakBy: BreakBy;
@@ -43,26 +45,36 @@ export interface Top {
 export interface AggregatedField {
     FieldID: string,
     Aggregator: Aggregator,
-    Alias?: string
+    Alias?: string,
+    Script?: string
 }
-
-export declare const UserTypes: readonly ["Current", "UnderMyRole", "All"];
+export interface AggregatedParam {
+    FieldID: string,
+    Aggregator: Aggregator,
+    Name: string,
+}
+export const UserTypes = ["Current", "UnderMyRole", "All"];
 export declare type UserType = typeof UserTypes[number];
 
-export declare const AccountTypes: readonly ["Assigned", "All"];
+export const AccountTypes = ["Assigned", "All"];
 export declare type AccountType = typeof AccountTypes[number];
 
-export declare const ResourceTypes: readonly ["all_activities", "transaction_lines"];
+export const ResourceTypes = ["all_activities", "transaction_lines", "None"];
 export declare type ResourceType = typeof ResourceTypes[number];
 
-export declare const DataTypes: readonly ["Single", "Series", "MultiSeries"];
+export const DataTypes = ["Single", "Series", "MultiSeries"];
 export declare type DataType = typeof DataTypes[number];
 
-export declare const IntervalUnits: readonly ["Days", "Weeks", "Months", "Years"];
+export const IntervalUnits = ["Days", "Weeks", "Months", "Years", "None"];
 export declare type IntervalUnit = typeof IntervalUnits[number];
 
-export declare const Aggregators: readonly ["Sum", "Count", "Average"];
+export const Aggregators = ["Sum", "Count", "Average", "Script", "None"];
 export declare type Aggregator = typeof Aggregators[number];
 
+export const DateOperation = ['InTheLast','Today','ThisWeek','ThisMonth','Before','After','Between','DueIn','On','NotInTheLast','NotDueIn', 'IsEmpty','IsNotEmpty']
+export const OrderType = ["Ascending", "Decending"];
+
 export const DATA_QUREIES_TABLE_NAME = 'DataQueries';
+export const SERIES_LABEL_DEFAULT_VALUE = '${label}';
+
 

@@ -30,6 +30,7 @@ class ElasticService {
     Weeks: 'w',
     Months: 'M',
     Years: 'y',
+    None: ''
   }
 
   intervalUnitFormat: { [key in IntervalUnit]: string } = {
@@ -37,6 +38,7 @@ class ElasticService {
     Weeks: 'MM-dd',
     Months: 'MM',
     Years: 'yyyy',
+    None: ''
   }
 
   async executeUserDefinedQuery(client: Client, request: Request) {
@@ -91,16 +93,16 @@ class ElasticService {
         aggregations.push(agg);
         //elasticRequestBody.agg(agg);
       }
-      const keySeries = this.getAggUniqueName(serie)
-      aggregationsList[keySeries] = aggregations;
+      aggregationsList[serie.Name] = aggregations;
     }
     let te: any = [];
-    Object.keys(aggregationsList).forEach((resource) => {
+    Object.keys(aggregationsList).forEach((seriesName) => {
       // build nested aggregations from array of aggregations
-      let aggs: esb.Aggregation = this.buildNestedAggregations(aggregationsList[resource]);
+      let aggs: esb.Aggregation = this.buildNestedAggregations(aggregationsList[seriesName]);
+      const series = query.Series.filter(x => x.Name === seriesName)[0];
       //aggs.aggs([test]);
       // elastic dont allow Duplicate field for e.g 'transaction_lines' but it can be 2 series with same resource so the name to the aggs is '{resource}:{Name} (The series names is unique)
-      const hadar = esb.filterAggregation(resource, esb.termQuery('ElasticSearchType', resource.split(':')[0])).agg(aggs);
+      const hadar = esb.filterAggregation(seriesName, esb.termQuery('ElasticSearchType', series.Resource)).agg(aggs);
       te.push(hadar);
     });
     elasticRequestBody.aggs(te);
@@ -131,11 +133,11 @@ class ElasticService {
 
     lambdaResponse = {
       "aggregations": {
-        "transaction_lines:total orders - sum": {
+        "transaction lines sum UnitsQuantity per Months": {
           "doc_count": 16431539,
           "Item.MainCategory": {
             "meta": {
-              "BreakBy": "Item.MainCategory"
+              "GroupBy": "Item.MainCategory"
             },
             "doc_count_error_upper_bound": 6645,
             "sum_other_doc_count": 262622,
@@ -143,204 +145,661 @@ class ElasticService {
               {
                 "key": "Pocket",
                 "doc_count": 10756184,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 1.9056882371213108E10
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 5378821,
+                      "UnitsQuantity_Sum": {
+                        "value": 4.1341803E7
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 5377363,
+                      "UnitsQuantity_Sum": {
+                        "value": 2.6425553E7
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Hallmark",
                 "doc_count": 3074146,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 8.036534000174263E9
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 978372,
+                      "UnitsQuantity_Sum": {
+                        "value": 4180953.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 2095774,
+                      "UnitsQuantity_Sum": {
+                        "value": 1.2127732E7
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Box",
                 "doc_count": 1644329,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 0.0
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 417201,
+                      "UnitsQuantity_Sum": {
+                        "value": 1.2965525E7
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 1227128,
+                      "UnitsQuantity_Sum": {
+                        "value": 3.5572682E7
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Tesco",
                 "doc_count": 319984,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 1.5752022882566814E9
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 125464,
+                      "UnitsQuantity_Sum": {
+                        "value": 829635.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 194520,
+                      "UnitsQuantity_Sum": {
+                        "value": 982884.0
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Morrisons",
                 "doc_count": 127394,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 5.860868638894033E8
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 19776,
+                      "UnitsQuantity_Sum": {
+                        "value": 170668.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 107618,
+                      "UnitsQuantity_Sum": {
+                        "value": 1486518.0
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Waitrose",
                 "doc_count": 78446,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 1.2315488211546326E8
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 36452,
+                      "UnitsQuantity_Sum": {
+                        "value": 420233.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 41994,
+                      "UnitsQuantity_Sum": {
+                        "value": 215629.0
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Danillo",
                 "doc_count": 52262,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 2.5259661457939434E8
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 26058,
+                      "UnitsQuantity_Sum": {
+                        "value": 137353.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 26204,
+                      "UnitsQuantity_Sum": {
+                        "value": 149810.0
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Me To You",
                 "doc_count": 42540,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 2.1539170440974545E8
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 12365,
+                      "UnitsQuantity_Sum": {
+                        "value": 66713.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 30175,
+                      "UnitsQuantity_Sum": {
+                        "value": 362776.0
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Tailormade",
                 "doc_count": 36079,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 1.4880057266946995E8
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 17010,
+                      "UnitsQuantity_Sum": {
+                        "value": 89371.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 19069,
+                      "UnitsQuantity_Sum": {
+                        "value": 93923.0
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "key": "Carte Blanche Greetings",
                 "doc_count": 34516,
-                "Transaction.GrandTotal_Sum": {
-                  "value": 1.5331788137981248E8
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 14317,
+                      "UnitsQuantity_Sum": {
+                        "value": 72968.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 20199,
+                      "UnitsQuantity_Sum": {
+                        "value": 218149.0
+                      }
+                    }
+                  ]
                 }
               }
             ]
           }
         },
-        "transaction_lines:total orders -Count": {
-          "doc_count": 16431539,
+        "all_activities sum UnitsQuantity per Months": {
+          "doc_count": 3333944,
           "Item.MainCategory": {
             "meta": {
-              "BreakBy": "Item.MainCategory"
+              "GroupBy": "Item.MainCategory"
             },
-            "doc_count_error_upper_bound": 6645,
-            "sum_other_doc_count": 262622,
-            "buckets": [
-              {
-                "key": "Pocket",
-                "doc_count": 10756184,
-                "Transaction.GrandTotal_Count": {
-                  "value": 10756184
-                }
-              },
-              {
-                "key": "Hallmark",
-                "doc_count": 3074146,
-                "Transaction.GrandTotal_Count": {
-                  "value": 3074146
-                }
-              },
-              {
-                "key": "Box",
-                "doc_count": 1644329,
-                "Transaction.GrandTotal_Count": {
-                  "value": 0
-                }
-              },
-              {
-                "key": "Tesco",
-                "doc_count": 319984,
-                "Transaction.GrandTotal_Count": {
-                  "value": 319984
-                }
-              },
-              {
-                "key": "Morrisons",
-                "doc_count": 127394,
-                "Transaction.GrandTotal_Count": {
-                  "value": 127394
-                }
-              },
-              {
-                "key": "Waitrose",
-                "doc_count": 78446,
-                "Transaction.GrandTotal_Count": {
-                  "value": 78446
-                }
-              },
-              {
-                "key": "Danillo",
-                "doc_count": 52262,
-                "Transaction.GrandTotal_Count": {
-                  "value": 52262
-                }
-              },
-              {
-                "key": "Me To You",
-                "doc_count": 42540,
-                "Transaction.GrandTotal_Count": {
-                  "value": 42540
-                }
-              },
-              {
-                "key": "Tailormade",
-                "doc_count": 36079,
-                "Transaction.GrandTotal_Count": {
-                  "value": 36079
-                }
-              },
-              {
-                "key": "Carte Blanche Greetings",
-                "doc_count": 34516,
-                "Transaction.GrandTotal_Count": {
-                  "value": 34516
-                }
-              }
-            ]
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": []
           }
         }
       }
     }
     let response: DataQueryResponse = new DataQueryResponse();
     query.Series.forEach(series => {
-      const aggsUniqueName = this.getAggUniqueName(series);
-      const resourceAggs = lambdaResponse.aggregations[aggsUniqueName];
+      const resourceAggs = lambdaResponse.aggregations[series.Name];
       if (series.GroupBy) {
+        
         series.GroupBy.forEach(groupBy => {
+          response.Groups.push(groupBy.FieldID);
+          resourceAggs[groupBy.FieldID].buckets.forEach(bucketsGroupBy => {
+            const dataSet = {};
+            const seriesName = this.getKeyAggregationName(bucketsGroupBy); // hallmark
+            dataSet[groupBy.FieldID] = seriesName;
 
+            bucketsGroupBy[series.BreakBy.FieldID].buckets.forEach(bucket => {
+              const seriesName = this.getKeyAggregationName(bucket);
+              response.Series.push(seriesName);
+              
+              //dataSet[]
+              series.AggregatedFields.forEach((aggregatedField) => {
+
+                const keyString = this.buildAggragationFieldString(aggregatedField);
+                dataSet[seriesName] = bucket[keyString].value;
+              })
+              //this.handleAggregatedFields(seriesName, bucket, series.AggregatedFields, response);
+              // response.Series.push(seriesName);
+              // const keyString = this.buildAggragationFieldString(bucket);
+              // response.DataSet.push({ [seriesName]: bucket[keyString].value });
+              //this.handleAggregatedFields(seriesName, bucket, series.AggregatedFields, response);
+              // series.AggregatedFields.forEach((aggregatedField) => {
+
+              //   const keyString = this.buildAggragationFieldString(aggregatedField);
+              //   response.Series.push(seriesName);
+              //   response.DataSet.push({ [seriesName]: bucket[keyString].value });
+              // })
+            });
+            response.DataSet.push(dataSet)
+          });
         });
 
       }
-      if (series.BreakBy?.FieldID) {
+      else if (series.BreakBy?.FieldID) {
         resourceAggs[series.BreakBy.FieldID].buckets.forEach(bucket => {
-          series.AggregatedFields.forEach((aggregatedField) => {
+          const seriesName = this.getKeyAggregationName(bucket);
+          response.Series.push(seriesName);
 
-            const keyString = this.buildAggragationFieldString(aggregatedField);
-            const seriesName = this.getKeyAggregationName(bucket);
-            response.Series.push(seriesName);
-            response.DataSet.push({ [seriesName]: bucket[keyString].value });
-          })
+          this.handleAggregatedFields(seriesName, bucket, series.AggregatedFields, response);
+          // series.AggregatedFields.forEach((aggregatedField) => {
+
+          //   const keyString = this.buildAggragationFieldString(aggregatedField);
+          //   response.Series.push(seriesName);
+          //   response.DataSet.push({ [seriesName]: bucket[keyString].value });
+          // })
         });
 
       } else {
-        series.AggregatedFields.forEach((aggregatedField) => {
+        response.Series.push(series.Name);
 
-          const keyString = this.buildAggragationFieldString(aggregatedField);
+        this.handleAggregatedFields(series.Name, resourceAggs, series.AggregatedFields, response);
+        // series.AggregatedFields.forEach((aggregatedField) => {
 
-          response.Series.push(series.Name);
-          response.DataSet.push({ [series.Name]: resourceAggs[keyString].value });
-        })
+        //   const keyString = this.buildAggragationFieldString(aggregatedField);
+
+        //   response.Series.push(series.Name);
+        //   response.DataSet.push({ [series.Name]: resourceAggs[keyString].value });
+        // })
       }
 
     });
 
     return response;
   }
+  private handleAggregatedFields(seriesName, seriesAggregation, aggregatedFields, response) {
+    aggregatedFields.forEach((aggregatedField) => {
 
+      const keyString = this.buildAggragationFieldString(aggregatedField);
+      response.DataSet.push({ [seriesName]: seriesAggregation[keyString].value });
+    })
+  }
   private buildResponseFromElasticResults(lambdaResponse, query: DataQuery) {
 
     lambdaResponse = {
       "aggregations": {
-        "transaction_lines": {
+        "transaction lines sum UnitsQuantity per Months": {
           "doc_count": 16431539,
-          "InternalID_Sum": {
-            "value": 1.026826266131737E16
+          "Item.MainCategory": {
+            "meta": {
+              "GroupBy": "Item.MainCategory"
+            },
+            "doc_count_error_upper_bound": 6645,
+            "sum_other_doc_count": 262622,
+            "buckets": [
+              {
+                "key": "Pocket",
+                "doc_count": 10756184,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 5378821,
+                      "UnitsQuantity_Sum": {
+                        "value": 4.1341803E7
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 5377363,
+                      "UnitsQuantity_Sum": {
+                        "value": 2.6425553E7
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Hallmark",
+                "doc_count": 3074146,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 978372,
+                      "UnitsQuantity_Sum": {
+                        "value": 4180953.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 2095774,
+                      "UnitsQuantity_Sum": {
+                        "value": 1.2127732E7
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Box",
+                "doc_count": 1644329,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 417201,
+                      "UnitsQuantity_Sum": {
+                        "value": 1.2965525E7
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 1227128,
+                      "UnitsQuantity_Sum": {
+                        "value": 3.5572682E7
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Tesco",
+                "doc_count": 319984,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 125464,
+                      "UnitsQuantity_Sum": {
+                        "value": 829635.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 194520,
+                      "UnitsQuantity_Sum": {
+                        "value": 982884.0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Morrisons",
+                "doc_count": 127394,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 19776,
+                      "UnitsQuantity_Sum": {
+                        "value": 170668.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 107618,
+                      "UnitsQuantity_Sum": {
+                        "value": 1486518.0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Waitrose",
+                "doc_count": 78446,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 36452,
+                      "UnitsQuantity_Sum": {
+                        "value": 420233.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 41994,
+                      "UnitsQuantity_Sum": {
+                        "value": 215629.0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Danillo",
+                "doc_count": 52262,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 26058,
+                      "UnitsQuantity_Sum": {
+                        "value": 137353.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 26204,
+                      "UnitsQuantity_Sum": {
+                        "value": 149810.0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Me To You",
+                "doc_count": 42540,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 12365,
+                      "UnitsQuantity_Sum": {
+                        "value": 66713.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 30175,
+                      "UnitsQuantity_Sum": {
+                        "value": 362776.0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Tailormade",
+                "doc_count": 36079,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 17010,
+                      "UnitsQuantity_Sum": {
+                        "value": 89371.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 19069,
+                      "UnitsQuantity_Sum": {
+                        "value": 93923.0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "Carte Blanche Greetings",
+                "doc_count": 34516,
+                "Transaction.ActionDateTime": {
+                  "meta": {
+                    "BreakBy": "Transaction.ActionDateTime"
+                  },
+                  "buckets": [
+                    {
+                      "key_as_string": "2018",
+                      "key": 1514764800000,
+                      "doc_count": 14317,
+                      "UnitsQuantity_Sum": {
+                        "value": 72968.0
+                      }
+                    },
+                    {
+                      "key_as_string": "2019",
+                      "key": 1546300800000,
+                      "doc_count": 20199,
+                      "UnitsQuantity_Sum": {
+                        "value": 218149.0
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "all_activities sum UnitsQuantity per Months": {
+          "doc_count": 3333944,
+          "Item.MainCategory": {
+            "meta": {
+              "GroupBy": "Item.MainCategory"
+            },
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": []
           }
         }
       }

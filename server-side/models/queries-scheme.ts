@@ -19,9 +19,44 @@ export const QueriesScheme =
                             "type": "object",
                             "properties": {
                                 "FieldID": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "minLength": 2
                                 },
                                 "Alias": {
+                                    "type": "string"
+                                },
+                                "Script": {
+                                    "type": "string"
+                                },
+                                "Aggregator": {
+                                    "type": "string",
+                                    "enum": ["Sum", "Count", "Average", "Script"]
+                                }
+                            },
+                            "if": {
+                                "properties": {
+                                    "Aggregator": { "const": "Script" }
+                                },
+                                
+                            },
+                            "then": { "required": ["Script"] },
+                            "else": { "required": ["FieldID"] },
+                            "additionalProperties": false,
+                            "required": [
+                                "Aggregator"
+                            ]
+                        }
+                    },
+                    "AggregatedParams": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "FieldID": {
+                                    "type": "string",
+                                    "minLength": 2
+                                },
+                                "Name": {
                                     "type": "string"
                                 },
                                 "Aggregator": {
@@ -32,7 +67,8 @@ export const QueriesScheme =
                             "additionalProperties": false,
                             "required": [
                                 "FieldID",
-                                "Aggregator"
+                                "Aggregator",
+                                "Name"
                             ]
                         }
                     },
@@ -40,11 +76,17 @@ export const QueriesScheme =
                         "type": "string",
                         "enum": ["all_activities", "transaction_lines"]
                     },
+                    "Label": {
+                        "type": "string",
+                        "minLength":1,
+                        "default": "${label}"
+                    },
                     "BreakBy": {
                         "type": "object",
                         "properties": {
                             "FieldID": {
-                                "type": "string"
+                                "type": "string",
+                                "minLength": 2
                             },
                             "Interval": {
                                 "type": "integer"
@@ -57,7 +99,8 @@ export const QueriesScheme =
                                 "type": "object",
                                 "properties": {
                                     "FieldID": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "minLength": 2
                                     },
                                     "Max": {
                                         "type": "integer",
@@ -81,7 +124,8 @@ export const QueriesScheme =
                             "type": "object",
                             "properties": {
                                 "FieldID": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "minLength": 2
                                 },
                                 "Interval": {
                                     "type": "integer"
@@ -94,7 +138,8 @@ export const QueriesScheme =
                                     "type": "object",
                                     "properties": {
                                         "FieldID": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "minLength": 2
                                         },
                                         "Max": {
                                             "type": "integer",
@@ -110,7 +155,7 @@ export const QueriesScheme =
                             "additionalProperties": false
                         }
                     },
-                    "Name":{
+                    "Name": {
                         "type": "string",
                         "minLength": 2
                     },

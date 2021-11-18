@@ -3,7 +3,7 @@ import jwt from 'jwt-decode';
 import { PapiClient } from '@pepperi-addons/papi-sdk';
 import { Injectable } from '@angular/core';
 import { PepDataConvertorService, PepHttpService, PepSessionService } from '@pepperi-addons/ngx-lib';
-import { PepDialogActionButton, PepDialogData } from '@pepperi-addons/ngx-lib/dialog';
+import { PepDialogActionButton, PepDialogData, PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 
 
 
@@ -14,21 +14,21 @@ export class AddonService {
     parsedToken: any
     papiBaseURL = ''
     addonUUID;
-    Chart_Addon_UUID='3d118baf-f576-4cdb-a81e-c2cc9af4d7ad';
-    queries:[]=[];
+    Chart_Addon_UUID = '3d118baf-f576-4cdb-a81e-c2cc9af4d7ad';
+    queries: [] = [];
     get papiClient(): PapiClient {
         return new PapiClient({
             baseURL: this.papiBaseURL,
             token: this.session.getIdpToken(),
             addonUUID: this.addonUUID,
-            suppressLogging:true
+            suppressLogging: true
         })
     }
 
     constructor(
-        public session:  PepSessionService
-        ,public pepperiDataConverter: PepDataConvertorService
-        ,private pepHttp: PepHttpService,
+        public session: PepSessionService
+        , public pepperiDataConverter: PepDataConvertorService
+        , private pepHttp: PepHttpService, public dialogService: PepDialogService
     ) {
         const accessToken = this.session.getIdpToken();
         this.parsedToken = jwt(accessToken);
@@ -36,7 +36,7 @@ export class AddonService {
     }
     ngOnInit() {
     }
-  
+
     async get(endpoint: string): Promise<any> {
         return await this.papiClient.get(endpoint);
     }
@@ -52,6 +52,19 @@ export class AddonService {
     pepPost(endpoint: string, body: any): Observable<any> {
         return this.pepHttp.postPapiApiCall(endpoint, body);
 
+    }
+    dialogRef;
+
+    openDialog(title, content, buttons,
+        input, callbackFunc = null): void {
+        const dialogConfig = this.dialogService.getDialogConfig({ disableClose: true, panelClass: 'pepperi-standalone',maxWidth:'832px',minWidth:'832px',maxHeight:'100%' }, 'large',)
+        const data = new PepDialogData({ title: title, content: content, actionButtons: buttons })
+        dialogConfig.data = data;
+
+        this.dialogRef = this.dialogService.openDialog(content, input, dialogConfig);
+        this.dialogRef.afterClosed().subscribe(res => {
+            callbackFunc(res);
+        });
     }
 
     // openDialog(title: string, content: string, callback?: any) {
