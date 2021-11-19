@@ -16,12 +16,16 @@ import { config } from '../addon.config';
 import { PepIconModule } from '@pepperi-addons/ngx-lib/icon';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ReactiveFormsModule } from '@angular/forms';
 
 
 
 @NgModule({
   declarations: [SeriesEditorComponent],
   imports: [
+    CommonModule,
+
+    ReactiveFormsModule,
     PepSelectModule,
     PepTextboxModule,
     PepButtonModule,
@@ -34,6 +38,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     PepIconModule,
     MatIconModule,
     MatDialogModule,
+    
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
@@ -48,9 +53,11 @@ import { MatDialogModule } from '@angular/material/dialog';
     TranslateStore,
     AddonService,
     PepAddonService,
-    PepCustomizationService,
     PepDialogService,
-    TranslateService
+    TranslateService,
+    HttpClient,
+    PepFileService,
+    PepCustomizationService,
     // Add here all used services.
   ]
 })
@@ -61,5 +68,7 @@ export class SeriesEditorModule {
   ) {
 
     this.pepAddonService.setDefaultTranslateLang(translate);
+
+  
   }
 }

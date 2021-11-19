@@ -30,11 +30,12 @@ const pepIcons = [
         CommonModule,
         PepTextareaModule,
         PepGroupButtonsModule,
+
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
-                useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) => 
-                    PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService,  ),
+                useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) =>
+                    PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
                 deps: [HttpClient, PepFileService, PepAddonService],
             }, isolate: false
         }),
@@ -45,7 +46,11 @@ const pepIcons = [
         AddonService,
         PepAddonService,
         PepCustomizationService,
-        PepDialogService 
+        PepDialogService,
+        TranslateService,  
+        HttpClient,
+        PepFileService,
+        
         // Add here all used services.
     ]
 })

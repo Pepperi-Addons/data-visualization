@@ -18,7 +18,6 @@ export class SeriesEditorComponent implements OnInit {
   chartInstance: any;
   currentSeries: Serie;
   filterExampleJSON = '';
-  scriptAggregationSelected = false;
   resourceOptions: Array<PepButton> = [];
   aggregationsOptions: Array<PepButton> = [];
   aggregationsFieldsOptions: Array<PepButton> = [];
@@ -39,10 +38,14 @@ export class SeriesEditorComponent implements OnInit {
         Aggregator: 'None',
         FieldID: '',
         Alias: '',
-        Script: 'params.mytotal / params.mycount'
+        Script: ''
       }
     ],
-    AggregatedParams: [],
+    AggregatedParams: [{
+      FieldID: '',
+      Aggregator: '',
+      Name: ''
+    }],
     BreakBy: {
       FieldID: '', IntervalUnit: 'None', Interval: null, Top: {
         FieldID: '',
@@ -50,6 +53,7 @@ export class SeriesEditorComponent implements OnInit {
         Max: null
       }
     },
+    DynamicFilterFields:[''],
     Resource: 'None',
     GroupBy: [{
       FieldID: '',
@@ -193,7 +197,6 @@ export class SeriesEditorComponent implements OnInit {
   onAggregatorSelected(aggregator) {
     switch (aggregator) {
       case 'Script':
-        this.scriptAggregationSelected = true;
         break;
     }
   }

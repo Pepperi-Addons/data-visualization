@@ -36,12 +36,18 @@
     "CategoriesDescription": "Defines the X-Axis values. For date based charts, usually it is defined in the Action Date field",
     "GroupByField": "Group by field",
     "Alias": "Alias",
+    "AggregatedField":"Aggregated field",
+    "PeriodFilter":"Period filter",
     "BreakByField": "Break by field",
     "AggregationDescription": "Define the aggregation rules",
     "Aggregator": "Aggregator",
     "ScriptParameters": "Script parameters",
     "ScriptParametersDescription": "The script can contain the aggregation parametes in the convention of 'params.'+parameter name.",
-    "ScriptParametersDescriptionExample": "For example, to get an average of thr total sales per account, define:\n \t script parameter in the sum of GrandTotal \n \t script parameter in the distinc count of account ID \n \t script of: params.mytotal / params.mycount",
+    "ScriptParametersDescriptionExample": "For example, to get an average of thr total sales per account, define:",
+    "ScriptParametersDescriptionExampleOne":"script parameter in the sum of GrandTotal",
+    "ScriptParametersDescriptionExampleTwo":"script parameter in the distinc count of account ID",
+    "ScriptParametersDescriptionExampleThree":"script of: params.mytotal / params.mycount",
+
     "DynamicFilterDescription": "Define the fields which if changed by the user, will be added to the chart filter",
     "FilterRules":"Filter rules"
 }

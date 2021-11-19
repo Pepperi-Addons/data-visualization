@@ -7,11 +7,12 @@
                     <pep-select class="flex" [emptyOption]="false" [(value)]="series.Resource" [key]="'resourceSelect'" [label]="'Resource' | translate" [xAlignment]="'left'" [options]='resourceOptions' (valueChange)="onChartSelected($event)">
                     </pep-select>
                 </div>
-                <pep-field-title [label]="'LabelFormat' | translate" class="header">
+                <h4>
+                    {{'LabelFormat' | translate}}
+                </h4>
+                <pep-field-title [label]="'LabelFormatDescription' | translate" class="header" [inputLength]="900">
                 </pep-field-title>
-                <pep-field-title [label]="'LabelFormatDescription' | translate" class="header">
-                </pep-field-title>
-                <pep-textbox class="half-width" [(value)]="series.Label" [showTitle]="false" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
+                <pep-textbox class="half-width no-title" [(value)]="series.Label" [showTitle]="false" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
                 <div id="metric">
                     <h2>{{'Metric' | translate}}
                     </h2>
@@ -24,29 +25,43 @@
                         <pep-select class="flex" [emptyOption]="false" [(value)]="series.AggregatedFields[0].FieldID" [key]="'fieldAggregationsSelect'" [label]="'AggregatedField' | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>
                     </div>
-                    <div id="scripts" *ngIf="scriptAggregationSelected">
-                        <pep-field-title [label]="'ScriptParameters' | translate" class="header">
-                        </pep-field-title>
+                    <div id="scripts" *ngIf="series.AggregatedFields[0].Aggregator === 'Script'">
+                        <!-- <pep-field-title [label]="'ScriptParameters' | translate" class="header">
+                        </pep-field-title> -->
+                        <h4>
+                            {{'ScriptParameters' | translate}}
+                        </h4>
                         <pep-field-title [label]="'ScriptParametersDescription' | translate" class="header">
                         </pep-field-title>
+                        <pep-field-title [label]="'ScriptParametersDescriptionExample' | translate" class="header">
+                        </pep-field-title>
                         <div class="space-between">
-                            <pep-field-title [label]="'ScriptParametersDescriptionExample' | translate" class="header">
-                            </pep-field-title>
+                            <div class="tab">
+                                <pep-field-title [label]="'ScriptParametersDescriptionExampleOne' | translate" class="header">
+                                </pep-field-title>
+                                <pep-field-title [label]="'ScriptParametersDescriptionExampleTwo' | translate" class="header">
+                                </pep-field-title>
+                                <pep-field-title [label]="'ScriptParametersDescriptionExampleThree' | translate" class="header">
+                                </pep-field-title>
+
+                            </div>
                             <button mat-button class="pep-spacing-element pep-button md strong" (click)="onSave($event)" [mat-dialog-close]="series">
                                 {{'Add'| translate}}
                             </button>
                         </div>
-                        <div class="flex-gap">
-                            <div *ngFor="let aggregatedParam of series.AggregatedParams">
+                        <div>
 
-                                <pep-textbox class="flex" [(value)]="aggregatedParam.Name" [label]="'Name' | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
-                                <pep-select class="flex" [(value)]="aggregatedParam.Aggregator" [emptyOption]="false" [label]="'Aggregation' | translate" [showTitle]="true" (valueChange)="onTypeChange($event)" [options]="aggregationsOptions" class="pull-left flip"></pep-select>
-                                <pep-select class="flex" [(value)]="aggregatedParam.FieldID" [emptyOption]="false" [label]="'Field' | translate" [showTitle]="false" (valueChange)="onTypeChange($event)" [options]="aggregationsFieldsOptions" class="pull-left flip"></pep-select>
-                                <button style="top: 1.5rem;" (click)="onValueChanged('Name', $event)" class="mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
-                                    <mat-icon style="padding: 1.2rem;">
-                                        <pep-icon name="system_bin"></pep-icon>
-                                    </mat-icon>
-                                </button>
+                            <div *ngFor="let aggregatedParam of series.AggregatedParams">
+                                <div class="flex-gap">
+                                    <pep-textbox class="flex" [(value)]="aggregatedParam.Name" [label]="'Name' | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
+                                    <pep-select class="flex" [(value)]="aggregatedParam.Aggregator" [emptyOption]="false" [label]="'Aggregation' | translate" [showTitle]="true" (valueChange)="onTypeChange($event)" [options]="aggregationsOptions" class="pull-left flip"></pep-select>
+                                    <pep-select class="flex" [(value)]="aggregatedParam.FieldID" [emptyOption]="false" [label]="'Field' | translate" [showTitle]="false" (valueChange)="onTypeChange($event)" [options]="aggregationsFieldsOptions" class="pull-left flip"></pep-select>
+                                    <button (click)="onValueChanged('Name', $event)" class="top mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
+                                        <mat-icon style="padding: 1.2rem;">
+                                            <pep-icon name="system_bin"></pep-icon>
+                                        </mat-icon>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <pep-textarea [key]="'textarea1'" [label]="'Script' | translate" [value]="getScript()" [rowSpan]="2" [xAlignment]="'left'">
@@ -87,7 +102,6 @@
                         </pep-select>
                     </div>
                 </div>
-                <hr>
                 <div id="filter">
                     <h2>{{'Filter' | translate}}
                     </h2>
@@ -105,7 +119,7 @@
                         </pep-select>
 
                     </div>
-                    <div class="flex-gap half-width">
+                    <div class="flex-gap">
                         <pep-select class="flex" [emptyOption]="false" [label]="'PeriodFilter' | translate" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='periodOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>
                         <pep-textbox class="flex" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
@@ -120,25 +134,27 @@
                     </h2>
                     <hr>
                     <div class="space-between">
-                        <pep-field-title [label]="'DynamicGraphsDescriptions' | translate" class="header">
+                        <pep-field-title [label]="'DynamicFilterDescription' | translate" class="header">
                         </pep-field-title>
                         <button mat-button class="pep-spacing-element pep-button md strong" (click)="onSave($event)" [mat-dialog-close]="series">
                             {{'Add'| translate}}
                         </button>
                     </div>
-                    <div id="aggregators-params-container">
-                        <pep-select [showTitle]="false" [emptyOption]="false" [emptyOption]="true" (valueChange)="onTypeChange($event)" [options]="aggregationsFieldsOptions" class="pull-left flip"></pep-select>
-                        <!-- <button mat-button class="pep-spacing-element pep-button md weak" (click)="onTypeChange($event)">
-                            <mat-icon>
-                                <pep-icon name="system_bin"></pep-icon>
-                            </mat-icon>
-                        </button> -->
-                        <button style="top: 1.5rem;" (click)="onValueChanged('Name', $event)" class="mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
-                            <mat-icon style="padding: 1.2rem;">
-                                <pep-icon name="system_bin"></pep-icon>
-                            </mat-icon>
-                        </button>
+
+                    <div id="fields-container">
+                        <div class="fieldRow" *ngFor="let dynamicFilterFields of series.DynamicFilterFields;  let i = index">
+                            <div id="aggregators-params-container">
+                                <pep-select [disabled]="false" [showTitle]="false" [emptyOption]="false" [options]="aggregationsFieldsOptions" class="pull-left flip" [value]="series.DynamicFilterFields[i]"></pep-select>
+
+                                <button class="mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
+                                    <mat-icon style="padding: 1.2rem;">
+                                        <pep-icon name="system_bin"></pep-icon>
+                                    </mat-icon>
+                                </button>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
 
             </div>

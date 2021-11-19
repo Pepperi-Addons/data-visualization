@@ -6,7 +6,6 @@ export interface DataQuery extends AddonData {
     Name: string;
     Description?: string;
     Series: Serie[],
-    DynamicFilterFields: [],
     Filter: {},
     Scope: {
         User: UserType,
@@ -25,6 +24,7 @@ export interface Serie {
     Name: string,
     Label: string,
     Resource: ResourceType,
+    DynamicFilterFields: string[],
     GroupBy?: GroupBy[],
     AggregatedFields: AggregatedField[];
     AggregatedParams?: AggregatedParam[],

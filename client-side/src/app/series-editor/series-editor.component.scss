@@ -7,6 +7,8 @@
 {
     display: flex;
     justify-content: space-between;
+    align-items:flex-end;
+
 }
 .flex-gap{
     display: flex; gap: 0.5rem;
@@ -20,3 +22,44 @@
 .flex-grow{
     flex-grow: 2.2;
 }
+.tab{
+    padding-left:1em
+}
+.top{
+    top:1.5rem;
+}
+.no-title{
+    margin:-1.5rem 1rem 0 0;
+}
+#fields-container{
+ 
+
+    .fieldRow{
+
+        height: 2.5rem;
+        margin-bottom: .5rem;
+            
+            label{
+                margin: .5rem 0 0 0;
+                min-width: 2rem;
+            }
+    
+            pep-select{
+                width: 14rem;
+                max-width: 14rem;
+                margin: -1.5rem 1rem 0 0;
+
+                &:last-of-type {
+                    margin-right: 0rem;
+                }
+            }
+            mat-icon{
+                cursor: pointer;
+            }
+    
+            &:last-of-type {
+                margin-bottom:  1.5rem;
+            }
+        }
+} 
+
