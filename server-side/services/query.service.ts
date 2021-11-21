@@ -7,7 +7,7 @@ import { validate } from 'jsonschema';
 import { QueriesScheme } from '../models/queries-scheme';
 
 class QueryService {
-
+    
     papiClient: PapiClient
     
     constructor(private client: Client) {

@@ -7,6 +7,7 @@
     "Open_Dialog": "Open Dialog",
     "Dialog_Body": "Dialog from sub addon",
     "Dialog_Title": "Dialog",
+    "CountDistinct":"Count Distinct",
     "FailedExecuteFile": "Failed to execute the file content",
     "FailedLoadLibrary": "Failed to load library: {{library}}",
     "DataVisualization": "Data Visualization",

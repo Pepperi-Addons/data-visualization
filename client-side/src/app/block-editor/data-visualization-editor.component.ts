@@ -10,6 +10,7 @@ import { Serie } from '../../../../server-side/models/data-query';
 import { SeriesEditorComponent } from '../series-editor/series-editor.component';
 import { PepDialogActionButton, PepDialogData, PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { MatDialogRef } from '@angular/material/dialog';
+import { v4 as uuid } from 'uuid';
 
 @Component({
     selector: 'data-visualization-editor',
@@ -27,12 +28,12 @@ export class DataVisualizationEditorComponent implements OnInit {
         } else {
             if (this.blockLoaded) {
                 this._configuration = {
-                    chart:{
-                        Key:'',
-                        ScriptURI:''
+                    chart: {
+                        Key: '',
+                        ScriptURI: ''
                     },
                     query: {
-                        Key:''
+                        Key: ''
                     }
                 };
                 this.updateHostObject();
@@ -41,14 +42,14 @@ export class DataVisualizationEditorComponent implements OnInit {
     }
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
 
-    
+
     private _configuration = {
         chart: {
-            Key:'',
-            ScriptURI:''
+            Key: '',
+            ScriptURI: ''
         },
         query: {
-            Key:''
+            Key: ''
         },
     };
 
@@ -69,7 +70,7 @@ export class DataVisualizationEditorComponent implements OnInit {
     chartInstance: any;
     currentChart;
     currentQuery;
-    
+
     constructor(private addonService: PepAddonService,
         public routeParams: ActivatedRoute,
         public router: Router,
@@ -85,24 +86,24 @@ export class DataVisualizationEditorComponent implements OnInit {
         this.fillQueriesOptions();
         this.hostEvents.emit({ action: 'block-editor-loaded' });
         this.blockLoaded = true;
-        if(this.configuration?.query){
+        if (this.configuration?.query) {
             this.selectedQuery = this.configuration?.query;
-            this.buildQueriesButtons(this.configuration?.query);
+            this.buildSeriesButtons(this.configuration?.query);
         }
     }
 
     private fillQueriesOptions() {
         this.addonService.getAddonApiCall(config.AddonUUID, 'api', 'queries').toPromise()
-        
-        .then((dataQueries) => {
-            this.queriesList = dataQueries;
-            dataQueries.forEach(dataQuerie => {
-                this.queriesOptions.push({ key: dataQuerie.Key, value: dataQuerie.Name });
+
+            .then((dataQueries) => {
+                this.queriesList = dataQueries;
+                dataQueries.forEach(dataQuerie => {
+                    this.queriesOptions.push({ key: dataQuerie.Key, value: dataQuerie.Name });
+                });
+                if (this.configuration?.query?.Key) {
+                    this.currentQuery = this.configuration.query.Key
+                }
             });
-            if (this.configuration?.query?.Key){
-                this.currentQuery =this.configuration.query.Key
-            }
-        });
     }
 
     onEditClick() {
@@ -114,8 +115,8 @@ export class DataVisualizationEditorComponent implements OnInit {
             charts.forEach(chart => {
                 this.chartsOptions.push({ key: chart.Key, value: chart.Name });
             });
-            if (this.configuration?.chart?.Key){
-                this.currentChart =this.configuration.chart.Key
+            if (this.configuration?.chart?.Key) {
+                this.currentChart = this.configuration.chart.Key
             }
         });
     }
@@ -123,8 +124,8 @@ export class DataVisualizationEditorComponent implements OnInit {
     onRemoveClick() {
     }
 
-    getQueryOption(key){
-        return this.queriesOptions.filter(qo=>qo.key === key)[0];
+    getQueryOption(key) {
+        return this.queriesOptions.filter(qo => qo.key === key)[0];
     }
 
     onChartSelected(event: IPepFieldValueChangeEvent) {
@@ -234,7 +235,7 @@ export class DataVisualizationEditorComponent implements OnInit {
 
     editSeries(event) {
         if (event) {
-            this.currentSeries = this.selectedQuery.Series.filter(s => s.Name === event.source.key)[0] as Serie
+            this.currentSeries = this.selectedQuery.Series.filter(s => s.Key === event.source.key)[0] as Serie
         }
         this.showSeriesEditorDialog(this.currentSeries);
         // this.showSeriesEditor = true;
@@ -249,13 +250,27 @@ export class DataVisualizationEditorComponent implements OnInit {
 
         this.openDialog(this.translate.instant('EditSeries'), SeriesEditorComponent, actionButton, {
             currentSeries: currentSeries
-        }, (addSeries) => {
-            if (addSeries) {
+        }, (seriesToAddOrUpdate) => {
+            if (seriesToAddOrUpdate) {
+                debugger;
+                const idx = this.selectedQuery.Series.findIndex(item => item.Key === seriesToAddOrUpdate.Key);;
+                if (idx > -1) {
+                    this.selectedQuery.Series[idx] = seriesToAddOrUpdate;
+                }
+                else {
+                    this.selectedQuery.Series.push(seriesToAddOrUpdate);
+                }
+
+                const updatedSeries =  this.selectedQuery.Series.filter(function (series) {
+                    delete series.Key;
+                    return true;
+                });
+                this.selectedQuery.Series = updatedSeries;
                 this.addonService.postAddonApiCall(
                     config.AddonUUID,
-                    'inventory_allocation',
-                    'user_allocations',
-                    addSeries).toPromise().then(() => this.reload())
+                    'api',
+                    'queries',
+                    this.selectedQuery).toPromise().then(() => this.buildSeriesButtons(this.selectedQuery))
             }
 
         });
@@ -301,14 +316,20 @@ export class DataVisualizationEditorComponent implements OnInit {
         });
     }
 
-    deleteQuery(event) {
+    deleteSeries(event) {
         console.log(event);
-        const body = {
-            Key: this.selectedQuery.Key,
-            Hidden: true
-        }
-        this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', body).toPromise().then((res) => {
-            this.buildQueriesButtons(res);
+        const idx = this.selectedQuery.Series.findIndex(item => item.Key === event.source.key);;
+        if (idx > -1) {
+            this.selectedQuery.Series.splice(idx, 1);
+         }
+         const updatedSeries =  this.selectedQuery.Series.filter(function (series) {
+            delete series.Key;
+            return true;
+        });
+        this.selectedQuery.Series = updatedSeries;
+
+        this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this.selectedQuery).toPromise().then((res) => {
+            this.buildSeriesButtons(res);
 
         });
     }
@@ -322,7 +343,7 @@ export class DataVisualizationEditorComponent implements OnInit {
 
         this.updateHostObject();
 
-        this.buildQueriesButtons(this.selectedQuery);
+        this.buildSeriesButtons(this.selectedQuery);
         const body = {
             QueryId: event
         }
@@ -331,18 +352,19 @@ export class DataVisualizationEditorComponent implements OnInit {
         });
     }
 
-    private buildQueriesButtons(selectedQuery) {
+    private buildSeriesButtons(selectedQuery) {
         selectedQuery.Series.forEach(serise => {
+            serise.Key = uuid();
             this.seriesButtons.push([
                 {
-                    key: serise.Name,
+                    key: serise.Key,
                     value: serise.Name,
                     callback: (event: IPepButtonClickEvent) => this.editSeries(event),
                 },
                 {
-                    key: serise.Name,
+                    key: serise.Key,
                     classNames: 'caution',
-                    callback: (event: IPepButtonClickEvent) => this.deleteQuery(event),
+                    callback: (event: IPepButtonClickEvent) => this.deleteSeries(event),
                     iconName: pepIconSystemBin.name,
                 },
             ]);

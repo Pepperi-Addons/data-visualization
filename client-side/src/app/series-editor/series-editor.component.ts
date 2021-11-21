@@ -6,7 +6,7 @@ import { IPepButtonClickEvent, PepButton } from '@pepperi-addons/ngx-lib/button'
 import { pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
 import { AddonService } from '../addon.service';
 import { config } from '../addon.config';
-import { AccountTypes, Aggregators, DateOperation, IntervalUnits, OrderType, ResourceTypes, Serie, UserTypes } from '../../../../server-side/models/data-query';
+import { AccountTypes, Aggregators, DateOperation, IntervalUnits, OrderType, ResourceTypes, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../../../../server-side/models/data-query';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
@@ -31,8 +31,9 @@ export class SeriesEditorComponent implements OnInit {
   isLoaded = false;
   mode: string = 'Add';
   series: Serie = {
+    Key: '',
     Name: '',
-    Label: '',
+    Label: SERIES_LABEL_DEFAULT_VALUE,
     AggregatedFields: [
       {
         Aggregator: 'None',
@@ -53,16 +54,14 @@ export class SeriesEditorComponent implements OnInit {
         Max: null
       }
     },
-    DynamicFilterFields:[''],
+    DynamicFilterFields: [''],
     Resource: 'None',
     GroupBy: [{
       FieldID: '',
       Interval: null,
       IntervalUnit: 'None',
       Top: null
-    }],
-    Interval: null,
-    IntervalUnit: 'None'
+    }]
 
   }
 
@@ -116,7 +115,7 @@ export class SeriesEditorComponent implements OnInit {
     }, null, 2);
 
     Aggregators.forEach(aggregator => {
-      this.aggregationsOptions.push({ key: aggregator, value: aggregator });
+      this.aggregationsOptions.push({ key: aggregator, value: this.translate.instant(aggregator) });
     });
 
     IntervalUnits.forEach(intervalUnit => {
@@ -199,5 +198,24 @@ export class SeriesEditorComponent implements OnInit {
       case 'Script':
         break;
     }
+  }
+
+
+  deleteDynamicFilterFields(index) {
+    this.series.DynamicFilterFields.splice(index);
+  }
+
+  deleteAggregatedParam(index) {
+    this.series.AggregatedParams.splice(index);
+  }
+
+  addAggregatedParam() {
+    this.series.AggregatedParams.push({ Name: '', Aggregator: '', FieldID: '' });
+
+  }
+
+  addDynamicFilterFields() {
+    this.series.DynamicFilterFields.push('');
+
   }
 }

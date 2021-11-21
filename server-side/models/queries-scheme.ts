@@ -8,7 +8,6 @@ export const QueriesScheme =
         },
         "Series": {
             "type": "array",
-            "minItems": 1,
             "items": {
                 "type": "object",
                 "properties": {
@@ -20,7 +19,6 @@ export const QueriesScheme =
                             "properties": {
                                 "FieldID": {
                                     "type": "string",
-                                    "minLength": 2
                                 },
                                 "Alias": {
                                     "type": "string"
@@ -30,7 +28,7 @@ export const QueriesScheme =
                                 },
                                 "Aggregator": {
                                     "type": "string",
-                                    "enum": ["Sum", "Count", "Average", "Script"]
+                                    "enum": ["Sum", "Count", "Average", "Script","CountDistinct"]
                                 }
                             },
                             "if": {
@@ -39,8 +37,8 @@ export const QueriesScheme =
                                 },
                                 
                             },
-                            "then": { "required": ["Script"] },
-                            "else": { "required": ["FieldID"] },
+                            "then": { "required": ["Script"],"minLength": 1 },
+                            "else": { "required": ["FieldID"] ,"minLength": 1},
                             "additionalProperties": false,
                             "required": [
                                 "Aggregator"
@@ -61,7 +59,7 @@ export const QueriesScheme =
                                 },
                                 "Aggregator": {
                                     "type": "string",
-                                    "enum": ["Sum", "Count", "Average"]
+                                    "enum": ["Sum", "Count", "Average","CountDistinct"]
                                 }
                             },
                             "additionalProperties": false,

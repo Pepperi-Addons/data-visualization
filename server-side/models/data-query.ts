@@ -21,6 +21,7 @@ export interface GroupBy {
 }
 
 export interface Serie {
+    Key: string,
     Name: string,
     Label: string,
     Resource: ResourceType,
@@ -59,19 +60,19 @@ export declare type UserType = typeof UserTypes[number];
 export const AccountTypes = ["Assigned", "All"];
 export declare type AccountType = typeof AccountTypes[number];
 
-export const ResourceTypes = ["all_activities", "transaction_lines", "None"];
+export const ResourceTypes = ["None", "all_activities", "transaction_lines"];
 export declare type ResourceType = typeof ResourceTypes[number];
 
 export const DataTypes = ["Single", "Series", "MultiSeries"];
 export declare type DataType = typeof DataTypes[number];
 
-export const IntervalUnits = ["Days", "Weeks", "Months", "Years", "None"];
+export const IntervalUnits = ["None", "Days", "Weeks", "Months", "Years"];
 export declare type IntervalUnit = typeof IntervalUnits[number];
 
-export const Aggregators = ["Sum", "Count", "Average", "Script", "None"];
+export const Aggregators = ["None", "Sum", "Count", "Average", "Script", "CountDistinct"];
 export declare type Aggregator = typeof Aggregators[number];
 
-export const DateOperation = ['InTheLast','Today','ThisWeek','ThisMonth','Before','After','Between','DueIn','On','NotInTheLast','NotDueIn', 'IsEmpty','IsNotEmpty']
+export const DateOperation = ['InTheLast', 'Today', 'ThisWeek', 'ThisMonth', 'Before', 'After', 'Between', 'DueIn', 'On', 'NotInTheLast', 'NotDueIn', 'IsEmpty', 'IsNotEmpty']
 export const OrderType = ["Ascending", "Decending"];
 
 export const DATA_QUREIES_TABLE_NAME = 'DataQueries';

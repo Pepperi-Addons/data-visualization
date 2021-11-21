@@ -2,7 +2,7 @@ import { PapiClient, InstalledAddon } from '@pepperi-addons/papi-sdk'
 import { Client, Request } from '@pepperi-addons/debug-server';
 import { v4 as uuid } from 'uuid';
 import config from '../../addon.config.json'
-import { AggregatedField, DataQuery, DataTypes, DATA_QUREIES_TABLE_NAME, GroupBy, IntervalUnit, IntervalUnits, Serie } from '../models/data-query';
+import { AggregatedField, AggregatedParam, DataQuery, DataTypes, DATA_QUREIES_TABLE_NAME, GroupBy, IntervalUnit, IntervalUnits, Serie } from '../models/data-query';
 import { validate } from 'jsonschema';
 import { QueriesScheme } from '../models/queries-scheme';
 import esb, { Aggregation, DateHistogramAggregation, dateHistogramAggregation, dateRangeAggregation, maxBucketAggregation, Query, termQuery, TermsAggregation } from 'elastic-builder';
@@ -44,6 +44,10 @@ class ElasticService {
   async executeUserDefinedQuery(client: Client, request: Request) {
 
     const validation = validate(request.body, QueryExecutionScheme);
+
+    if (!validation.valid) {
+      throw new Error(validation.toString());
+    }
 
     const query: DataQuery = await this.getUserDefinedQuery(request);
     const distributorUUID = (<any>jwtDecode(client.OAuthAccessToken))["pepperi.distributoruuid"];
@@ -89,7 +93,25 @@ class ElasticService {
       }
 
       for (const aggregatedField of serie.AggregatedFields) {
-        let agg = this.getAggregator(aggregatedField);
+        let agg;
+
+        if (aggregatedField.Aggregator === 'Script' && aggregatedField.Script) {
+          let scriptAggs: Aggregation[] = [];
+          serie.AggregatedParams?.forEach(aggregatedParam => {
+            scriptAggs.push(this.getAggregator(aggregatedParam))
+          });
+
+          scriptAggs.push(esb.bucketScriptAggregation('test').bucketsPath({
+            "total": "totalsum",
+            "count": "myCount"
+          }).script(aggregatedField.Script));
+          agg = esb.requestBodySearch().aggs(scriptAggs);
+
+        } else {
+
+          agg = this.getAggregator(aggregatedField);
+        }
+
         aggregations.push(agg);
         //elasticRequestBody.agg(agg);
       }
@@ -432,7 +454,7 @@ class ElasticService {
     query.Series.forEach(series => {
       const resourceAggs = lambdaResponse.aggregations[series.Name];
       if (series.GroupBy) {
-        
+
         series.GroupBy.forEach(groupBy => {
           response.Groups.push(groupBy.FieldID);
           resourceAggs[groupBy.FieldID].buckets.forEach(bucketsGroupBy => {
@@ -443,7 +465,7 @@ class ElasticService {
             bucketsGroupBy[series.BreakBy.FieldID].buckets.forEach(bucket => {
               const seriesName = this.getKeyAggregationName(bucket);
               response.Series.push(seriesName);
-              
+
               //dataSet[]
               series.AggregatedFields.forEach((aggregatedField) => {
 
@@ -919,12 +941,13 @@ class ElasticService {
       case 'Sum':
         agg = esb.sumAggregation(aggName, aggregatedField.FieldID);
         break;
-      case 'Count':
-        agg = esb.valueCountAggregation(aggName, aggregatedField.FieldID);
+      case 'CountDistinct':
+        agg = esb.cardinalityAggregation(aggName, aggregatedField.FieldID);
         break;
       case 'Average':
         agg = esb.avgAggregation(aggName, aggregatedField.FieldID);
         break;
+
     }
     return agg;
   }

@@ -22,7 +22,7 @@
                     <div class="flex-gap">
                         <pep-select class="flex" [emptyOption]="false" [(value)]="series.AggregatedFields[0].Aggregator" [key]="'aggregationsSelect'" [label]="'Aggregator' | translate" [xAlignment]="'left'" [options]='aggregationsOptions' (valueChange)="onAggregatorSelected($event)">
                         </pep-select>
-                        <pep-select class="flex" [emptyOption]="false" [(value)]="series.AggregatedFields[0].FieldID" [key]="'fieldAggregationsSelect'" [label]="'AggregatedField' | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' (valueChange)="onChartSelected($event)">
+                        <pep-select *ngIf="series.AggregatedFields[0].Aggregator=='Sum' || series.AggregatedFields[0].Aggregator=='Average' || series.AggregatedFields[0].Aggregator=='CountDistinct'" class="flex" [emptyOption]="false" [(value)]="series.AggregatedFields[0].FieldID" [key]="'fieldAggregationsSelect'" [label]="'AggregatedField' | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>
                     </div>
                     <div id="scripts" *ngIf="series.AggregatedFields[0].Aggregator === 'Script'">
@@ -45,18 +45,18 @@
                                 </pep-field-title>
 
                             </div>
-                            <button mat-button class="pep-spacing-element pep-button md strong" (click)="onSave($event)" [mat-dialog-close]="series">
+                            <button mat-button class="pep-spacing-element pep-button md strong" (click)="addAggregatedParam()">
                                 {{'Add'| translate}}
                             </button>
                         </div>
                         <div>
 
-                            <div *ngFor="let aggregatedParam of series.AggregatedParams">
+                            <div *ngFor="let aggregatedParam of series.AggregatedParams; let i = index">
                                 <div class="flex-gap">
-                                    <pep-textbox class="flex" [(value)]="aggregatedParam.Name" [label]="'Name' | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
-                                    <pep-select class="flex" [(value)]="aggregatedParam.Aggregator" [emptyOption]="false" [label]="'Aggregation' | translate" [showTitle]="true" (valueChange)="onTypeChange($event)" [options]="aggregationsOptions" class="pull-left flip"></pep-select>
-                                    <pep-select class="flex" [(value)]="aggregatedParam.FieldID" [emptyOption]="false" [label]="'Field' | translate" [showTitle]="false" (valueChange)="onTypeChange($event)" [options]="aggregationsFieldsOptions" class="pull-left flip"></pep-select>
-                                    <button (click)="onValueChanged('Name', $event)" class="top mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
+                                    <pep-textbox  class="flex" [(value)]="aggregatedParam.Name" [label]="'Name' | translate" [showTitle]="i==0" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
+                                    <pep-select  class="flex" [(value)]="aggregatedParam.Aggregator" [emptyOption]="false" [label]="'Aggregation' | translate" [showTitle]="i==0" (valueChange)="onTypeChange($event)" [options]="aggregationsOptions" class="pull-left flip"></pep-select>
+                                    <pep-select class="flex" [(value)]="aggregatedParam.FieldID" [emptyOption]="false" [label]="'Field' | translate" [showTitle]="i==0" (valueChange)="onTypeChange($event)" [options]="aggregationsFieldsOptions" class="pull-left flip"></pep-select>
+                                    <button (click)="deleteAggregatedParam(i)" class="top mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
                                         <mat-icon style="padding: 1.2rem;">
                                             <pep-icon name="system_bin"></pep-icon>
                                         </mat-icon>
@@ -64,7 +64,7 @@
                                 </div>
                             </div>
                         </div>
-                        <pep-textarea [key]="'textarea1'" [label]="'Script' | translate" [value]="getScript()" [rowSpan]="2" [xAlignment]="'left'">
+                        <pep-textarea [key]="'textarea1'" [label]="'Script' | translate" [(value)]="series.AggregatedFields[0].Script" [rowSpan]="2" [xAlignment]="'left'">
                         </pep-textarea>
                     </div>
                 </div>
@@ -136,7 +136,7 @@
                     <div class="space-between">
                         <pep-field-title [label]="'DynamicFilterDescription' | translate" class="header">
                         </pep-field-title>
-                        <button mat-button class="pep-spacing-element pep-button md strong" (click)="onSave($event)" [mat-dialog-close]="series">
+                        <button mat-button class="pep-spacing-element pep-button md strong" (click)="addDynamicFilterFields()">
                             {{'Add'| translate}}
                         </button>
                     </div>
@@ -146,7 +146,7 @@
                             <div id="aggregators-params-container">
                                 <pep-select [disabled]="false" [showTitle]="false" [emptyOption]="false" [options]="aggregationsFieldsOptions" class="pull-left flip" [value]="series.DynamicFilterFields[i]"></pep-select>
 
-                                <button class="mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
+                                <button (click)="deleteDynamicFilterFields(i)" class="mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
                                     <mat-icon style="padding: 1.2rem;">
                                         <pep-icon name="system_bin"></pep-icon>
                                     </mat-icon>
