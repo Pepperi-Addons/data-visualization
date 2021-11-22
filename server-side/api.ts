@@ -12,15 +12,5 @@ export async function queries(client: Client, request: Request) {
     }
 };
 
-export async function ui_data(client: Client, request: Request) {
-    const service = new ClientService(client)
-    if (request.method == 'GET') {
-        return await service.getUIData(request.query);
-    }
-    else{
-        throw new Error('Bad request');
-    }
-} 
-
 
 

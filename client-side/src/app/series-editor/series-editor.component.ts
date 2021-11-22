@@ -48,19 +48,26 @@ export class SeriesEditorComponent implements OnInit {
       Name: ''
     }],
     BreakBy: {
-      FieldID: '', IntervalUnit: 'None', Interval: null, Top: {
+      FieldID: '',
+      IntervalUnit: 'None',
+      Interval: 0,
+      Top: {
         FieldID: '',
         Ascending: null,
         Max: null
       }
     },
-    DynamicFilterFields: [''],
+    DynamicFilterFields: [],
     Resource: 'None',
     GroupBy: [{
       FieldID: '',
-      Interval: null,
+      Interval: 0,
       IntervalUnit: 'None',
-      Top: null
+      Top: {
+        Max: 0,
+        Ascending: false,
+        FieldID: ''
+      }
     }]
 
   }
