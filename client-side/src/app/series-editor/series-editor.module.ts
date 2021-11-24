@@ -17,6 +17,7 @@ import { PepIconModule } from '@pepperi-addons/ngx-lib/icon';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
+import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
 
 
 
@@ -28,6 +29,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     ReactiveFormsModule,
     PepSelectModule,
     PepTextboxModule,
+    PepCheckboxModule,
     PepButtonModule,
     CommonModule,
     PepTextareaModule,

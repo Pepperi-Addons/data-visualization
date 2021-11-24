@@ -6,24 +6,20 @@ export interface DataQuery extends AddonData {
     Name: string;
     Description?: string;
     Series: Serie[],
-    Filter: {},
-    Scope: {
-        User: UserType,
-        Account: AccountType
-    }
+
 }
 
 export interface GroupBy {
     FieldID: string;
     Interval?: number;
     IntervalUnit?: IntervalUnit;
-    Top?: Top;
 }
 
 export interface Serie {
     Key: string,
     Name: string,
     Label: string,
+    Top?: Top;
     Resource: ResourceType,
     DynamicFilterFields: string[],
     GroupBy?: GroupBy[],
@@ -32,14 +28,18 @@ export interface Serie {
     Interval?: number;
     IntervalUnit?: IntervalUnit;
     BreakBy: BreakBy;
+    Filter: {},
+    Scope: {
+        User: UserType,
+        UserFilterField: string,
+        Account: AccountType,
+        AccountFilterField: string,
+    }
 }
-
 
 export interface BreakBy extends GroupBy {
-    Top: Top;
 }
 export interface Top {
-    FieldID: string,
     Max: number,
     Ascending: boolean,
 }
@@ -54,10 +54,10 @@ export interface AggregatedParam {
     Aggregator: Aggregator,
     Name: string,
 }
-export const UserTypes = ["Current", "UnderMyRole", "All"];
+export const UserTypes = ["AllUsers", "CurrentUser", "UsersWithTheSameFieldValue", "UnderCurrentUserRoleHierarchy"];
 export declare type UserType = typeof UserTypes[number];
 
-export const AccountTypes = ["Assigned", "All"];
+export const AccountTypes = ["AllAccounts", "CurrentAccount", "AccountsWithTheSameFieldValue"];
 export declare type AccountType = typeof AccountTypes[number];
 
 export const ResourceTypes = ["None", "all_activities", "transaction_lines"];

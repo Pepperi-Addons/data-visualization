@@ -8,6 +8,7 @@ import { AddonService } from '../addon.service';
 import { config } from '../addon.config';
 import { AccountTypes, Aggregators, DateOperation, IntervalUnits, OrderType, ResourceTypes, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../../../../server-side/models/data-query';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { v4 as uuid } from 'uuid';
 
 @Component({
   selector: 'app-series-editor',
@@ -29,14 +30,24 @@ export class SeriesEditorComponent implements OnInit {
   accountFilterOptions: Array<PepButton> = [];
   periodOptions: Array<PepButton> = [];
   isLoaded = false;
+  limitNumber = false;
+  useCategories = false;
+  useDynamicSeries = false;
+  useDynamicFilter = false;
+
   mode: string = 'Add';
   series: Serie = {
-    Key: '',
+    Key: uuid(),
     Name: '',
+    Resource: 'all_activities',
     Label: SERIES_LABEL_DEFAULT_VALUE,
+    Top: {
+      Max: 0,
+      Ascending: false,
+    },
     AggregatedFields: [
       {
-        Aggregator: 'None',
+        Aggregator: 'Sum',
         FieldID: '',
         Alias: '',
         Script: ''
@@ -44,33 +55,32 @@ export class SeriesEditorComponent implements OnInit {
     ],
     AggregatedParams: [{
       FieldID: '',
-      Aggregator: '',
+      Aggregator: 'Sum',
       Name: ''
     }],
     BreakBy: {
       FieldID: '',
-      IntervalUnit: 'None',
+      IntervalUnit: 'Months',
       Interval: 0,
-      Top: {
-        FieldID: '',
-        Ascending: null,
-        Max: null
-      }
+
+    },
+    Filter: {},
+    Scope: {
+      User: 'AllUsers',
+      UserFilterField: '',
+      Account: 'AllAccounts',
+      AccountFilterField: ""
     },
     DynamicFilterFields: [],
-    Resource: 'None',
     GroupBy: [{
       FieldID: '',
       Interval: 0,
       IntervalUnit: 'None',
-      Top: {
-        Max: 0,
-        Ascending: false,
-        FieldID: ''
-      }
     }]
 
   }
+  trnsactionLinesFields: any;
+  allActivitiesFields: any;
 
   constructor(private addonService: PepAddonService,
     public routeParams: ActivatedRoute,
@@ -82,23 +92,19 @@ export class SeriesEditorComponent implements OnInit {
     if (incoming && incoming.currentSeries) {
       this.mode = 'Update';
       this.series = incoming.currentSeries;
+      this.useCategories = this.series.GroupBy[0].FieldID ? true : false;
+      this.useDynamicSeries = this.series.BreakBy.FieldID ? true : false;
+      this.useDynamicFilter = this.series.DynamicFilterFields.length > 0;
+      this.limitNumber = this.series.Top && this.series.Top.Max > 0;
     }
     this.pluginService.addonUUID = this.routeParams.snapshot.params['addon_uuid'];
   }
 
   ngOnInit(): void {
     //this.initCurrentSeries();
-    this.getDataIndexFields().then((metaDataFields) => {
+    this.getDataIndexFields().then(() => {
+      this.fillAggregatedFieldsType();
       this.isLoaded = true;
-      metaDataFields.forEach(field => {
-        this.aggregationsFieldsOptions.push({ key: field, value: field })
-        if (field.startsWith('Account')) {
-          this.accountFilterFieldOptions.push({ key: field, value: field });
-        }
-        if (field.startsWith('Agent')) {
-          this.userFilterFieldOptions.push({ key: field, value: field });
-        }
-      });
 
     })
     this.filterExampleJSON = JSON.stringify({
@@ -134,11 +140,11 @@ export class SeriesEditorComponent implements OnInit {
     });
 
     UserTypes.forEach(userType => {
-      this.userFilterOptions.push({ key: userType, value: userType });
+      this.userFilterOptions.push({ key: userType, value: this.translate.instant(userType) });
     });
 
     AccountTypes.forEach(accountType => {
-      this.accountFilterOptions.push({ key: accountType, value: accountType });
+      this.accountFilterOptions.push({ key: accountType, value: this.translate.instant(accountType) });
     });
 
     DateOperation.forEach(dateOperation => {
@@ -146,9 +152,33 @@ export class SeriesEditorComponent implements OnInit {
     });
 
     OrderType.forEach(order => {
-      this.periodOptions.push({ key: order, value: order });
+      this.orderOptions.push({ key: order, value: order });
     });
 
+  }
+
+  private fillAggregatedFieldsType() {
+    switch (this.series.Resource) {
+      case 'transaction_lines':
+        this.fillAggregatorField(this.trnsactionLinesFields);
+        break;
+      case 'all_activities':
+        this.fillAggregatorField(this.allActivitiesFields);
+        break;
+    }
+  }
+
+
+  private fillAggregatorField(fields) {
+    fields.forEach(field => {
+      this.aggregationsFieldsOptions.push({ key: field, value: field });
+      if (field.startsWith('Account')) {
+        this.accountFilterFieldOptions.push({ key: field, value: field });
+      }
+      if (field.startsWith('Agent')) {
+        this.userFilterFieldOptions.push({ key: field, value: field });
+      }
+    });
   }
 
   getResource(resource) {
@@ -158,10 +188,27 @@ export class SeriesEditorComponent implements OnInit {
   getDataIndexFields() {
     return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'all_activities_fields').toPromise().then((allActivitiesFields) => {
       return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'transaction_lines_fields').toPromise().then((trnsactionLinesFields) => {
-        const allFields = allActivitiesFields.Fields.concat(trnsactionLinesFields.Fields);
-        return allFields;
+        this.allActivitiesFields = allActivitiesFields.Fields;
+        this.trnsactionLinesFields = trnsactionLinesFields.Fields;
       });
     });
+  }
+
+  onEventCheckboxChanged(eventType, event) {
+    switch (eventType) {
+      case 'Categories':
+        this.useCategories = event;
+        break;
+      case 'DynamicSeries':
+        this.useDynamicSeries = event;
+        break;
+      case 'LimitNumberResults':
+        this.limitNumber = event;
+        break;
+      case 'DynamicFilter':
+        this.useDynamicFilter = event;
+        break;
+    }
   }
 
   onValueChanged(element, $event) {
@@ -206,12 +253,16 @@ export class SeriesEditorComponent implements OnInit {
         break;
     }
   }
-
+  onResourceChange(event) {
+    this.fillAggregatedFieldsType();
+  }
 
   deleteDynamicFilterFields(index) {
     this.series.DynamicFilterFields.splice(index);
   }
-
+  onGroupByIntervalChanged(event) {
+    this.series.GroupBy[0].Interval = +event;
+  }
   deleteAggregatedParam(index) {
     this.series.AggregatedParams.splice(index);
   }

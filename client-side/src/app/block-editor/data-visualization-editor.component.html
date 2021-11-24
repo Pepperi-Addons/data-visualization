@@ -21,7 +21,7 @@
                 <pep-group-buttons [buttons]="qureiesButton" [buttonsDisabled]="false" [viewType]="'split'">
                 </pep-group-buttons>
             </div>
-            <pep-button *ngIf="this.selectedQuery" style="width: 4rem;" [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
+            <pep-button *ngIf="selectedQuery" style="width: 4rem;" [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
         </div>
     </div>
    

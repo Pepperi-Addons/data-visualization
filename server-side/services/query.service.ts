@@ -7,9 +7,9 @@ import { validate } from 'jsonschema';
 import { QueriesScheme } from '../models/queries-scheme';
 
 class QueryService {
-    
+
     papiClient: PapiClient
-    
+
     constructor(private client: Client) {
         this.papiClient = new PapiClient({
             baseURL: client.BaseURL,
@@ -25,16 +25,18 @@ class QueryService {
         const body = request.body;
 
         const validation = validate(body, QueriesScheme, { allowUnknownAttributes: false, });
-        
+
         if (!validation.valid) {
             throw new Error(validation.toString());
         }
 
-        if (this.hasDuplicates(body.Series.map(s=>s.Name))){
-            throw new Error('Series names must be unique');
+        if (body.Series?.length > 0) {
+
+            this.hasDuplicates(body.Series);
+            this.checkSeriesLabels(body.Series);
+            this.generateSeriesKey(body.Series);
         }
 
-        this.checkSeriesLabels(body.Series);
 
         if (!body.Key) {
             body.Key = uuid();
@@ -44,9 +46,17 @@ class QueryService {
         return query;
     }
 
+    generateSeriesKey(series: any) {
+        series.forEach(serie => {
+            if (!serie.Key) {
+                serie.Key = uuid();
+            }
+        });
+    }
+
     checkSeriesLabels(series: Serie[]) {
         series.forEach(serie => {
-            if (!serie.Label){
+            if (!serie.Label) {
                 serie.Label = SERIES_LABEL_DEFAULT_VALUE;
             }
         });
@@ -66,19 +76,14 @@ class QueryService {
         }
     }
 
-    hasDuplicates(array) {
-        return (new Set(array)).size !== array.length;
+    hasDuplicates(series) {
+        const uniqueValues = new Set(series?.map(s => s.Key));
+
+        if (uniqueValues.size < series.length) {
+            throw new Error('Series Key must be unique');
+        }
     }
 
-    private async getDataQuery(key: string) {
-        // try {
-        //     const chart = await this.papiClient.addons.data.uuid(config.AddonUUID).table(chartsTableScheme.Name).key(key).get();
-        //     return chart;
-        // }
-        // catch (e) {
-        //     return undefined;
-        // }
-    }
 }
 
 export default QueryService;

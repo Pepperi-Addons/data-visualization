@@ -34,7 +34,8 @@ export class DataVisualizationEditorComponent implements OnInit {
                     },
                     query: {
                         Key: ''
-                    }
+                    },
+                    data:undefined
                 };
                 this.updateHostObject();
             }
@@ -51,6 +52,7 @@ export class DataVisualizationEditorComponent implements OnInit {
         query: {
             Key: ''
         },
+        data: {}
     };
 
     get configuration() {
@@ -89,6 +91,10 @@ export class DataVisualizationEditorComponent implements OnInit {
         if (this.configuration?.query) {
             this.selectedQuery = this.configuration?.query;
             this.buildSeriesButtons(this.configuration?.query);
+        }
+        if (this.queryResult) {
+
+            this.configuration.data = this.queryResult;
         }
     }
 
@@ -133,51 +139,11 @@ export class DataVisualizationEditorComponent implements OnInit {
         if (event) {
             const selectedChart = this.charts.filter(c => c.Key == event)[0];
             this._configuration.chart = selectedChart;
+            
             this.updateHostObject();
         }
     }
 
-    private importChartFileAndExecute(chart) {
-        const selectedChart = this.charts.filter(c => c.Key == chart)[0];
-        this.hostEvents.emit({
-            action: 'set-configuration',
-            configuration: {
-                selectedChart
-            }
-        });
-        const seedData = {
-            Groups: ["ActionDate"],
-            Series: ["Series 1", "Series 2"],
-            DataSet: [
-                { "ActionDate": "01/01/2021", "Series 1": this.getRandomNumber(), "Series 2": this.getRandomNumber() },
-                { "ActionDate": "01/02/2021", "Series 1": this.getRandomNumber(), "Series 2": this.getRandomNumber() },
-                { "ActionDate": "01/03/2021", "Series 1": this.getRandomNumber(), "Series 2": this.getRandomNumber() },
-                { "ActionDate": "01/04/2021", "Series 1": this.getRandomNumber(), "Series 2": this.getRandomNumber() },
-                { "ActionDate": "01/05/2021", "Series 1": this.getRandomNumber(), "Series 2": this.getRandomNumber() },
-                { "ActionDate": "01/06/2021", "Series 1": this.getRandomNumber(), "Series 2": this.getRandomNumber() }
-            ]
-        }
-        console.log(chart);
-        const chats = this.charts.filter(c => c.Key == chart)[0];
-        System.import(chats.ScriptURI).then((res) => {
-            const configuration = {
-                label: 'Sales'
-            }
-            this.loadSrcJSFiles(res.deps).then(() => {
-                const previewDiv = document.getElementById("previewArea");
-                this.chartInstance = new res.default(previewDiv, configuration);
-                this.chartInstance.data = seedData;
-                this.chartInstance.update();
-                //this.loaderService.hide();
-
-            }).catch(err => {
-                //this.handleErrorDialog(this.translate.instant("FailedExecuteFile"));
-            })
-        }).catch(err => {
-            console.log(err);
-            //this.handleErrorDialog(this.translate.instant("FailedExecuteFile"));
-        });
-    }
 
     loadSrcJSFiles(imports) {
 
@@ -218,7 +184,8 @@ export class DataVisualizationEditorComponent implements OnInit {
 
         this.hostEvents.emit({
             action: 'set-configuration',
-            configuration: this.configuration
+            configuration: this.configuration,
+
         });
     }
 
@@ -261,11 +228,6 @@ export class DataVisualizationEditorComponent implements OnInit {
                     this.selectedQuery.Series.push(seriesToAddOrUpdate);
                 }
 
-                const updatedSeries =  this.selectedQuery.Series.filter(function (series) {
-                    delete series.Key;
-                    return true;
-                });
-                this.selectedQuery.Series = updatedSeries;
                 this.addonService.postAddonApiCall(
                     config.AddonUUID,
                     'api',
@@ -321,12 +283,7 @@ export class DataVisualizationEditorComponent implements OnInit {
         const idx = this.selectedQuery.Series.findIndex(item => item.Key === event.source.key);;
         if (idx > -1) {
             this.selectedQuery.Series.splice(idx, 1);
-         }
-         const updatedSeries =  this.selectedQuery.Series.filter(function (series) {
-            delete series.Key;
-            return true;
-        });
-        this.selectedQuery.Series = updatedSeries;
+        }
 
         this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this.selectedQuery).toPromise().then((res) => {
             this.buildSeriesButtons(res);
@@ -341,20 +298,23 @@ export class DataVisualizationEditorComponent implements OnInit {
         this.selectedQuery = this.queriesList.filter(x => x.Key == event)[0];
         this._configuration.query = this.selectedQuery;
 
-        this.updateHostObject();
 
         this.buildSeriesButtons(this.selectedQuery);
         const body = {
             QueryId: event
         }
         this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', `execute`, body).toPromise().then((res) => {
-            this.queryResult(res);
+            this.queryResult = res;
+            this._configuration.data=res;
         });
+
+        this.updateHostObject();
+
     }
 
     private buildSeriesButtons(selectedQuery) {
+        this.seriesButtons = [];
         selectedQuery.Series.forEach(serise => {
-            serise.Key = uuid();
             this.seriesButtons.push([
                 {
                     key: serise.Key,

@@ -26,7 +26,6 @@
     "DynamicSeriesDescriptions": "Generate a seperate graph per each field value",
     "Interval": "Interval",
     "NumberOf": "Number Of",
-    "Order": "Order",
     "Filter": "Filter",
     "DynamicFilter": "Dynamic Filter",
     "UserFilterField": "User Filter Field",
@@ -48,7 +47,19 @@
     "ScriptParametersDescriptionExampleOne":"script parameter in the sum of GrandTotal",
     "ScriptParametersDescriptionExampleTwo":"script parameter in the distinc count of account ID",
     "ScriptParametersDescriptionExampleThree":"script of: params.mytotal / params.mycount",
-
     "DynamicFilterDescription": "Define the fields which if changed by the user, will be added to the chart filter",
-    "FilterRules":"Filter rules"
+    "FilterRules":"Filter rules",
+    "LimitNumberOfResults": "Limit the number of results",
+    "LimitNumberOfResultsDescription":"Limit the number of returned result, for example to show thr top 10 selling items.",
+    "NumberOfResults":"Number of results",
+    "Order": "Order",
+    "CurrentUser":"Current user",
+    "UnderCurrentUserRoleHierarchy":"Users under my role hierarchy",
+    "AllUsers":"All users",
+    "UsersWithTheSameFieldValue":"Users with the same field value as current user",
+    "CurrentAccount":"Current account",
+    "AllAccounts":"All accounts",
+    "AccountsWithTheSameFieldValue":"Accounts with the same field value as current account"
+
+
 }

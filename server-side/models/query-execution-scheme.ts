@@ -11,7 +11,6 @@ export const QueryExecutionScheme =
     },
     "required": [
         "QueryId",
-        "Filter"
     ],
     "additionalProperties": false
 }
