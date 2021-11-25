@@ -6,7 +6,7 @@ import { IPepButtonClickEvent, PepButton } from '@pepperi-addons/ngx-lib/button'
 import { pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
 import { AddonService } from '../addon.service';
 import { config } from '../addon.config';
-import { AccountTypes, Aggregators, DateOperation, IntervalUnits, OrderType, ResourceTypes, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../../../../server-side/models/data-query';
+import { AccountTypes, Aggregators, DateOperation, Intervals, OrderType, ResourceTypes, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../../../../server-side/models/data-query';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { v4 as uuid } from 'uuid';
 
@@ -23,6 +23,7 @@ export class SeriesEditorComponent implements OnInit {
   aggregationsOptions: Array<PepButton> = [];
   aggregationsFieldsOptions: Array<PepButton> = [];
   intervalOptions: Array<PepButton> = [];
+  formatOptions: Array<PepButton> = [];
   orderOptions: Array<PepButton> = [];
   userFilterFieldOptions: Array<PepButton> = [];
   userFilterOptions: Array<PepButton> = [];
@@ -34,7 +35,13 @@ export class SeriesEditorComponent implements OnInit {
   useCategories = false;
   useDynamicSeries = false;
   useDynamicFilter = false;
-
+  formatOptionsMap = {
+    'yyyy': 'Year',
+    'yyyy MMM': 'YearMonth',
+    'MMM': 'Month',
+    'MMM dd': 'MonthDay',
+    'yyyy MMM dd': 'YearMonthDay'
+  }
   mode: string = 'Add';
   series: Serie = {
     Key: uuid(),
@@ -60,8 +67,8 @@ export class SeriesEditorComponent implements OnInit {
     }],
     BreakBy: {
       FieldID: '',
-      IntervalUnit: 'Months',
-      Interval: 0,
+      Interval: 'None',
+      Format: ''
 
     },
     Filter: {},
@@ -74,8 +81,8 @@ export class SeriesEditorComponent implements OnInit {
     DynamicFilterFields: [],
     GroupBy: [{
       FieldID: '',
-      Interval: 0,
-      IntervalUnit: 'None',
+      Interval: 'None',
+      Format: ''
     }]
 
   }
@@ -131,7 +138,7 @@ export class SeriesEditorComponent implements OnInit {
       this.aggregationsOptions.push({ key: aggregator, value: this.translate.instant(aggregator) });
     });
 
-    IntervalUnits.forEach(intervalUnit => {
+    Intervals.forEach(intervalUnit => {
       this.intervalOptions.push({ key: intervalUnit, value: intervalUnit });
     });
 
@@ -154,6 +161,9 @@ export class SeriesEditorComponent implements OnInit {
     OrderType.forEach(order => {
       this.orderOptions.push({ key: order, value: order });
     });
+    Object.keys(this.formatOptionsMap).forEach((formatKey) => {
+      this.formatOptions.push({ key: formatKey, value: this.translate.instant(this.formatOptionsMap[formatKey]) })
+    })
 
   }
 
@@ -260,9 +270,7 @@ export class SeriesEditorComponent implements OnInit {
   deleteDynamicFilterFields(index) {
     this.series.DynamicFilterFields.splice(index);
   }
-  onGroupByIntervalChanged(event) {
-    this.series.GroupBy[0].Interval = +event;
-  }
+
   deleteAggregatedParam(index) {
     this.series.AggregatedParams.splice(index);
   }

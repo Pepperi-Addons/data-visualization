@@ -35,7 +35,7 @@ export class DataVisualizationEditorComponent implements OnInit {
                     query: {
                         Key: ''
                     },
-                    data:undefined
+                    data: undefined
                 };
                 this.updateHostObject();
             }
@@ -139,7 +139,7 @@ export class DataVisualizationEditorComponent implements OnInit {
         if (event) {
             const selectedChart = this.charts.filter(c => c.Key == event)[0];
             this._configuration.chart = selectedChart;
-            
+
             this.updateHostObject();
         }
     }
@@ -232,8 +232,25 @@ export class DataVisualizationEditorComponent implements OnInit {
                     config.AddonUUID,
                     'api',
                     'queries',
-                    this.selectedQuery).toPromise().then(() => this.buildSeriesButtons(this.selectedQuery))
+                    this.selectedQuery).toPromise().then((res) => {
+                        this.selectedQuery = res;
+                        this.buildSeriesButtons(this.selectedQuery);
+                        this.executeQuery();
+                
+                    })
             }
+
+        });
+    }
+
+    executeQuery() {
+        const body = {
+            QueryId: this.currentQuery.Key
+        };
+        this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', body).toPromise().then((res) => {
+            this.queryResult = res;
+            this._configuration.data = res;
+            this.updateHostObject();
 
         });
     }
@@ -287,7 +304,7 @@ export class DataVisualizationEditorComponent implements OnInit {
 
         this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this.selectedQuery).toPromise().then((res) => {
             this.buildSeriesButtons(res);
-
+            this.executeQuery();
         });
     }
 
@@ -300,14 +317,7 @@ export class DataVisualizationEditorComponent implements OnInit {
 
 
         this.buildSeriesButtons(this.selectedQuery);
-        const body = {
-            QueryId: event
-        }
-        this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', `execute`, body).toPromise().then((res) => {
-            this.queryResult = res;
-            this._configuration.data=res;
-        });
-
+        this.executeQuery();
         this.updateHostObject();
 
     }

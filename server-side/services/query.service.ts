@@ -2,7 +2,7 @@ import { PapiClient, InstalledAddon } from '@pepperi-addons/papi-sdk'
 import { Client, Request } from '@pepperi-addons/debug-server';
 import { v4 as uuid } from 'uuid';
 import config from '../../addon.config.json'
-import { DATA_QUREIES_TABLE_NAME, IntervalUnit, IntervalUnits, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../models/data-query';
+import { DATA_QUREIES_TABLE_NAME, Interval, Intervals, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../models/data-query';
 import { validate } from 'jsonschema';
 import { QueriesScheme } from '../models/queries-scheme';
 

@@ -401,7 +401,7 @@ export class DataVisualizationComponent implements OnInit {
 
                 this.loadSrcJSFiles(res.deps).then(() => {
                     this.chartInstance = new res.default(this.divView.nativeElement, configuration);
-                    this.chartInstance.data = this.hostObject.configuration.chart.data;
+                    this.chartInstance.data = this.hostObject.configuration.data;
                     this.chartInstance.update();
                     //this.loaderService.hide();
 

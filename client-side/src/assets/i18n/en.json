@@ -59,7 +59,13 @@
     "UsersWithTheSameFieldValue":"Users with the same field value as current user",
     "CurrentAccount":"Current account",
     "AllAccounts":"All accounts",
-    "AccountsWithTheSameFieldValue":"Accounts with the same field value as current account"
+    "AccountsWithTheSameFieldValue":"Accounts with the same field value as current account",
+    "Format":"Format",
+    "Year":"Year",
+    "Month":"Month",
+    "YearMonth":"Year + Month",
+    "MonthDay":"Month + Day",
+    "YearMonthDay":"Year + Month + Day"
 
 
 }

@@ -24,7 +24,7 @@ export const QueriesScheme =
                                 },
                                 "Aggregator": {
                                     "type": "string",
-                                    "enum": ["Sum", "Count", "Average","CountDistinct","Script","None"]
+                                    "enum": ["None", "Sum", "Count", "Average","CountDistinct","Script"]
                                 }
                             },
                             "if": {
@@ -54,7 +54,7 @@ export const QueriesScheme =
                                 },
                                 "Aggregator": {
                                     "type": "string",
-                                    "enum": ["Sum", "Count", "Average","CountDistinct","Script","None"]
+                                    "enum": ["None", "Sum", "Count", "Average","CountDistinct","Script"]
                                 }
                             },
                             "additionalProperties": false,
@@ -83,12 +83,12 @@ export const QueriesScheme =
                             "FieldID": {
                                 "type": "string",
                             },
-                            "Interval": {
-                                "type": "integer"
+                            "Format": {
+                                "type": "string"
                             },
-                            "IntervalUnit": {
+                            "Interval": {
                                 "type": "string",
-                                "enum": ["Days", "Weeks", "Months", "Years","None"]
+                                "enum": ["None","Day", "Week", "Month", "Quarter", "Year"]
                             },
                         },
                         "additionalProperties": false,
@@ -120,12 +120,12 @@ export const QueriesScheme =
                                 "FieldID": {
                                     "type": "string",
                                 },
-                                "Interval": {
-                                    "type": "integer"
+                                "Format": {
+                                    "type": "string"
                                 },
-                                "IntervalUnit": {
+                                "Interval": {
                                     "type": "string",
-                                    "enum": ["Days", "Weeks", "Months", "Years","None"]
+                                    "enum": ["None","Day", "Week", "Month", "Quarter", "Year"]
                                 },
                             },
                             "additionalProperties": false

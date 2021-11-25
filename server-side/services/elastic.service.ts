@@ -2,7 +2,7 @@ import { PapiClient, InstalledAddon } from '@pepperi-addons/papi-sdk'
 import { Client, Request } from '@pepperi-addons/debug-server';
 import { v4 as uuid } from 'uuid';
 import config from '../../addon.config.json'
-import { AggregatedField, AggregatedParam, DataQuery, DataTypes, DATA_QUREIES_TABLE_NAME, GroupBy, IntervalUnit, IntervalUnits, Serie } from '../models/data-query';
+import { AggregatedField, AggregatedParam, DataQuery, DataTypes, DATA_QUREIES_TABLE_NAME, GroupBy, Interval, Intervals, Serie } from '../models/data-query';
 import { validate } from 'jsonschema';
 import { QueriesScheme } from '../models/queries-scheme';
 import esb, { Aggregation, DateHistogramAggregation, dateHistogramAggregation, dateRangeAggregation, maxBucketAggregation, Query, termQuery, TermsAggregation } from 'elastic-builder';
@@ -25,19 +25,13 @@ class ElasticService {
   }
   MaxAggregationSize = 100;
 
-  intervalUnitMap: { [key in IntervalUnit]: string } = {
-    Days: 'd',
-    Weeks: 'w',
-    Months: 'M',
-    Years: 'y',
-    None: ''
-  }
-
-  intervalUnitFormat: { [key in IntervalUnit]: string } = {
-    Days: 'dd',
-    Weeks: 'MM-dd',
-    Months: 'MM',
-    Years: 'yyyy',
+  //"None","Day", "Week", "Month", "Quarter", "Year"]
+  intervalUnitFormat: { [key in Interval]: string } = {
+    Day: 'dd',
+    Week: 'MM-dd',
+    Month: 'MM',
+    Quarter: 'MM-yyyy',
+    Year:'yyyy',
     None: ''
   }
 
@@ -136,8 +130,8 @@ class ElasticService {
     // console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
 
     // if (!lambdaResponse.success) {
-    //     console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
-    //     throw new Error(`Failed to execute data query ID: ${query.Key}`);
+    //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
+    //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
     // }
     const lambdaResponse = {
       resultObject: null
@@ -154,11 +148,11 @@ class ElasticService {
   private buildResponseFromElasticResults2(lambdaResponse, query: DataQuery) {
 
     lambdaResponse = {
-      "aggregations": {
-        "tretretret": {
-          "doc_count": 116,
-          "Transaction.SubTotal_Sum": {
-            "value": 781458.0
+      "aggregations" : {
+        "fffff" : {
+          "doc_count" : 116,
+          "Transaction.SubTotal_Sum" : {
+            "value" : 781458.0
           }
         }
       }
@@ -169,11 +163,11 @@ class ElasticService {
       const resourceAggs = lambdaResponse.aggregations[series.Name];
       if (series.GroupBy && series.GroupBy[0].FieldID) {
         series.GroupBy.forEach(groupBy => {
-          response.Groups.push(groupBy.FieldID);
+          response.Groups.push(this.cutDotNotation(groupBy.FieldID));
           resourceAggs[groupBy.FieldID].buckets.forEach(bucketsGroupBy => {
             const dataSet = {};
             const seriesName = this.getKeyAggregationName(bucketsGroupBy); // hallmark
-            dataSet[groupBy.FieldID] = seriesName;
+            dataSet[this.cutDotNotation(groupBy.FieldID)] = seriesName;
             if (series.BreakBy && series.BreakBy.FieldID) {
 
               this.handleAggregatorsFieldsWithBreakBy(bucketsGroupBy[series.BreakBy.FieldID], series, response, dataSet);
@@ -589,9 +583,7 @@ class ElasticService {
   }
 
   private cutDotNotation(key: string) {
-    //return key.split('.').join("");
     return key.replace('.', '');
-
   }
 
   private getKeyAggregationName(bucket: any) {
@@ -622,11 +614,11 @@ class ElasticService {
     // data histogram aggregation has no size.
     // This aggregation is already selective in the sense that the number of buckets is manageable through the interval 
     // so it is necessary to do nested aggregation to get size buckets
-    const isDateHistogramAggregation = groupBy.IntervalUnit && groupBy.Interval;
+    //const isDateHistogramAggregation = groupBy.IntervalUnit && groupBy.Interval;
     let query: Aggregation;
-    if (isDateHistogramAggregation) {
-      const calenderInterval = `${groupBy.Interval}${this.intervalUnitMap[groupBy.IntervalUnit!]}`;
-      query = esb.dateHistogramAggregation(groupBy.FieldID, groupBy.FieldID).calendarInterval(calenderInterval).format(this.intervalUnitFormat[groupBy.IntervalUnit!]);
+    if (groupBy.Interval && groupBy.Interval != "None" && groupBy.Format) {
+      //const calenderInterval = `${groupBy.Interval}${this.intervalUnitMap[groupBy.IntervalUnit!]}`;
+      query = esb.dateHistogramAggregation(groupBy.FieldID, groupBy.FieldID).calendarInterval(groupBy.Interval.toLocaleLowerCase()).format(groupBy.Format);
     } else {
       query = esb.termsAggregation(groupBy.FieldID, `${groupBy.FieldID}`);
     }

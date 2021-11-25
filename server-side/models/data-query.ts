@@ -11,8 +11,8 @@ export interface DataQuery extends AddonData {
 
 export interface GroupBy {
     FieldID: string;
-    Interval?: number;
-    IntervalUnit?: IntervalUnit;
+    Interval?: Interval;
+    Format?: string;
 }
 
 export interface Serie {
@@ -25,8 +25,7 @@ export interface Serie {
     GroupBy?: GroupBy[],
     AggregatedFields: AggregatedField[];
     AggregatedParams?: AggregatedParam[],
-    Interval?: number;
-    IntervalUnit?: IntervalUnit;
+    IntervalUnit?: Interval;
     BreakBy: BreakBy;
     Filter: {},
     Scope: {
@@ -39,6 +38,7 @@ export interface Serie {
 
 export interface BreakBy extends GroupBy {
 }
+
 export interface Top {
     Max: number,
     Ascending: boolean,
@@ -66,8 +66,8 @@ export declare type ResourceType = typeof ResourceTypes[number];
 export const DataTypes = ["Single", "Series", "MultiSeries"];
 export declare type DataType = typeof DataTypes[number];
 
-export const IntervalUnits = ["None", "Days", "Weeks", "Months", "Years"];
-export declare type IntervalUnit = typeof IntervalUnits[number];
+export const Intervals = ["None","Day", "Week", "Month", "Quarter", "Year"];
+export declare type Interval = typeof Intervals[number];
 
 export const Aggregators = ["None", "Sum", "Count", "Average", "Script", "CountDistinct"];
 export declare type Aggregator = typeof Aggregators[number];
