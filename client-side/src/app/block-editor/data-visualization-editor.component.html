@@ -10,11 +10,11 @@
 <div pep-main-area style="height: inherit;margin-top: 1rem">
     <!-- <mat-tab-group #tabGroup [selectedIndex]="activeTabIndex" [dynamicHeight]="false" (selectedTabChange)="tabClick($event)" animationDuration="100ms"> -->
     <!-- <mat-tab id="1" label="{{'General' | translate}}"> -->
-    <div>
+    <div *ngIf="blockLoaded">
         <pep-select [key]="'chartSelect'" [label]="'Select a chart'" [value]="currentChart" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onChartSelected($event)">
         </pep-select>
         <pep-textbox [label]="'Label' | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
-        <pep-select #pepSelect [key]="'querySelect'" [label]="'Select a data query'" [value]="currentQuery" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onDataQuerySelected($event)">
+        <pep-select #pepSelect [key]="'querySelect'" [label]="'Select a data query'" [value]="selectedQuery.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onDataQuerySelected($event)">
         </pep-select>
         <div class="queries-containter">
             <div *ngFor="let qureiesButton of seriesButtons">

@@ -31,7 +31,7 @@ class ElasticService {
     Week: 'MM-dd',
     Month: 'MM',
     Quarter: 'MM-yyyy',
-    Year:'yyyy',
+    Year: 'yyyy',
     None: ''
   }
 
@@ -101,45 +101,59 @@ class ElasticService {
           aggregations[aggregations.length - 1].aggs(scriptAggs)
           //agg = scriptAggs;
 
+        }
+        else if (aggregatedField.Aggregator == 'Count') {
+
         } else {
 
           agg = this.getAggregator(aggregatedField, aggName);
           aggregations.push(agg);
         }
 
-        //elasticRequestBody.agg(agg);
+        // todo- if agg is the last and serie.Top && serie.Top.Max > 0
+        if (serie.Top && serie.Top.Max > 0) {
+          const order = serie.Top.Ascending ? 'asc' : 'desc';
+          aggregations[aggregations.length - 1].aggs([
+            //the lase and:
+            esb.bucketSortAggregation('sort').sort([esb.sort(undefined, order)]).size(serie.Top.Max)
+          ])
+          //elasticRequestBody.agg(agg);
+        }
+
+
+
+        aggregationsList[serie.Name] = aggregations;
+
       }
-      aggregationsList[serie.Name] = aggregations;
+      let te: any = [];
+      Object.keys(aggregationsList).forEach((seriesName) => {
+        // build nested aggregations from array of aggregations
+        let aggs: esb.Aggregation = this.buildNestedAggregations(aggregationsList[seriesName]);
+        const series = query.Series.filter(x => x.Name === seriesName)[0];
+        //aggs.aggs([test]);
+        // elastic dont allow Duplicate field for e.g 'transaction_lines' but it can be 2 series with same resource so the name to the aggs is '{resource}:{Name} (The series names is unique)
+        const hadar = esb.filterAggregation(seriesName, esb.termQuery('ElasticSearchType', series.Resource)).agg(aggs);
+        te.push(hadar);
+      });
+      elasticRequestBody.aggs(te);
+
+      const body = elasticRequestBody.toJSON();
+      console.log(`lambdaBody: ${JSON.stringify(body)}`);
+
+      // const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
+      // console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
+
+      // if (!lambdaResponse.success) {
+      //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
+      //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
+      // }
+      const lambdaResponse = {
+        resultObject: null
+      };
+      let response: DataQueryResponse = this.buildResponseFromElasticResults2(lambdaResponse.resultObject, query);
+
+      return response;
     }
-    let te: any = [];
-    Object.keys(aggregationsList).forEach((seriesName) => {
-      // build nested aggregations from array of aggregations
-      let aggs: esb.Aggregation = this.buildNestedAggregations(aggregationsList[seriesName]);
-      const series = query.Series.filter(x => x.Name === seriesName)[0];
-      //aggs.aggs([test]);
-      // elastic dont allow Duplicate field for e.g 'transaction_lines' but it can be 2 series with same resource so the name to the aggs is '{resource}:{Name} (The series names is unique)
-      const hadar = esb.filterAggregation(seriesName, esb.termQuery('ElasticSearchType', series.Resource)).agg(aggs);
-      te.push(hadar);
-    });
-    elasticRequestBody.aggs(te);
-
-    const body = elasticRequestBody.toJSON();
-    console.log(`lambdaBody: ${JSON.stringify(body)}`);
-
-    // const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
-    // console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
-
-    // if (!lambdaResponse.success) {
-    //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
-    //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
-    // }
-    const lambdaResponse = {
-      resultObject: null
-    };
-    let response: DataQueryResponse = this.buildResponseFromElasticResults2(lambdaResponse.resultObject, query);
-
-    return response;
-  }
 
   private getAggUniqueName(serie: Serie) {
     return `${serie.Resource}:${serie.Name}`;
@@ -148,11 +162,11 @@ class ElasticService {
   private buildResponseFromElasticResults2(lambdaResponse, query: DataQuery) {
 
     lambdaResponse = {
-      "aggregations" : {
-        "fffff" : {
-          "doc_count" : 116,
-          "Transaction.SubTotal_Sum" : {
-            "value" : 781458.0
+      "aggregations": {
+        "fffff": {
+          "doc_count": 116,
+          "Transaction.SubTotal_Sum": {
+            "value": 781458.0
           }
         }
       }

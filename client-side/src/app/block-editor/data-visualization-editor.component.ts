@@ -71,7 +71,6 @@ export class DataVisualizationEditorComponent implements OnInit {
     selectedQuery: any;
     chartInstance: any;
     currentChart;
-    currentQuery;
 
     constructor(private addonService: PepAddonService,
         public routeParams: ActivatedRoute,
@@ -84,31 +83,38 @@ export class DataVisualizationEditorComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.fillChartsOptions();
-        this.fillQueriesOptions();
-        this.hostEvents.emit({ action: 'block-editor-loaded' });
-        this.blockLoaded = true;
-        if (this.configuration?.query) {
-            this.selectedQuery = this.configuration?.query;
-            this.buildSeriesButtons(this.configuration?.query);
-        }
-        if (this.queryResult) {
+        this.fillChartsOptions().then(() => {
+            this.fillQueriesOptions().then(() => {
+                if (this.configuration?.query?.Key) {
+                    this.getSeriesByKey(this.configuration?.query?.Key).then((res) => {
+                        this.selectedQuery = res[0];
+                        this.blockLoaded = true;
+                        this.buildSeriesButtons();
+                        this.executeQuery();
+                        this.hostEvents.emit({ action: 'block-editor-loaded' });
+                    })
 
-            this.configuration.data = this.queryResult;
-        }
+
+                }
+            })
+
+        });
+    }
+
+    getSeriesByKey(Key: string) {
+        const params = { where: `Key=${Key}` };
+        return this.addonService.getAddonApiCall(config.AddonUUID, 'api', 'queries', params).toPromise()
+
     }
 
     private fillQueriesOptions() {
-        this.addonService.getAddonApiCall(config.AddonUUID, 'api', 'queries').toPromise()
+        return this.addonService.getAddonApiCall(config.AddonUUID, 'api', 'queries').toPromise()
 
             .then((dataQueries) => {
                 this.queriesList = dataQueries;
                 dataQueries.forEach(dataQuerie => {
                     this.queriesOptions.push({ key: dataQuerie.Key, value: dataQuerie.Name });
                 });
-                if (this.configuration?.query?.Key) {
-                    this.currentQuery = this.configuration.query.Key
-                }
             });
     }
 
@@ -116,7 +122,7 @@ export class DataVisualizationEditorComponent implements OnInit {
     }
 
     private fillChartsOptions() {
-        this.addonService.getAddonApiCall('3d118baf-f576-4cdb-a81e-c2cc9af4d7ad', 'api', 'charts').toPromise().then((charts) => {
+        return this.addonService.getAddonApiCall('3d118baf-f576-4cdb-a81e-c2cc9af4d7ad', 'api', 'charts').toPromise().then((charts) => {
             this.charts = charts;
             charts.forEach(chart => {
                 this.chartsOptions.push({ key: chart.Key, value: chart.Name });
@@ -234,9 +240,9 @@ export class DataVisualizationEditorComponent implements OnInit {
                     'queries',
                     this.selectedQuery).toPromise().then((res) => {
                         this.selectedQuery = res;
-                        this.buildSeriesButtons(this.selectedQuery);
+                        this.buildSeriesButtons();
                         this.executeQuery();
-                
+
                     })
             }
 
@@ -245,7 +251,7 @@ export class DataVisualizationEditorComponent implements OnInit {
 
     executeQuery() {
         const body = {
-            QueryId: this.currentQuery.Key
+            QueryId: this.selectedQuery.Key
         };
         this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', body).toPromise().then((res) => {
             this.queryResult = res;
@@ -303,7 +309,8 @@ export class DataVisualizationEditorComponent implements OnInit {
         }
 
         this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this.selectedQuery).toPromise().then((res) => {
-            this.buildSeriesButtons(res);
+            this.selectedQuery = res;
+            this.buildSeriesButtons();
             this.executeQuery();
         });
     }
@@ -316,15 +323,15 @@ export class DataVisualizationEditorComponent implements OnInit {
         this._configuration.query = this.selectedQuery;
 
 
-        this.buildSeriesButtons(this.selectedQuery);
+        this.buildSeriesButtons();
         this.executeQuery();
         this.updateHostObject();
 
     }
 
-    private buildSeriesButtons(selectedQuery) {
+    private buildSeriesButtons() {
         this.seriesButtons = [];
-        selectedQuery.Series.forEach(serise => {
+        this.selectedQuery.Series.forEach(serise => {
             this.seriesButtons.push([
                 {
                     key: serise.Key,
