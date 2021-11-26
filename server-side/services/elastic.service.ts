@@ -9,8 +9,8 @@ import esb, { Aggregation, DateHistogramAggregation, dateHistogramAggregation, d
 import { callElasticSearchLambda } from '@pepperi-addons/system-addon-utils';
 import jwtDecode from 'jwt-decode';
 import { DataQueryResponse } from '../models/data-query-response';
-import { parse, toKibanaQuery, JSONBaseFilter, toApiQueryString, filter, FieldType, JSONFilter } from "@pepperi-addons/pepperi-filters";
 import { QueryExecutionScheme } from '../models/query-execution-scheme';
+import { toKibanaQuery } from '@pepperi-addons/pepperi-filters';
 class ElasticService {
 
   papiClient: PapiClient;
@@ -76,18 +76,19 @@ class ElasticService {
       if (serie.GroupBy && serie.GroupBy) {
         serie.GroupBy.forEach(groupBy => {
           if (groupBy.FieldID) {
-            aggregations.push(this.buildAggregationQuery(groupBy, aggregations, 'GroupBy'));
+            aggregations.push(this.buildAggregationQuery(groupBy, aggregations));
           }
         });
       }
       // handle aggregation by break by
       if (serie.BreakBy && serie.BreakBy.FieldID) {
-        aggregations.push(this.buildAggregationQuery(serie.BreakBy, aggregations, 'BreakBy'));
+        aggregations.push(this.buildAggregationQuery(serie.BreakBy, aggregations));
       }
+      for (let i = 0; i < serie.AggregatedFields.length; i++) {
+        const aggregatedField = serie.AggregatedFields[i];
 
-      for (const aggregatedField of serie.AggregatedFields) {
         let agg;
-
+        let lastIndex = serie.AggregatedFields.length - 1;
         const aggName = this.buildAggragationFieldString(aggregatedField);
         if (aggregatedField.Aggregator === 'Script' && aggregatedField.Script) {
           let bucketPath = {};
@@ -98,6 +99,10 @@ class ElasticService {
           });
 
           scriptAggs.push(esb.bucketScriptAggregation(aggName).bucketsPath(bucketPath).script(aggregatedField.Script));
+          if (i === lastIndex && serie.Top && serie.Top?.Max) {
+            const bucketSortAgg = this.buildBucketSortAggregation(aggName, serie);
+            scriptAggs.push(bucketSortAgg);
+          }
           aggregations[aggregations.length - 1].aggs(scriptAggs)
           //agg = scriptAggs;
 
@@ -107,58 +112,65 @@ class ElasticService {
         } else {
 
           agg = this.getAggregator(aggregatedField, aggName);
-          aggregations.push(agg);
+          if (i === lastIndex && serie.Top && serie.Top?.Max) {
+            const bucketSortAgg = this.buildBucketSortAggregation(aggName, serie);
+            let aggs = [agg, bucketSortAgg];
+            aggregations[aggregations.length - 1].aggs(aggs)
+
+          }
+          else {
+
+            aggregations.push(agg);
+          }
         }
-
-        // todo- if agg is the last and serie.Top && serie.Top.Max > 0
-        if (serie.Top && serie.Top.Max > 0) {
-          const order = serie.Top.Ascending ? 'asc' : 'desc';
-          aggregations[aggregations.length - 1].aggs([
-            //the lase and:
-            esb.bucketSortAggregation('sort').sort([esb.sort(undefined, order)]).size(serie.Top.Max)
-          ])
-          //elasticRequestBody.agg(agg);
-        }
-
-
 
         aggregationsList[serie.Name] = aggregations;
 
       }
-      let te: any = [];
-      Object.keys(aggregationsList).forEach((seriesName) => {
-        // build nested aggregations from array of aggregations
-        let aggs: esb.Aggregation = this.buildNestedAggregations(aggregationsList[seriesName]);
-        const series = query.Series.filter(x => x.Name === seriesName)[0];
-        //aggs.aggs([test]);
-        // elastic dont allow Duplicate field for e.g 'transaction_lines' but it can be 2 series with same resource so the name to the aggs is '{resource}:{Name} (The series names is unique)
-        const hadar = esb.filterAggregation(seriesName, esb.termQuery('ElasticSearchType', series.Resource)).agg(aggs);
-        te.push(hadar);
-      });
-      elasticRequestBody.aggs(te);
-
-      const body = elasticRequestBody.toJSON();
-      console.log(`lambdaBody: ${JSON.stringify(body)}`);
-
-      // const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
-      // console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
-
-      // if (!lambdaResponse.success) {
-      //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
-      //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
-      // }
-      const lambdaResponse = {
-        resultObject: null
-      };
-      let response: DataQueryResponse = this.buildResponseFromElasticResults2(lambdaResponse.resultObject, query);
-
-      return response;
     }
+    let seriesAggregation: any = [];
+    Object.keys(aggregationsList).forEach((seriesName) => {
+      // build nested aggregations from array of aggregations
+      let aggs: esb.Aggregation = this.buildNestedAggregations(aggregationsList[seriesName]);
+      const series = query.Series.filter(x => x.Name === seriesName)[0];
+      //aggs.aggs([test]);
+      // elastic dont allow Duplicate field for e.g 'transaction_lines' but it can be 2 series with same resource so the name to the aggs is '{resource}:{Name} (The series names is unique)
+      let resourceFilter:any = esb.termQuery('ElasticSearchType', series.Resource);
+      if (series.Filter && Object.keys(series.Filter).length > 0) {
+        const serializedQuery: any = toKibanaQuery(series.Filter);
+        resourceFilter = esb.boolQuery().must([resourceFilter, serializedQuery]);
+      }
+      const filterAggregation = esb.filterAggregation(seriesName, resourceFilter).agg(aggs);
+      seriesAggregation.push(filterAggregation);
+    });
+    elasticRequestBody.aggs(seriesAggregation);
+
+    const body = elasticRequestBody.toJSON();
+    console.log(`lambdaBody: ${JSON.stringify(body)}`);
+
+    // const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
+    // console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
+
+    // if (!lambdaResponse.success) {
+    //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
+    //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
+    // }
+    const lambdaResponse = {
+      resultObject: null
+    };
+    let response: DataQueryResponse = this.buildResponseFromElasticResults2(lambdaResponse.resultObject, query);
+
+    return response;
+  }
 
   private getAggUniqueName(serie: Serie) {
     return `${serie.Resource}:${serie.Name}`;
   }
 
+  private buildBucketSortAggregation(aggName, serie) {
+    const order = serie.Top.Ascending ? 'asc' : 'desc';
+    return esb.bucketSortAggregation('sort').sort([esb.sort(aggName, order)]).size(serie.Top.Max)
+  }
   private buildResponseFromElasticResults2(lambdaResponse, query: DataQuery) {
 
     lambdaResponse = {
@@ -619,7 +631,7 @@ class ElasticService {
 
   // build sggregation - if the type field is date time build dateHistogramAggregation else termsAggregation
   // sourceAggs determine if its group by or break by so we can distinguish between them in the results
-  private buildAggregationQuery(groupBy: GroupBy, sggregations: esb.Aggregation[], sourceAggs) {
+  private buildAggregationQuery(groupBy: GroupBy, sggregations: esb.Aggregation[]) {
 
     // Maximum size of each aggregation is 100
     //const topAggs = groupBy.Top?.Max ? groupBy.Top.Max : this.MaxAggregationSize;
@@ -636,7 +648,6 @@ class ElasticService {
     } else {
       query = esb.termsAggregation(groupBy.FieldID, `${groupBy.FieldID}`);
     }
-    query.meta({ [sourceAggs]: groupBy.FieldID })
     //Handle the sorting
     //query.order('_key', groupBy.Top?.Ascending ? 'asc' : 'desc');
 
@@ -652,7 +663,7 @@ class ElasticService {
     if (aggregatedField.Aggregator === 'Script') {
       return `${aggregatedField.Aggregator}`
     } else {
-      return `${aggregatedField.FieldID}_${aggregatedField.Aggregator}`
+      return `${aggregatedField.FieldID.replace('.', '')}_${aggregatedField.Aggregator}`
     }
   }
 

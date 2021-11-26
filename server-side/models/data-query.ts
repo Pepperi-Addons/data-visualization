@@ -1,5 +1,6 @@
 
 import { AddonData } from "@pepperi-addons/papi-sdk";
+import { JSONFilter } from "@pepperi-addons/pepperi-filters";
 
 export interface DataQuery extends AddonData {
     Type: DataType,
@@ -27,7 +28,7 @@ export interface Serie {
     AggregatedParams?: AggregatedParam[],
     IntervalUnit?: Interval;
     BreakBy: BreakBy;
-    Filter: {},
+    Filter: JSONFilter,
     Scope: {
         User: UserType,
         UserFilterField: string,

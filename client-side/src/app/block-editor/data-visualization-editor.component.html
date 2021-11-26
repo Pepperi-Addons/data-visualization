@@ -14,7 +14,7 @@
         <pep-select [key]="'chartSelect'" [label]="'Select a chart'" [value]="currentChart" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onChartSelected($event)">
         </pep-select>
         <pep-textbox [label]="'Label' | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
-        <pep-select #pepSelect [key]="'querySelect'" [label]="'Select a data query'" [value]="selectedQuery.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onDataQuerySelected($event)">
+        <pep-select  [key]="'querySelect'" [label]="'Select a data query'" [value]="selectedQuery?.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onDataQuerySelected($event)">
         </pep-select>
         <div class="queries-containter">
             <div *ngFor="let qureiesButton of seriesButtons">

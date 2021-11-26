@@ -286,7 +286,7 @@ export class DataVisualizationEditorComponent implements OnInit {
         input, callbackFunc = null): void {
         const config = this.dialogService.getDialogConfig(
             {
-                disableClose: false,
+                disableClose: true,
                 panelClass: 'pepperi-standalone'
             },
             'inline'
@@ -315,17 +315,22 @@ export class DataVisualizationEditorComponent implements OnInit {
         });
     }
 
-    onDataQuerySelected(event: IPepFieldValueChangeEvent) {
-        this.seriesButtons = [];
-        console.log(event);
+    onDataQuerySelected(event) {
+        if (event === ""){
+            this.selectedQuery = null;
+            this.seriesButtons = [];
+            this.queryResult=null;
+        }else{
 
-        this.selectedQuery = this.queriesList.filter(x => x.Key == event)[0];
+            this.selectedQuery = this.queriesList.filter(x => x.Key == event)[0];
+            this.buildSeriesButtons();
+            this.executeQuery();
+        }
         this._configuration.query = this.selectedQuery;
+        this._configuration.data = this.queryResult;
 
-
-        this.buildSeriesButtons();
-        this.executeQuery();
         this.updateHostObject();
+
 
     }
 

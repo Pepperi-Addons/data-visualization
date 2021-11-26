@@ -71,7 +71,7 @@ export class SeriesEditorComponent implements OnInit {
       Format: ''
 
     },
-    Filter: {},
+    Filter: null,
     Scope: {
       User: 'AllUsers',
       UserFilterField: '',
@@ -88,6 +88,7 @@ export class SeriesEditorComponent implements OnInit {
   }
   trnsactionLinesFields: any;
   allActivitiesFields: any;
+  JSON: JSON;
 
   constructor(private addonService: PepAddonService,
     public routeParams: ActivatedRoute,
@@ -96,6 +97,7 @@ export class SeriesEditorComponent implements OnInit {
     private translate: TranslateService,
     public pluginService: AddonService,
     @Inject(MAT_DIALOG_DATA) public incoming: any) {
+    this.JSON = JSON;
     if (incoming && incoming.currentSeries) {
       this.mode = 'Update';
       this.series = incoming.currentSeries;
