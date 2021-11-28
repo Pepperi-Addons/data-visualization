@@ -99,6 +99,9 @@ export class DataVisualizationEditorComponent implements OnInit {
                     })
 
 
+                }else{
+                    this.blockLoaded = true;
+
                 }
             })
 

@@ -18,7 +18,10 @@ export class DataVisualizationComponent implements OnInit {
     }
     set hostObject(value) {
         this._hostObject = value;
-        this.drawChart(this._hostObject.configuration);
+        if (this._hostObject?.configuration) {
+
+            this.drawChart(this._hostObject.configuration);
+        }
 
     }
     //lockObject = false;
@@ -475,7 +478,7 @@ export class DataVisualizationComponent implements OnInit {
                     node.id = src;
                     node.onload = (script) => {
                         window['define'] = _oldDefine;
-                        this.isLibraryAlreadyLoaded[src]=true;
+                        this.isLibraryAlreadyLoaded[src] = true;
                         //this.lockObject = false;
                         resolve()
                     };
