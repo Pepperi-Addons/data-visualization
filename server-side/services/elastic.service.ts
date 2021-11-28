@@ -1,16 +1,14 @@
-import { PapiClient, InstalledAddon } from '@pepperi-addons/papi-sdk'
+import { PapiClient } from '@pepperi-addons/papi-sdk'
 import { Client, Request } from '@pepperi-addons/debug-server';
-import { v4 as uuid } from 'uuid';
 import config from '../../addon.config.json'
-import { AggregatedField, AggregatedParam, DataQuery, DataTypes, DATA_QUREIES_TABLE_NAME, GroupBy, Interval, Intervals, Serie } from '../models/data-query';
+import { AggregatedField, AggregatedParam, BreakBy, DataQuery, DataTypes, DATA_QUREIES_TABLE_NAME, GroupBy, Interval, Intervals, Serie } from '../models/data-query';
 import { validate } from 'jsonschema';
-import { QueriesScheme } from '../models/queries-scheme';
-import esb, { Aggregation, DateHistogramAggregation, dateHistogramAggregation, dateRangeAggregation, maxBucketAggregation, Query, termQuery, TermsAggregation } from 'elastic-builder';
+import esb, { Aggregation, Query } from 'elastic-builder';
 import { callElasticSearchLambda } from '@pepperi-addons/system-addon-utils';
 import jwtDecode from 'jwt-decode';
 import { DataQueryResponse } from '../models/data-query-response';
 import { QueryExecutionScheme } from '../models/query-execution-scheme';
-import { toKibanaQuery } from '@pepperi-addons/pepperi-filters';
+import { toApiQueryString, toKibanaQuery } from '@pepperi-addons/pepperi-filters';
 class ElasticService {
 
   papiClient: PapiClient;
@@ -62,9 +60,8 @@ class ElasticService {
     //     },
     //     RightNode: request.body.Filter,
     // }
-
-    //console.log(JSON.stringify(toKibanaQuery(request.body.Filter).toJSON()))
-
+    //console.log(JSON.stringify(toKibanaQuery(undefined).toJSON()));
+    //toApiQueryString(undefined);
     //elasticRequestBody.query(toKibanaQuery(request.body.Filter));
     let aggregationsList: { [key: string]: Aggregation[] } = {};
 
@@ -83,6 +80,10 @@ class ElasticService {
       // handle aggregation by break by
       if (serie.BreakBy && serie.BreakBy.FieldID) {
         aggregations.push(this.buildAggregationQuery(serie.BreakBy, aggregations));
+      }
+      else {
+        aggregations.push(this.buildDummyBreakBy());
+
       }
       for (let i = 0; i < serie.AggregatedFields.length; i++) {
         const aggregatedField = serie.AggregatedFields[i];
@@ -103,8 +104,8 @@ class ElasticService {
             const bucketSortAgg = this.buildBucketSortAggregation(aggName, serie);
             scriptAggs.push(bucketSortAgg);
           }
+
           aggregations[aggregations.length - 1].aggs(scriptAggs)
-          //agg = scriptAggs;
 
         }
         else if (aggregatedField.Aggregator == 'Count') {
@@ -115,13 +116,10 @@ class ElasticService {
           if (i === lastIndex && serie.Top && serie.Top?.Max) {
             const bucketSortAgg = this.buildBucketSortAggregation(aggName, serie);
             let aggs = [agg, bucketSortAgg];
+            
             aggregations[aggregations.length - 1].aggs(aggs)
-
           }
-          else {
-
-            aggregations.push(agg);
-          }
+         
         }
 
         aggregationsList[serie.Name] = aggregations;
@@ -135,9 +133,9 @@ class ElasticService {
       const series = query.Series.filter(x => x.Name === seriesName)[0];
       //aggs.aggs([test]);
       // elastic dont allow Duplicate field for e.g 'transaction_lines' but it can be 2 series with same resource so the name to the aggs is '{resource}:{Name} (The series names is unique)
-      let resourceFilter:any = esb.termQuery('ElasticSearchType', series.Resource);
+      let resourceFilter: Query = esb.termQuery('ElasticSearchType', series.Resource);
       if (series.Filter && Object.keys(series.Filter).length > 0) {
-        const serializedQuery: any = toKibanaQuery(series.Filter);
+        const serializedQuery:Query = toKibanaQuery(series.Filter);
         resourceFilter = esb.boolQuery().must([resourceFilter, serializedQuery]);
       }
       const filterAggregation = esb.filterAggregation(seriesName, resourceFilter).agg(aggs);
@@ -148,19 +146,25 @@ class ElasticService {
     const body = elasticRequestBody.toJSON();
     console.log(`lambdaBody: ${JSON.stringify(body)}`);
 
-    // const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
-    // console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
+    const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
+    console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
 
-    // if (!lambdaResponse.success) {
-    //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
-    //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
-    // }
-    const lambdaResponse = {
-      resultObject: null
-    };
+    if (!lambdaResponse.success) {
+      console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
+      throw new Error(`Failed to execute data query ID: ${query.Key}`);
+    }
+    // const lambdaResponse = {
+    //   resultObject: null
+    // };
     let response: DataQueryResponse = this.buildResponseFromElasticResults2(lambdaResponse.resultObject, query);
 
     return response;
+  }
+
+  buildDummyBreakBy(): esb.Aggregation {
+
+    let query: Aggregation = esb.termsAggregation('DummyBreakBy').script(esb.script('inline',"'test'"));
+    return query;
   }
 
   private getAggUniqueName(serie: Serie) {
@@ -173,16 +177,671 @@ class ElasticService {
   }
   private buildResponseFromElasticResults2(lambdaResponse, query: DataQuery) {
 
-    lambdaResponse = {
-      "aggregations": {
-        "fffff": {
-          "doc_count": 116,
-          "Transaction.SubTotal_Sum": {
-            "value": 781458.0
-          }
-        }
-      }
-    }
+    // lambdaResponse = {
+    //   "aggregations" : {
+    //     "test filter" : {
+    //       "doc_count" : 131,
+    //       "Transaction.ActionDateTime" : {
+    //         "buckets" : [
+    //           {
+    //             "key_as_string" : "2017 Feb",
+    //             "key" : 1485907200000,
+    //             "doc_count" : 1,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "test",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Mar",
+    //             "key" : 1488326400000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Apr",
+    //             "key" : 1491004800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 May",
+    //             "key" : 1493596800000,
+    //             "doc_count" : 3,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "Hadar",
+    //                   "doc_count" : 2
+    //                 },
+    //                 {
+    //                   "key" : "test",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Jun",
+    //             "key" : 1496275200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Jul",
+    //             "key" : 1498867200000,
+    //             "doc_count" : 11,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 8
+    //                 },
+    //                 {
+    //                   "key" : "Hadar",
+    //                   "doc_count" : 3
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Aug",
+    //             "key" : 1501545600000,
+    //             "doc_count" : 1,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "123",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Sep",
+    //             "key" : 1504224000000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Oct",
+    //             "key" : 1506816000000,
+    //             "doc_count" : 2,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 1
+    //                 },
+    //                 {
+    //                   "key" : "test",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Nov",
+    //             "key" : 1509494400000,
+    //             "doc_count" : 32,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "",
+    //                   "doc_count" : 29
+    //                 },
+    //                 {
+    //                   "key" : "123",
+    //                   "doc_count" : 1
+    //                 },
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 1
+    //                 },
+    //                 {
+    //                   "key" : "test",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2017 Dec",
+    //             "key" : 1512086400000,
+    //             "doc_count" : 1,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "123",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Jan",
+    //             "key" : 1514764800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Feb",
+    //             "key" : 1517443200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Mar",
+    //             "key" : 1519862400000,
+    //             "doc_count" : 46,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "123",
+    //                   "doc_count" : 26
+    //                 },
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 19
+    //                 },
+    //                 {
+    //                   "key" : "",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Apr",
+    //             "key" : 1522540800000,
+    //             "doc_count" : 3,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "123",
+    //                   "doc_count" : 3
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 May",
+    //             "key" : 1525132800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Jun",
+    //             "key" : 1527811200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Jul",
+    //             "key" : 1530403200000,
+    //             "doc_count" : 21,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "",
+    //                   "doc_count" : 16
+    //                 },
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 4
+    //                 },
+    //                 {
+    //                   "key" : "123",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Aug",
+    //             "key" : 1533081600000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Sep",
+    //             "key" : 1535760000000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Oct",
+    //             "key" : 1538352000000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Nov",
+    //             "key" : 1541030400000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2018 Dec",
+    //             "key" : 1543622400000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Jan",
+    //             "key" : 1546300800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Feb",
+    //             "key" : 1548979200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Mar",
+    //             "key" : 1551398400000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Apr",
+    //             "key" : 1554076800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 May",
+    //             "key" : 1556668800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Jun",
+    //             "key" : 1559347200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Jul",
+    //             "key" : 1561939200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Aug",
+    //             "key" : 1564617600000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Sep",
+    //             "key" : 1567296000000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Oct",
+    //             "key" : 1569888000000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Nov",
+    //             "key" : 1572566400000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2019 Dec",
+    //             "key" : 1575158400000,
+    //             "doc_count" : 1,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Jan",
+    //             "key" : 1577836800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Feb",
+    //             "key" : 1580515200000,
+    //             "doc_count" : 1,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Mar",
+    //             "key" : 1583020800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Apr",
+    //             "key" : 1585699200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 May",
+    //             "key" : 1588291200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Jun",
+    //             "key" : 1590969600000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Jul",
+    //             "key" : 1593561600000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Aug",
+    //             "key" : 1596240000000,
+    //             "doc_count" : 3,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 2
+    //                 },
+    //                 {
+    //                   "key" : "123",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Sep",
+    //             "key" : 1598918400000,
+    //             "doc_count" : 1,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 1
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Oct",
+    //             "key" : 1601510400000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Nov",
+    //             "key" : 1604188800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2020 Dec",
+    //             "key" : 1606780800000,
+    //             "doc_count" : 2,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "123",
+    //                   "doc_count" : 2
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2021 Jan",
+    //             "key" : 1609459200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2021 Feb",
+    //             "key" : 1612137600000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2021 Mar",
+    //             "key" : 1614556800000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2021 Apr",
+    //             "key" : 1617235200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2021 May",
+    //             "key" : 1619827200000,
+    //             "doc_count" : 0,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [ ]
+    //             }
+    //           },
+    //           {
+    //             "key_as_string" : "2021 Jun",
+    //             "key" : 1622505600000,
+    //             "doc_count" : 2,
+    //             "Transaction.Account.ExternalID" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "MQB1",
+    //                   "doc_count" : 2
+    //                 }
+    //               ]
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     }
+    //   }
+    // }
 
     let response: DataQueryResponse = new DataQueryResponse();
     query.Series.forEach(series => {
@@ -199,7 +858,9 @@ class ElasticService {
               this.handleAggregatorsFieldsWithBreakBy(bucketsGroupBy[series.BreakBy.FieldID], series, response, dataSet);
             }
             else {
-              this.handleAggregatedFieldNoBreakBy(series, response, dataSet, bucketsGroupBy);
+              this.handleAggregatorsFieldsWithBreakBy(bucketsGroupBy['DummyBreakBy'], series, response, dataSet);
+
+              //this.handleAggregatedFieldNoBreakBy(series, response, dataSet, bucketsGroupBy);
             }
             response.DataSet.push(dataSet)
           });
@@ -215,7 +876,7 @@ class ElasticService {
 
       } else {
         const dataSet = {};
-        this.handleAggregatedFieldNoBreakBy(series, response, dataSet, resourceAggs);
+        this.handleAggregatorsFieldsWithBreakBy(resourceAggs['DummyBreakBy'], series, response, dataSet);
         response.DataSet.push(dataSet);
 
       }
@@ -248,334 +909,24 @@ class ElasticService {
     });
   }
 
+
   private handleAggregatedFields(seriesName, seriesLabel, seriesAggregation, aggregatedFields, dataSet) {
     aggregatedFields.forEach((aggregatedField) => {
 
       const keyString = this.buildAggragationFieldString(aggregatedField);
       const dataSetKeyString = this.buildDataSetKeyString(seriesName, seriesLabel);
-      dataSet[dataSetKeyString] = seriesAggregation[keyString].value;
+      let val;
+      if (seriesAggregation[keyString]?.value){
+        val = seriesAggregation[keyString].value;
+
+      }else{
+        val = seriesAggregation.doc_count;
+
+      }
+      dataSet[dataSetKeyString] = val;
     })
   }
 
-  private buildResponseFromElasticResults(lambdaResponse, query: DataQuery) {
-
-    lambdaResponse = {
-      "aggregations": {
-        "transaction lines sum UnitsQuantity per Months": {
-          "doc_count": 16431539,
-          "Item.MainCategory": {
-            "meta": {
-              "GroupBy": "Item.MainCategory"
-            },
-            "doc_count_error_upper_bound": 6645,
-            "sum_other_doc_count": 262622,
-            "buckets": [
-              {
-                "key": "Pocket",
-                "doc_count": 10756184,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 5378821,
-                      "UnitsQuantity_Sum": {
-                        "value": 4.1341803E7
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 5377363,
-                      "UnitsQuantity_Sum": {
-                        "value": 2.6425553E7
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Hallmark",
-                "doc_count": 3074146,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 978372,
-                      "UnitsQuantity_Sum": {
-                        "value": 4180953.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 2095774,
-                      "UnitsQuantity_Sum": {
-                        "value": 1.2127732E7
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Box",
-                "doc_count": 1644329,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 417201,
-                      "UnitsQuantity_Sum": {
-                        "value": 1.2965525E7
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 1227128,
-                      "UnitsQuantity_Sum": {
-                        "value": 3.5572682E7
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Tesco",
-                "doc_count": 319984,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 125464,
-                      "UnitsQuantity_Sum": {
-                        "value": 829635.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 194520,
-                      "UnitsQuantity_Sum": {
-                        "value": 982884.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Morrisons",
-                "doc_count": 127394,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 19776,
-                      "UnitsQuantity_Sum": {
-                        "value": 170668.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 107618,
-                      "UnitsQuantity_Sum": {
-                        "value": 1486518.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Waitrose",
-                "doc_count": 78446,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 36452,
-                      "UnitsQuantity_Sum": {
-                        "value": 420233.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 41994,
-                      "UnitsQuantity_Sum": {
-                        "value": 215629.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Danillo",
-                "doc_count": 52262,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 26058,
-                      "UnitsQuantity_Sum": {
-                        "value": 137353.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 26204,
-                      "UnitsQuantity_Sum": {
-                        "value": 149810.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Me To You",
-                "doc_count": 42540,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 12365,
-                      "UnitsQuantity_Sum": {
-                        "value": 66713.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 30175,
-                      "UnitsQuantity_Sum": {
-                        "value": 362776.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Tailormade",
-                "doc_count": 36079,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 17010,
-                      "UnitsQuantity_Sum": {
-                        "value": 89371.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 19069,
-                      "UnitsQuantity_Sum": {
-                        "value": 93923.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Carte Blanche Greetings",
-                "doc_count": 34516,
-                "Transaction.ActionDateTime": {
-                  "meta": {
-                    "BreakBy": "Transaction.ActionDateTime"
-                  },
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 14317,
-                      "UnitsQuantity_Sum": {
-                        "value": 72968.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 20199,
-                      "UnitsQuantity_Sum": {
-                        "value": 218149.0
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        "all_activities sum UnitsQuantity per Months": {
-          "doc_count": 3333944,
-          "Item.MainCategory": {
-            "meta": {
-              "GroupBy": "Item.MainCategory"
-            },
-            "doc_count_error_upper_bound": 0,
-            "sum_other_doc_count": 0,
-            "buckets": []
-          }
-        }
-      }
-    }
-    let response: DataQueryResponse = new DataQueryResponse();
-
-    Object.keys(lambdaResponse.aggregations).forEach((key) => {
-      // remove the dots since chart js doesnt support it
-      const keyString = this.cutDotNotation(key);
-      //response.Groups.push(keyString);
-      if (lambdaResponse.aggregations[key].buckets) {
-        lambdaResponse.aggregations[key].buckets.forEach(bucket => {
-          this.extractTermAggregation(bucket, keyString, query, response);
-        });
-      }
-      else {
-        this.extractTermAggregation(lambdaResponse.aggregations[key], keyString, query, response);
-
-      }
-
-
-    });
-    return response;
-  }
 
   private extractTermAggregation(bucket: any, keyString: string, query: DataQuery, response: DataQueryResponse) {
     let dataSet = {};

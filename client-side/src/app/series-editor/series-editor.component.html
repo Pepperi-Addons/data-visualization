@@ -102,7 +102,7 @@
                     <pep-checkbox [value]="limitNumber" [label]="'LimitNumberOfResults' | translate" [renderTitle]="false" (valueChange)="onEventCheckboxChanged('LimitNumberResults',$event)"></pep-checkbox>
 
                     <div class="flex-gap half-width">
-                        <pep-textbox class="flex" [(value)]="series.Top.Max"  [disabled]="!limitNumber" [label]="'NumberOf' | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
+                        <pep-textbox class="flex" [(value)]="series.Top.Max"  [disabled]="!limitNumber" [label]="'NumberOf' | translate" [type]="'text'" (valueChange)="onTopMaxChanged($event)"></pep-textbox>
                         <pep-select class="flex" [value]="series.Top.Ascending === true? 'Ascending': 'Decending'" [disabled]="!limitNumber" [label]="'Order'" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='orderOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>
                     </div>
@@ -134,7 +134,7 @@
                         <pep-select class="flex" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='intervalOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>
                     </div>
-                    <pep-textarea [key]="'textarea1'" [label]="'FilterRules' | translate" [value]="JSON.stringify(series.Filter, null, 2)" [rowSpan]="2" [maxFieldCharacters]="1000" [xAlignment]="'left'">
+                    <pep-textarea [key]="'textarea1'" [label]="'FilterRules' | translate" [value]="JSON.stringify(series.Filter, null, 2)" [rowSpan]="2" [maxFieldCharacters]="1000" (valueChange)="onFilterRuleChanged($event)" [xAlignment]="'left'">
                     </pep-textarea>
                 </div>
 

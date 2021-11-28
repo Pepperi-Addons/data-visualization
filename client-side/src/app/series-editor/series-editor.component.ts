@@ -71,7 +71,7 @@ export class SeriesEditorComponent implements OnInit {
       Format: ''
 
     },
-    Filter: null,
+    Filter:undefined,
     Scope: {
       User: 'AllUsers',
       UserFilterField: '',
@@ -285,5 +285,17 @@ export class SeriesEditorComponent implements OnInit {
   addDynamicFilterFields() {
     this.series.DynamicFilterFields.push('');
 
+  }
+
+  onTopMaxChanged(event){
+    this.series.Top.Max = Number(event);
+  }
+  onFilterRuleChanged(event){
+    if (event){
+
+      this.series.Filter = JSON.parse(event)
+    }else{
+      this.series.Filter =null;
+    }
   }
 }

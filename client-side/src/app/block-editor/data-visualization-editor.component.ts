@@ -11,6 +11,7 @@ import { SeriesEditorComponent } from '../series-editor/series-editor.component'
 import { PepDialogActionButton, PepDialogData, PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { MatDialogRef } from '@angular/material/dialog';
 import { v4 as uuid } from 'uuid';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 
 @Component({
     selector: 'data-visualization-editor',
@@ -68,9 +69,9 @@ export class DataVisualizationEditorComponent implements OnInit {
     chartsOptions: { key: string, value: string }[] = [];
     queriesOptions: { key: string, value: string }[] = [];
     seriesButtons: Array<Array<PepButton>> = [];
-    selectedQuery: any;
     chartInstance: any;
     currentChart;
+    selectedQuery: any;
 
     constructor(private addonService: PepAddonService,
         public routeParams: ActivatedRoute,
@@ -90,7 +91,10 @@ export class DataVisualizationEditorComponent implements OnInit {
                         this.selectedQuery = res[0];
                         this.blockLoaded = true;
                         this.buildSeriesButtons();
-                        this.executeQuery();
+                        this.executeQuery().then(()=>{
+                            this.updateHostObject();
+
+                        })
                         this.hostEvents.emit({ action: 'block-editor-loaded' });
                     })
 
@@ -203,18 +207,18 @@ export class DataVisualizationEditorComponent implements OnInit {
     }
 
     add() {
-        this.showSeriesEditorDialog(null);
+        this.showSeriesEditorDialog();
     }
 
     editSeries(event) {
         if (event) {
             this.currentSeries = this.selectedQuery.Series.filter(s => s.Key === event.source.key)[0] as Serie
         }
-        this.showSeriesEditorDialog(this.currentSeries);
+        this.showSeriesEditorDialog();
         // this.showSeriesEditor = true;
     }
 
-    showSeriesEditorDialog(currentSeries) {
+    showSeriesEditorDialog() {
         const actionButton: PepDialogActionButton = {
             title: "OK",
             className: "",
@@ -222,15 +226,18 @@ export class DataVisualizationEditorComponent implements OnInit {
         };
 
         this.openDialog(this.translate.instant('EditSeries'), SeriesEditorComponent, actionButton, {
-            currentSeries: currentSeries
+            currentSeries: this.currentSeries
         }, (seriesToAddOrUpdate) => {
             if (seriesToAddOrUpdate) {
                 debugger;
-                const idx = this.selectedQuery.Series.findIndex(item => item.Key === seriesToAddOrUpdate.Key);;
+                const idx = this.selectedQuery.Series?.findIndex(item => item.Key === seriesToAddOrUpdate.Key);
                 if (idx > -1) {
                     this.selectedQuery.Series[idx] = seriesToAddOrUpdate;
                 }
                 else {
+                    if (!this.selectedQuery.Series) {
+                        this.selectedQuery.Series = [];
+                    }
                     this.selectedQuery.Series.push(seriesToAddOrUpdate);
                 }
 
@@ -241,7 +248,9 @@ export class DataVisualizationEditorComponent implements OnInit {
                     this.selectedQuery).toPromise().then((res) => {
                         this.selectedQuery = res;
                         this.buildSeriesButtons();
-                        this.executeQuery();
+                        this.executeQuery().then(()=>{
+                            this.updateHostObject();
+                        })
 
                     })
             }
@@ -249,14 +258,13 @@ export class DataVisualizationEditorComponent implements OnInit {
         });
     }
 
-    executeQuery() {
+    async executeQuery() {
         const body = {
             QueryId: this.selectedQuery.Key
         };
-        this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', body).toPromise().then((res) => {
+        return this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', body).toPromise().then((res) => {
             this.queryResult = res;
             this._configuration.data = res;
-            this.updateHostObject();
 
         });
     }
@@ -311,27 +319,31 @@ export class DataVisualizationEditorComponent implements OnInit {
         this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this.selectedQuery).toPromise().then((res) => {
             this.selectedQuery = res;
             this.buildSeriesButtons();
-            this.executeQuery();
+            this.executeQuery().then(()=>{
+                this.updateHostObject();
+
+            })
         });
     }
 
     onDataQuerySelected(event) {
-        if (event === ""){
+        if (event === "") {
             this.selectedQuery = null;
             this.seriesButtons = [];
-            this.queryResult=null;
-        }else{
+            this.queryResult = null;
+            this._configuration.query = this.selectedQuery;
+            this._configuration.data = this.queryResult;
+            this.updateHostObject();
+    
+        } else {
 
             this.selectedQuery = this.queriesList.filter(x => x.Key == event)[0];
             this.buildSeriesButtons();
-            this.executeQuery();
+            this.executeQuery().then(()=>{
+                this.updateHostObject();
+
+            });
         }
-        this._configuration.query = this.selectedQuery;
-        this._configuration.data = this.queryResult;
-
-        this.updateHostObject();
-
-
     }
 
     private buildSeriesButtons() {

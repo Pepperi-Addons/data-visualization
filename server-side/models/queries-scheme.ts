@@ -162,7 +162,7 @@ export const QueriesScheme =
                         }
                     },
                     "Filter": {
-                        "type": "object"
+                        "type": ["null","object"]
                     }
                 },
                 "additionalProperties": false,
