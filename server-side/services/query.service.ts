@@ -21,6 +21,12 @@ class QueryService {
 
     async upsert(client: Client, request: Request) {
 
+        const userType = (<any>jwtDecode(client.OAuthAccessToken))["pepperi.employeetype"];
+        // Hack until Addons permission will be developed
+        if (userType !== 1) {
+            throw new Error('Authorization request denied.');
+        }
+
         const adal = this.papiClient.addons.data.uuid(config.AddonUUID).table(DATA_QUREIES_TABLE_NAME);
         const body = request.body;
 
@@ -87,3 +93,7 @@ class QueryService {
 }
 
 export default QueryService;
+
+function jwtDecode(OAuthAccessToken: string): any {
+    throw new Error('Function not implemented.');
+}

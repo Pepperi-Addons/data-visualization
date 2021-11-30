@@ -9,12 +9,14 @@ import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
 import { DataVisualizationEditorComponent } from './data-visualization-editor.component';
 import { PepGroupButtonsModule } from '@pepperi-addons/ngx-lib/group-buttons';
 import { PepTextareaModule } from '@pepperi-addons/ngx-lib/textarea';
-
+import { MatTabsModule } from '@angular/material/tabs';
 import { config } from '../addon.config';
 import { AddonService } from '../addon.service';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { PepIconRegistry, pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
+import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
+import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
 
 const pepIcons = [
     pepIconSystemBin,
@@ -25,12 +27,14 @@ const pepIcons = [
     imports: [
         PepSelectModule,
         PepTextboxModule,
+        PepCheckboxModule,
         PepButtonModule,
         PepTopBarModule,
         CommonModule,
         PepTextareaModule,
+        PepSliderModule,
         PepGroupButtonsModule,
-
+        MatTabsModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
@@ -50,8 +54,6 @@ const pepIcons = [
         TranslateService,  
         HttpClient,
         PepFileService,
-        
-        // Add here all used services.
     ]
 })
 export class DataVisualizationEditorModule {

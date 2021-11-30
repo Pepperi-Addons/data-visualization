@@ -18,7 +18,6 @@ import { v4 as uuid } from 'uuid';
 export class SeriesEditorComponent implements OnInit {
   chartInstance: any;
   currentSeries: Serie;
-  filterExampleJSON = '';
   resourceOptions: Array<PepButton> = [];
   aggregationsOptions: Array<PepButton> = [];
   aggregationsFieldsOptions: Array<PepButton> = [];
@@ -35,13 +34,7 @@ export class SeriesEditorComponent implements OnInit {
   useCategories = false;
   useDynamicSeries = false;
   useDynamicFilter = false;
-  formatOptionsMap = {
-    'yyyy': 'Year',
-    'yyyy MMM': 'YearMonth',
-    'MMM': 'Month',
-    'MMM dd': 'MonthDay',
-    'yyyy MMM dd': 'YearMonthDay'
-  }
+
   mode: string = 'Add';
   series: Serie = {
     Key: uuid(),
@@ -71,7 +64,7 @@ export class SeriesEditorComponent implements OnInit {
       Format: ''
 
     },
-    Filter:undefined,
+    Filter: undefined,
     Scope: {
       User: 'AllUsers',
       UserFilterField: '',
@@ -82,9 +75,18 @@ export class SeriesEditorComponent implements OnInit {
     GroupBy: [{
       FieldID: '',
       Interval: 'None',
-      Format: ''
+      Format: '',
+      Alias: ''
     }]
 
+  }
+
+  formatOptionsMap = {
+    'yyyy': 'Year',
+    'yyyy MMM': 'YearMonth',
+    'MMM': 'Month',
+    'MMM dd': 'MonthDay',
+    'yyyy MMM dd': 'YearMonthDay'
   }
   trnsactionLinesFields: any;
   allActivitiesFields: any;
@@ -110,31 +112,11 @@ export class SeriesEditorComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    //this.initCurrentSeries();
     this.getDataIndexFields().then(() => {
       this.fillAggregatedFieldsType();
       this.isLoaded = true;
 
     })
-    this.filterExampleJSON = JSON.stringify({
-      "Operation": "AND",
-      "LeftNode": {
-        "ApiName": "Item.ExternalID",
-        "FieldType": "String",
-        "Operation": "IsNotEqual",
-        "Values": [
-          "25473982"
-        ]
-      },
-      "RightNode": {
-        "ApiName": "Item.MainCategory",
-        "FieldType": "String",
-        "Operation": "IsNotEqual",
-        "Values": [
-          "Hallmark"
-        ]
-      }
-    }, null, 2);
 
     Aggregators.forEach(aggregator => {
       this.aggregationsOptions.push({ key: aggregator, value: this.translate.instant(aggregator) });
@@ -253,6 +235,13 @@ export class SeriesEditorComponent implements OnInit {
   }
 
   onSave(e) {
+    if (!this.useCategories) {
+      this.series.GroupBy[0].FieldID = '';
+      this.series.GroupBy[0].Alias = '';
+    }
+    if (!this.useDynamicSeries) {
+      this.series.BreakBy.FieldID = '';
+    }
   }
 
   onTypeChange(e) {
@@ -287,15 +276,23 @@ export class SeriesEditorComponent implements OnInit {
 
   }
 
-  onTopMaxChanged(event){
+  onTopMaxChanged(event) {
     this.series.Top.Max = Number(event);
   }
-  onFilterRuleChanged(event){
-    if (event){
+
+  onGroupByFieldSelected(event) {
+    const parts = `.${event}`.split('.');
+    var alias = parts[parts.length - 1];
+    this.series.GroupBy[0].Alias = alias;
+
+  }
+
+  onFilterRuleChanged(event) {
+    if (event) {
 
       this.series.Filter = JSON.parse(event)
-    }else{
-      this.series.Filter =null;
+    } else {
+      this.series.Filter = null;
     }
   }
 }

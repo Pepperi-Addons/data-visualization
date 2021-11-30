@@ -56,16 +56,16 @@ async function runMigration(client){
 
         const pageComponentRelation: Relation = {
             RelationName: "PageBlock",
-            Name: blockName, // TODO: change to block name
-            Description: `${blockName} block`, // TODO: change to block description
+            Name: blockName, 
+            Description: `Chart`, 
             Type: "NgComponent",
             SubType: "NG11",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'data_visualization', 
             ComponentName: `${blockName}Component`, 
-            ModuleName: `${blockName}Module`, // TODO: Change to block module name
-            EditorComponentName: `${blockName}EditorComponent`, // TODO: Change to block editor component name
-            EditorModuleName: `${blockName}EditorModule` // TODO: Change to block editor module name
+            ModuleName: `${blockName}Module`, 
+            EditorComponentName: `${blockName}EditorComponent`, 
+            EditorModuleName: `${blockName}EditorModule`
         };
 
         const service = new MyService(client);

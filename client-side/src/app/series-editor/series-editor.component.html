@@ -74,15 +74,15 @@
                     <pep-field-title [label]="'CategoriesDescription' | translate" class="header">
                     </pep-field-title>
                     <div class="flex-gap">
-                        <pep-select class="flex flex-grow" [disabled]="!useCategories" [emptyOption]="false" [(value)]="series.GroupBy && series.GroupBy[0] && series.GroupBy[0].FieldID" [key]="'GroupBySelect'" [label]="'GroupByField'  | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' (valueChange)="onChartSelected($event)">
+                        <pep-select class="flex flex-grow" [disabled]="!useCategories" [emptyOption]="false" [(value)]="series.GroupBy && series.GroupBy[0] && series.GroupBy[0].FieldID" [key]="'GroupBySelect'" [label]="'GroupByField'  | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' (valueChange)="onGroupByFieldSelected($event)">
                         </pep-select>
                         <!-- <pep-textbox class="flex" [disabled]="!useCategories" [value]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Interval"  [label]="'Interval'  | translate" [type]="'int'" (valueChange)="onGroupByIntervalChanged($event)"></pep-textbox> -->
-                        <pep-select class="flex" [label]="'Interval' | translate" [disabled]="!useCategories" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [(value)]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Interval" [options]='intervalOptions' (valueChange)="onChartSelected($event)">
+                        <pep-select class="flex" [label]="'Interval' | translate" [disabled]="!useCategories" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [(value)]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Interval" [options]='intervalOptions' >
                         </pep-select>
-                        <pep-select class="flex" [label]="'Foramt' | translate" [disabled]="!useCategories" [emptyOption]="false" [key]="'formatSelect'" [xAlignment]="'left'" [(value)]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Format" [options]='formatOptions' (valueChange)="onChartSelected($event)">
+                        <pep-select class="flex" [label]="'Foramt' | translate" [disabled]="!useCategories" [emptyOption]="false" [key]="'formatSelect'" [xAlignment]="'left'" [(value)]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Format" [options]='formatOptions'>
                         </pep-select>
                     </div>
-                    <pep-textbox class="half-width" [disabled]="!useCategories" [(value)]="series.Name" [label]="'Alias' | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
+                    <pep-textbox class="half-width" [disabled]="!useCategories" [(value)]="series.GroupBy[0].Alias" [label]="'Alias' | translate" [type]="'text'"></pep-textbox>
                 </div>
                 <div id="dynamic-series">
                     <pep-checkbox [value]="useDynamicSeries" [label]="'DynamicSeries' | translate" [renderTitle]="false" (valueChange)="onEventCheckboxChanged('DynamicSeries',$event)"></pep-checkbox>
@@ -90,7 +90,7 @@
                     <pep-field-title [label]="'DynamicSeriesDescriptions' | translate" class="header">
                     </pep-field-title>
                     <div class="flex-gap">
-                        <pep-select class="flex flex-grow" [disabled]="!useDynamicSeries" [emptyOption]="false" [key]="'groupBySelect'" [(value)]="series.BreakBy.FieldID" [label]="'BreakByField' | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' (valueChange)="onChartSelected($event)">
+                        <pep-select class="flex flex-grow" [disabled]="!useDynamicSeries" [emptyOption]="false" [key]="'groupBySelect'" [(value)]="series.BreakBy.FieldID" [label]="'BreakByField' | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' >
                         </pep-select>
                         <!-- <pep-textbox class="flex" [disabled]="!useDynamicSeries"  [label]="'Interval'  | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox> -->
                         <pep-select class="flex" [disabled]="!useDynamicSeries" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='intervalOptions' (valueChange)="onChartSelected($event)">
@@ -103,7 +103,7 @@
 
                     <div class="flex-gap half-width">
                         <pep-textbox class="flex" [(value)]="series.Top.Max"  [disabled]="!limitNumber" [label]="'NumberOf' | translate" [type]="'text'" (valueChange)="onTopMaxChanged($event)"></pep-textbox>
-                        <pep-select class="flex" [value]="series.Top.Ascending === true? 'Ascending': 'Decending'" [disabled]="!limitNumber" [label]="'Order'" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='orderOptions' (valueChange)="onChartSelected($event)">
+                        <pep-select class="flex" [value]="series.Top.Ascending === true? 'Ascending': 'Decending'" [disabled]="!limitNumber" [label]="'Order'" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='orderOptions'>
                         </pep-select>
                     </div>
                 </div>
@@ -114,7 +114,7 @@
                     <h2>{{'Filter' | translate}}
                     </h2>
                     <hr>
-                    <div class="flex-gap">
+                    <!-- <div class="flex-gap">
                         <pep-select class="flex" [emptyOption]="false" [(value)]="series.Scope && series.Scope.Account" [label]="'AccountFilter'  | translate" [key]="'accountFilterSelect'" [xAlignment]="'left'" [options]='accountFilterOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>
                         <pep-select *ngIf="series.Scope && series.Scope.Account==='AccountsWithTheSameFieldValue'" class="flex" [emptyOption]="false" [label]="'AccountFilterField'  | translate" [key]="'accountFilterFieldSelect'" [xAlignment]="'left'" [options]='accountFilterFieldOptions' (valueChange)="onChartSelected($event)">
@@ -133,7 +133,7 @@
                         <pep-textbox class="flex" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
                         <pep-select class="flex" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='intervalOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>
-                    </div>
+                    </div> -->
                     <pep-textarea [key]="'textarea1'" [label]="'FilterRules' | translate" [value]="JSON.stringify(series.Filter, null, 2)" [rowSpan]="2" [maxFieldCharacters]="1000" (valueChange)="onFilterRuleChanged($event)" [xAlignment]="'left'">
                     </pep-textarea>
                 </div>

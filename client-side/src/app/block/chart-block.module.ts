@@ -3,16 +3,18 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
-import { PepAddonService, PepFileService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
 
 import { DataVisualizationComponent } from './chart-block.component';
 
 import { config } from '../addon.config';
+import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 
 @NgModule({
     declarations: [DataVisualizationComponent],
     imports: [
         CommonModule,
+        PepTopBarModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
@@ -25,6 +27,7 @@ import { config } from '../addon.config';
     exports: [DataVisualizationComponent],
     providers: [
         TranslateStore,
+        PepCustomizationService
         // Add here all used services.
     ]
 })

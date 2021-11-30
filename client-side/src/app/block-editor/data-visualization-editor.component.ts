@@ -6,7 +6,7 @@ import { IPepButtonClickEvent, PepButton } from '@pepperi-addons/ngx-lib/button'
 import { pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
 import { AddonService } from '../addon.service';
 import { config } from '../addon.config';
-import { Serie } from '../../../../server-side/models/data-query';
+import { DataQuery, Serie } from '../../../../server-side/models/data-query';
 import { SeriesEditorComponent } from '../series-editor/series-editor.component';
 import { PepDialogActionButton, PepDialogData, PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -28,50 +28,33 @@ export class DataVisualizationEditorComponent implements OnInit {
             this._configuration = value.configuration
         } else {
             if (this.blockLoaded) {
-                this._configuration = {
-                    chart: {
-                        Key: '',
-                        ScriptURI: ''
-                    },
-                    query: {
-                        Key: ''
-                    },
-                    data: undefined
-                };
                 this.updateHostObject();
             }
         }
     }
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
 
-
-    private _configuration = {
-        chart: {
-            Key: '',
-            ScriptURI: ''
-        },
-        query: {
-            Key: ''
-        },
-        data: {}
+    label = false;
+    _configuration = {
+        chart: null,
+        query: null,
+        label: '',
+        data: null
     };
 
     get configuration() {
         return this._configuration;
     }
-
+    activeTabIndex = 0;
     charts: any;
     dialogRef: MatDialogRef<any>;
     blockLoaded = false;
     currentSeries: Serie;
     queryResult: any;
-    queriesList: any;
     chartsOptions: { key: string, value: string }[] = [];
-    queriesOptions: { key: string, value: string }[] = [];
     seriesButtons: Array<Array<PepButton>> = [];
     chartInstance: any;
-    currentChart;
-    selectedQuery: any;
+    SlideDropShadowStyle: Array<PepButton> = [];
 
     constructor(private addonService: PepAddonService,
         public routeParams: ActivatedRoute,
@@ -84,45 +67,47 @@ export class DataVisualizationEditorComponent implements OnInit {
     }
 
     ngOnInit(): void {
+
+        this.SlideDropShadowStyle = [
+            { key: 'Soft', value: this.translate.instant('Soft') },
+            { key: 'Regular', value: this.translate.instant('Regular') }
+        ];
+
         this.fillChartsOptions().then(() => {
-            this.fillQueriesOptions().then(() => {
-                if (this.configuration?.query?.Key) {
-                    this.getSeriesByKey(this.configuration?.query?.Key).then((res) => {
-                        this.selectedQuery = res[0];
-                        this.blockLoaded = true;
-                        this.buildSeriesButtons();
-                        this.executeQuery().then(()=>{
-                            this.updateHostObject();
-
-                        })
-                        this.hostEvents.emit({ action: 'block-editor-loaded' });
-                    })
-
-
-                }else{
+            const queryID = this.configuration?.query?.Key;
+            if (queryID) {
+                this.getSeriesByKey(queryID).then((res) => {
+                    this._configuration.query = res[0];
                     this.blockLoaded = true;
+                    this.buildSeriesButtons();
+                    this.executeQuery().then((res) => {
+                        this._configuration.data = res;
+                        this.updateHostObject();
 
-                }
-            })
-
+                    })
+                    this.hostEvents.emit({ action: 'block-editor-loaded' });
+                })
+            } else {
+                this.upsertDataQuery().then((res) => {
+                    this._configuration.query = res;
+                });
+                this.blockLoaded = true;
+            }
         });
+
     }
 
+    upsertDataQuery() {
+        const body = {
+            Name: uuid()
+        };
+        return this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', body).toPromise()
+
+    }
     getSeriesByKey(Key: string) {
         const params = { where: `Key=${Key}` };
         return this.addonService.getAddonApiCall(config.AddonUUID, 'api', 'queries', params).toPromise()
 
-    }
-
-    private fillQueriesOptions() {
-        return this.addonService.getAddonApiCall(config.AddonUUID, 'api', 'queries').toPromise()
-
-            .then((dataQueries) => {
-                this.queriesList = dataQueries;
-                dataQueries.forEach(dataQuerie => {
-                    this.queriesOptions.push({ key: dataQuerie.Key, value: dataQuerie.Name });
-                });
-            });
     }
 
     onEditClick() {
@@ -134,29 +119,8 @@ export class DataVisualizationEditorComponent implements OnInit {
             charts.forEach(chart => {
                 this.chartsOptions.push({ key: chart.Key, value: chart.Name });
             });
-            if (this.configuration?.chart?.Key) {
-                this.currentChart = this.configuration.chart.Key
-            }
         });
     }
-
-    onRemoveClick() {
-    }
-
-    getQueryOption(key) {
-        return this.queriesOptions.filter(qo => qo.key === key)[0];
-    }
-
-    onChartSelected(event: IPepFieldValueChangeEvent) {
-
-        if (event) {
-            const selectedChart = this.charts.filter(c => c.Key == event)[0];
-            this._configuration.chart = selectedChart;
-
-            this.updateHostObject();
-        }
-    }
-
 
     loadSrcJSFiles(imports) {
 
@@ -202,56 +166,71 @@ export class DataVisualizationEditorComponent implements OnInit {
         });
     }
 
-    onValueChanged(element, $event) {
-    }
+    onValueChanged(type, event) {
+        let promise: Promise<any> = Promise.resolve();
+        switch (type) {
+            case 'Chart':
+                if (event) {
+                    const selectedChart = this.charts.filter(c => c.Key == event)[0];
+                    this._configuration.chart = selectedChart;
+                }
+                else {
+                    this._configuration.chart = null;
+                }
+                break;
+            case 'Label':
+                this._configuration.label = event;
+                break;
+        }
 
-    getRandomNumber() {
-        return Math.floor(Math.random() * 100);
+        promise.then((res) => {
+            if (type && type === 'Query') {
+                this._configuration.data = res;
+            }
+            this.updateHostObject();
+        })
+
     }
 
     add() {
-        this.showSeriesEditorDialog();
+        this.showSeriesEditorDialog(null);
     }
 
     editSeries(event) {
         if (event) {
-            this.currentSeries = this.selectedQuery.Series.filter(s => s.Key === event.source.key)[0] as Serie
+            this.currentSeries = this._configuration.query.Series.filter(s => s.Key === event.source.key)[0] as Serie
         }
-        this.showSeriesEditorDialog();
-        // this.showSeriesEditor = true;
+        this.showSeriesEditorDialog(this.currentSeries);
+    }
+    tabClick(event) {
+
     }
 
-    showSeriesEditorDialog() {
+    onEventCheckboxChanged(eventType, event) {
+
+    }
+
+    showSeriesEditorDialog(series) {
         const actionButton: PepDialogActionButton = {
             title: "OK",
             className: "",
             callback: null,
         };
-
-        this.openDialog(this.translate.instant('EditSeries'), SeriesEditorComponent, actionButton, {
-            currentSeries: this.currentSeries
-        }, (seriesToAddOrUpdate) => {
+        const input = {
+            currentSeries: series
+        }
+        this.openDialog(this.translate.instant('EditSeries'), SeriesEditorComponent, actionButton, input, (seriesToAddOrUpdate) => {
             if (seriesToAddOrUpdate) {
-                debugger;
-                const idx = this.selectedQuery.Series?.findIndex(item => item.Key === seriesToAddOrUpdate.Key);
-                if (idx > -1) {
-                    this.selectedQuery.Series[idx] = seriesToAddOrUpdate;
-                }
-                else {
-                    if (!this.selectedQuery.Series) {
-                        this.selectedQuery.Series = [];
-                    }
-                    this.selectedQuery.Series.push(seriesToAddOrUpdate);
-                }
-
+                this.updateQuerySeries(seriesToAddOrUpdate);
                 this.addonService.postAddonApiCall(
                     config.AddonUUID,
                     'api',
                     'queries',
-                    this.selectedQuery).toPromise().then((res) => {
-                        this.selectedQuery = res;
+                    this._configuration.query).toPromise().then((res) => {
+                        this._configuration.query = res;
                         this.buildSeriesButtons();
-                        this.executeQuery().then(()=>{
+                        this.executeQuery().then((res) => {
+                            this._configuration.data = res;
                             this.updateHostObject();
                         })
 
@@ -261,40 +240,27 @@ export class DataVisualizationEditorComponent implements OnInit {
         });
     }
 
+    private updateQuerySeries(seriesToAddOrUpdate: any) {
+        const idx = this._configuration.query.Series?.findIndex(item => item.Key === seriesToAddOrUpdate.Key);
+        if (idx > -1) {
+            this._configuration.query.Series[idx] = seriesToAddOrUpdate;
+        }
+        else {
+            if (!this._configuration.query.Series) {
+                this._configuration.query.Series = [];
+            }
+            this._configuration.query.Series.push(seriesToAddOrUpdate);
+        }
+    }
+
     async executeQuery() {
         const body = {
-            QueryId: this.selectedQuery.Key
+            QueryId: this._configuration.query.Key
         };
-        return this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', body).toPromise().then((res) => {
-            this.queryResult = res;
-            this._configuration.data = res;
-
-        });
+        return this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', body).toPromise();
     }
 
-    reload(): any {
-        throw new Error('Method not implemented.');
-    }
-
-    openDialog2(title: string, content: string, callback?: any) {
-        const actionButton: PepDialogActionButton = {
-            title: "OK",
-            className: "",
-            callback: callback,
-        };
-
-        const dialogData = new PepDialogData({
-            title: title,
-            content: content,
-            actionButtons: [actionButton],
-            actionsType: "custom",
-            showClose: false,
-        });
-        this.dialogService.openDefaultDialog(dialogData);
-    }
-
-    openDialog(title, content, buttons,
-        input, callbackFunc = null): void {
+    openDialog(title, content, buttons, input, callbackFunc = null): void {
         const config = this.dialogService.getDialogConfig(
             {
                 disableClose: true,
@@ -302,8 +268,15 @@ export class DataVisualizationEditorComponent implements OnInit {
             },
             'inline'
         );
-        //const dialogConfig = this.dialogService.getDialogConfig({ disableClose: true, panelClass: 'pepperi-standalone', maxWidth: '832px', minWidth: '832px', maxHeight: '100%' }, 'large',)
-        const data = new PepDialogData({ title: title, content: content, actionButtons: buttons, actionsType: "custom", showHeader: true, showFooter: true, showClose: true })
+        const data = new PepDialogData({
+            title: title,
+            content: content,
+            actionButtons: buttons,
+            actionsType: "custom",
+            showHeader: true,
+            showFooter: true,
+            showClose: true
+        })
         config.data = data;
 
         this.dialogRef = this.dialogService.openDialog(content, input, config);
@@ -314,44 +287,31 @@ export class DataVisualizationEditorComponent implements OnInit {
 
     deleteSeries(event) {
         console.log(event);
-        const idx = this.selectedQuery.Series.findIndex(item => item.Key === event.source.key);;
+        const idx = this._configuration.query.Series.findIndex(item => item.Key === event.source.key);;
         if (idx > -1) {
-            this.selectedQuery.Series.splice(idx, 1);
+            this._configuration.query.Series.splice(idx, 1);
         }
 
-        this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this.selectedQuery).toPromise().then((res) => {
-            this.selectedQuery = res;
+        this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this._configuration.query.Series).toPromise().then((res) => {
+            this._configuration.query = res;
             this.buildSeriesButtons();
-            this.executeQuery().then(()=>{
+            this.executeQuery().then((res) => {
+                this._configuration.data = res;
                 this.updateHostObject();
-
             })
         });
     }
 
-    onDataQuerySelected(event) {
-        if (event === "") {
-            this.selectedQuery = null;
-            this.seriesButtons = [];
-            this.queryResult = null;
-            this._configuration.query = this.selectedQuery;
-            this._configuration.data = this.queryResult;
-            this.updateHostObject();
-    
-        } else {
 
-            this.selectedQuery = this.queriesList.filter(x => x.Key == event)[0];
-            this.buildSeriesButtons();
-            this.executeQuery().then(()=>{
-                this.updateHostObject();
+    onSlideshowFieldChange(key, event) {
 
-            });
-        }
+
+        this.updateHostObject();
     }
 
     private buildSeriesButtons() {
         this.seriesButtons = [];
-        this.selectedQuery.Series.forEach(serise => {
+        this._configuration.query?.Series?.forEach(serise => {
             this.seriesButtons.push([
                 {
                     key: serise.Key,

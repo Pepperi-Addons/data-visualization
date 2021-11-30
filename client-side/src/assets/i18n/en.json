@@ -12,10 +12,13 @@
     "FailedLoadLibrary": "Failed to load library: {{library}}",
     "DataVisualization": "Data Visualization",
     "DataQueriesTitle": "Data Visualization",
+    "DataQueries":"Data Queries",
     "General": "General",
+    "ChartDesign":"Chart design",
     "Content": "Content",
     "Design": "Design",
     "Title": "Title",
+    "TitleText":"Title text",
     "Name": "Name",
     "LabelFormat":"Label format",
     "LabelFormatDescription":"Add test to the series name. Unique value is reqired when having two series with the same dynamic series field.",
@@ -65,7 +68,10 @@
     "Month":"Month",
     "YearMonth":"Year + Month",
     "MonthDay":"Month + Day",
-    "YearMonthDay":"Year + Month + Day"
+    "YearMonthDay":"Year + Month + Day",
+    "ShadowIntensity":"Shadow intensity",
+    "DropShadow":"Drop shadow",
+    "ShadowType":"Shadow type"
 
 
 }

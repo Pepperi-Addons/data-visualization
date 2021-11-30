@@ -127,6 +127,9 @@ export const QueriesScheme =
                                     "type": "string",
                                     "enum": ["None","Day", "Week", "Month", "Quarter", "Year"]
                                 },
+                                "Alias": {
+                                    "type": "string"
+                                },
                             },
                             "additionalProperties": false
                         }

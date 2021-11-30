@@ -14,6 +14,7 @@ export interface GroupBy {
     FieldID: string;
     Interval?: Interval;
     Format?: string;
+    Alias?:string;
 }
 
 export interface Serie {

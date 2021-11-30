@@ -1,4 +1,8 @@
-<div style="width: 47rem;">
+<ng-container pep-top-area>
+    <pep-top-bar [title]="this._hostObject?.configuration?.label">
+    </pep-top-bar>
+</ng-container>
+<div [hidden]="!this.chartInstance" style="width: 47rem;">
     <div #previewArea>
     </div>
 </div>

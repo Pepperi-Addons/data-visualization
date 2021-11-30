@@ -1,6 +1,6 @@
 {
   "AddonUUID": "00000000-0000-0000-0000-0da1a0de41e5",
-  "AddonVersion": "0.0.50",
+  "AddonVersion": "0.0.52",
   "DebugPort": 4500,
   "WebappBaseUrl": "https://app.sandbox.pepperi.com",
   "DefaultEditor": "main",
@@ -18,13 +18,7 @@
   ],
   "PublishConfig": {
     "ClientStack": "ng10",
-    "Editors": [
-      {
-        "ParentPackageName": "Queries",
-        "PackageName": "queries",
-        "Description": "Data queries"
-      }
-    ],
+    "Editors": [],
     "Dependencies": {},
     "CPISide": []
   }
