@@ -62,16 +62,16 @@ export declare type UserType = typeof UserTypes[number];
 export const AccountTypes = ["AllAccounts", "CurrentAccount", "AccountsWithTheSameFieldValue"];
 export declare type AccountType = typeof AccountTypes[number];
 
-export const ResourceTypes = ["None", "all_activities", "transaction_lines"];
+export const ResourceTypes = ["all_activities", "transaction_lines"];
 export declare type ResourceType = typeof ResourceTypes[number];
 
 export const DataTypes = ["Single", "Series", "MultiSeries"];
 export declare type DataType = typeof DataTypes[number];
 
-export const Intervals = ["None","Day", "Week", "Month", "Quarter", "Year"];
+export const Intervals = ["Day", "Week", "Month", "Quarter", "Year"];
 export declare type Interval = typeof Intervals[number];
 
-export const Aggregators = ["None", "Sum", "Count", "Average", "Script", "CountDistinct"];
+export const Aggregators = ["Sum", "Count", "Average", "Script", "CountDistinct"];
 export declare type Aggregator = typeof Aggregators[number];
 
 export const DateOperation = ['InTheLast', 'Today', 'ThisWeek', 'ThisMonth', 'Before', 'After', 'Between', 'DueIn', 'On', 'NotInTheLast', 'NotDueIn', 'IsEmpty', 'IsNotEmpty']

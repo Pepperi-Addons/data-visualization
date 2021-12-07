@@ -1,0 +1,60 @@
+<div pep-main-area>
+    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="100ms">
+        <mat-tab id="1" label="{{'General' | translate}}">
+            <div *ngIf="blockLoaded">
+                <pep-checkbox [value]="enableLabel" [label]="'Title' | translate" [renderTitle]="false" (valueChange)="onEventCheckboxChanged('Label',$event)"></pep-checkbox>
+                <pep-textbox [label]="'TitleText' | translate" [type]="'text'" [disabled]="!enableLabel" [(value)]="_configuration.label" (valueChange)="onValueChanged('Label', $event)"></pep-textbox>
+                <h2>{{'ChartDesign' | translate}}
+                </h2>
+                <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="this._configuration.chart?.Key" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">
+                </pep-select>
+                <div id="border">
+                    <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onGalleryFieldChange('useBorder',$event)"></pep-checkbox>
+                    <pep-color [value]="configuration?.galleryConfig?.border?.color" [label]="'BorderColor' | translate" [disabled]="" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onGalleryFieldChange('border.color',$event)">
+                    </pep-color>
+                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.galleryConfig?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.galleryConfig?.useBorder" [value]="configuration?.galleryConfig?.border?.opacity" [background]="getSliderBackground(configuration?.galleryConfig?.border?.color)" (valueChange)="onGalleryFieldChange('border.opacity',$event)">
+                    </pep-slider>
+                    <pep-checkbox [value]="configuration?.useGradientOverlay" [label]="'GradientOverlay' | translate" [renderTitle]="false" (valueChange)="onGalleryFieldChange('useGradientOverlay',$event)"></pep-checkbox>
+                    <pep-color [value]="configuration?.galleryConfig?.gradientOverlay?.color" [label]="'GradientOverlayColor' | translate" [disabled]="!configuration?.galleryConfig?.useGradientOverlay" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onGalleryFieldChange('gradientOverlay.color',$event)">
+                    </pep-color>
+                    <pep-slider [label]="'GradientOverlayOpacity' | translate" [hint]="configuration?.galleryConfig?.gradientOverlay?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.galleryConfig?.useGradientOverlay" [value]="configuration?.galleryConfig?.gradientOverlay?.opacity" [background]="getSliderBackground(configuration?.galleryConfig?.gradientOverlay?.color)" (valueChange)="onGalleryFieldChange('gradientOverlay.opacity',$event)">
+                    </pep-slider>
+                </div>
+                <div id="dropShadow">
+                    <pep-checkbox [value]="configuration.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onSlideshowFieldChange('dropShadow.useDropShadow',$event)">
+                    </pep-checkbox>
+                    <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
+                    <pep-group-buttons [buttons]="SlideDropShadowStyle" buttonsClass="md regular" (buttonClick)="onSlideshowFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
+                    </pep-group-buttons>
+                    <pep-slider [label]="'ShadowIntensity' | translate" [minValue]="0" [maxValue]="100" (valueChange)="onSlideshowFieldChange('dropShadow.intensity',$event)">
+                    </pep-slider>
+                </div>
+                <!-- <pep-select  [key]="'querySelect'" [label]="'Select a data query'" [value]="this._configuration.query?.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onValueChanged('Query',$event)">
+        </pep-select> -->
+
+            </div>
+
+            <!-- <addon-pepperi-list-exmaple [type]="'Data'" [ID]='0' [isActive]="activeTabIndex === 0" [data]="activeTabIndex === 0 ? currentData : null"></addon-pepperi-list-exmaple> -->
+        </mat-tab>
+        <mat-tab id="2" label="{{'Content' | translate}}">
+            <h2>{{'DataQueries' | translate}}
+            </h2>
+            <div class="queries-containter">
+                <div *ngFor="let qureiesButton of seriesButtons">
+                    <pep-group-buttons [buttons]="qureiesButton" [buttonsDisabled]="false" [viewType]="'split'">
+                    </pep-group-buttons>
+                </div>
+                <pep-button style="width: 4rem;" [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
+            </div>
+
+        </mat-tab>
+        <!-- <mat-tab  id="3" label="{{'SetupTabHeader' | translate}}">
+            <addon-pepperi-list-exmaple [type]="'Setup'" [ID]='2' [isActive]="activeTabIndex === 2" [data]="activeTabIndex === 2 ? currentData : null"></addon-pepperi-list-exmaple>
+        </mat-tab> -->
+
+        <!-- <mat-tab *ngFor="let tab of relationsData; let index = index" [label]="getRelationDataTabLabel(tab)">
+            <addon-pepperi-list-exmaple [type]="'Relation'" [ID]=index+3 [isActive]="activeTabIndex === index+3" [relationsData]="activeTabIndex === index+3 ? tab : null"></addon-pepperi-list-exmaple>
+          </mat-tab> -->
+
+    </mat-tab-group>
+</div>

@@ -1,16 +1,10 @@
 export const QueryExecutionScheme =
 {
-    "type": "object",
+    "type": ["object","null"],
     "properties": {
         "Filter": {
             "type": "object",
-        },
-        "QueryId": {
-            "type": "string"
         }
     },
-    "required": [
-        "QueryId",
-    ],
     "additionalProperties": false
 }

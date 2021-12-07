@@ -4,14 +4,13 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { PepAddonService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
-
-import { DataVisualizationComponent } from './chart-block.component';
+import { ChartComponent } from './chart.component';
 
 import { config } from '../addon.config';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 
 @NgModule({
-    declarations: [DataVisualizationComponent],
+    declarations: [ChartComponent],
     imports: [
         CommonModule,
         PepTopBarModule,
@@ -24,14 +23,14 @@ import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
             }, isolate: false
         }),
     ],
-    exports: [DataVisualizationComponent],
+    exports: [ChartComponent],
     providers: [
         TranslateStore,
         PepCustomizationService
         // Add here all used services.
     ]
 })
-export class DataVisualizationModule {
+export class ChartModule {
     constructor(
         translate: TranslateService,
         private pepAddonService: PepAddonService

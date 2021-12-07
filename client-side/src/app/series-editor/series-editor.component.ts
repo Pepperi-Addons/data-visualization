@@ -30,12 +30,16 @@ export class SeriesEditorComponent implements OnInit {
   accountFilterOptions: Array<PepButton> = [];
   periodOptions: Array<PepButton> = [];
   isLoaded = false;
-  limitNumber = false;
-  useCategories = false;
-  useDynamicSeries = false;
-  useDynamicFilter = false;
+
+  formFlags={
+    useDynamicSeries:false,
+    useCategories: false,
+    useDynamicFilter:false,
+    limitNumber: false
+  }
 
   mode: string = 'Add';
+  seriesEditorType: 'scorecards' | 'chart' = 'chart'
   series: Serie = {
     Key: uuid(),
     Name: '',
@@ -50,18 +54,18 @@ export class SeriesEditorComponent implements OnInit {
         Aggregator: 'Sum',
         FieldID: '',
         Alias: '',
-        Script: ''
+        Script: 'params.Var1'
       }
     ],
     AggregatedParams: [{
       FieldID: '',
       Aggregator: 'Sum',
-      Name: ''
+      Name: 'Var1'
     }],
     BreakBy: {
       FieldID: '',
-      Interval: 'None',
-      Format: ''
+      Interval: 'Month',
+      Format: 'yyyy MMM'
 
     },
     Filter: undefined,
@@ -74,8 +78,8 @@ export class SeriesEditorComponent implements OnInit {
     DynamicFilterFields: [],
     GroupBy: [{
       FieldID: '',
-      Interval: 'None',
-      Format: '',
+      Interval: 'Month',
+      Format: 'yyyy MMM',
       Alias: ''
     }]
 
@@ -86,7 +90,11 @@ export class SeriesEditorComponent implements OnInit {
     'yyyy MMM': 'YearMonth',
     'MMM': 'Month',
     'MMM dd': 'MonthDay',
-    'yyyy MMM dd': 'YearMonthDay'
+    'yyyy MMM dd': 'YearMonthDay',
+    'w':'Week',
+    'w yyyy': 'WeekYear',
+    'q':'Quarter',
+    'q yyyy':'QuarterYear'
   }
   trnsactionLinesFields: any;
   allActivitiesFields: any;
@@ -100,13 +108,20 @@ export class SeriesEditorComponent implements OnInit {
     public pluginService: AddonService,
     @Inject(MAT_DIALOG_DATA) public incoming: any) {
     this.JSON = JSON;
-    if (incoming && incoming.currentSeries) {
+    if (incoming?.currentSeries) {
       this.mode = 'Update';
       this.series = incoming.currentSeries;
-      this.useCategories = this.series.GroupBy[0].FieldID ? true : false;
-      this.useDynamicSeries = this.series.BreakBy.FieldID ? true : false;
-      this.useDynamicFilter = this.series.DynamicFilterFields.length > 0;
-      this.limitNumber = this.series.Top && this.series.Top.Max > 0;
+      this.formFlags.useCategories = this.series.GroupBy[0].FieldID ? true : false;
+      this.formFlags.useDynamicSeries = this.series.BreakBy.FieldID ? true : false;
+      this.formFlags.useDynamicFilter = this.series.DynamicFilterFields.length > 0;
+      this.formFlags.limitNumber = this.series.Top && this.series.Top.Max > 0;
+    }
+    if (incoming?.parent) {
+      this.seriesEditorType = incoming.parent;
+    }
+    // set default name 
+    if (incoming?.seriesName) {
+      this.series.Name = incoming.seriesName;
     }
     this.pluginService.addonUUID = this.routeParams.snapshot.params['addon_uuid'];
   }
@@ -164,6 +179,7 @@ export class SeriesEditorComponent implements OnInit {
 
 
   private fillAggregatorField(fields) {
+    this.aggregationsFieldsOptions = [];
     fields.forEach(field => {
       this.aggregationsFieldsOptions.push({ key: field, value: field });
       if (field.startsWith('Account')) {
@@ -182,8 +198,8 @@ export class SeriesEditorComponent implements OnInit {
   getDataIndexFields() {
     return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'all_activities_fields').toPromise().then((allActivitiesFields) => {
       return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'transaction_lines_fields').toPromise().then((trnsactionLinesFields) => {
-        this.allActivitiesFields = allActivitiesFields.Fields;
-        this.trnsactionLinesFields = trnsactionLinesFields.Fields;
+        this.allActivitiesFields = allActivitiesFields.Fields.sort((one, two) => (one > two ? 1 : -1));
+        this.trnsactionLinesFields = trnsactionLinesFields.Fields.sort((one, two) => (one > two ? 1 : -1));
       });
     });
   }
@@ -191,16 +207,16 @@ export class SeriesEditorComponent implements OnInit {
   onEventCheckboxChanged(eventType, event) {
     switch (eventType) {
       case 'Categories':
-        this.useCategories = event;
+        this.formFlags.useCategories = event;
         break;
       case 'DynamicSeries':
-        this.useDynamicSeries = event;
+        this.formFlags.useDynamicSeries = event;
         break;
       case 'LimitNumberResults':
-        this.limitNumber = event;
+        this.formFlags.limitNumber = event;
         break;
       case 'DynamicFilter':
-        this.useDynamicFilter = event;
+        this.formFlags.useDynamicFilter = event;
         break;
     }
   }
@@ -235,12 +251,24 @@ export class SeriesEditorComponent implements OnInit {
   }
 
   onSave(e) {
-    if (!this.useCategories) {
+    if (!this.formFlags.useCategories) {
       this.series.GroupBy[0].FieldID = '';
       this.series.GroupBy[0].Alias = '';
     }
-    if (!this.useDynamicSeries) {
+    if (!this.formFlags.useDynamicSeries) {
       this.series.BreakBy.FieldID = '';
+    }
+    if (!this.formFlags.limitNumber) {
+      this.series.Top.Max = 0;
+    }
+    if (this.series.GroupBy && this.series.GroupBy[0]?.FieldID && this.series.GroupBy[0]?.FieldID.indexOf("Date") == -1){
+      this.series.GroupBy[0].Interval = 'None';
+      this.series.GroupBy[0].Format = '';
+
+    }
+    if (this.series.BreakBy && this.series.BreakBy?.FieldID.indexOf("Date") == -1){
+      this.series.BreakBy.Interval = 'None';
+      this.series.BreakBy.Format = '';
     }
   }
 
@@ -293,6 +321,15 @@ export class SeriesEditorComponent implements OnInit {
       this.series.Filter = JSON.parse(event)
     } else {
       this.series.Filter = null;
+    }
+  }
+
+  onOrderChanged(event) {
+    if (event === 'Ascending') {
+      this.series.Top.Ascending = true;
+    }
+    else {
+      this.series.Top.Ascending = false;
     }
   }
 }

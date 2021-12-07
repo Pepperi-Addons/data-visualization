@@ -1,21 +1,21 @@
 export class DataQueryResponse {
-    MetaData: SeriesData[];
-    DataSet: { [key: string]: string }[];
+    DataQueries: SeriesData[];
+    DataSet: Map<string, any>[];
 
-    constructor() { 
-        this.MetaData = [];
-        this.DataSet=[];
-     }  
+    constructor() {
+        this.DataQueries = [];
+        this.DataSet = [];
+    }
 }
 export class SeriesData {
     Name: string;
     Groups: string[];
     Series: string[];
 
-    constructor() { 
-        this.Name=''
+    constructor(seriesName) {
+        this.Name = seriesName;
         this.Groups = [];
-        this.Series=[];
-     }  
+        this.Series = [];
+    }
 }
 

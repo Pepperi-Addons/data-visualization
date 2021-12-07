@@ -21,9 +21,9 @@ class ElasticService {
       addonSecretKey: client.AddonSecretKey
     });
   }
+
   MaxAggregationSize = 100;
 
-  //"None","Day", "Week", "Month", "Quarter", "Year"]
   intervalUnitFormat: { [key in Interval]: string } = {
     Day: 'dd',
     Week: 'MM-dd',
@@ -48,101 +48,17 @@ class ElasticService {
 
     let elasticRequestBody = new esb.RequestBodySearch().size(0);
 
-    // concat the dynamic filter with the type filter
-    // const test: JSONFilter =
-    // {
-    //     Operation: 'AND',
-    //     LeftNode: {
-    //         ApiName: 'ElasticSearchType',
-    //         FieldType: 'String',
-    //         Operation: 'IsEqual',
-    //         Values: [query.Resource],
-    //     },
-    //     RightNode: request.body.Filter,
-    // }
-    //console.log(JSON.stringify(toKibanaQuery(undefined).toJSON()));
-    //toApiQueryString(undefined);
-    //elasticRequestBody.query(toKibanaQuery(request.body.Filter));
-    let aggregationsList: { [key: string]: Aggregation[] } = {};
-
-    // handle aggregation by series
-    for (const serie of query.Series) {
-      let aggregations: Aggregation[] = [];
-
-      // handle group by
-      if (serie.GroupBy && serie.GroupBy) {
-        serie.GroupBy.forEach(groupBy => {
-          if (groupBy.FieldID) {
-            aggregations.push(this.buildAggregationQuery(groupBy, aggregations));
-          }
-        });
-      }
-      // handle aggregation by break by
-      if (serie.BreakBy && serie.BreakBy.FieldID) {
-        aggregations.push(this.buildAggregationQuery(serie.BreakBy, aggregations));
-      }
-      else {
-        aggregations.push(this.buildDummyBreakBy());
-
-      }
-      for (let i = 0; i < serie.AggregatedFields.length; i++) {
-        const aggregatedField = serie.AggregatedFields[i];
-
-        let agg;
-        let lastIndex = serie.AggregatedFields.length - 1;
-        const aggName = this.buildAggragationFieldString(aggregatedField);
-        if (aggregatedField.Aggregator === 'Script' && aggregatedField.Script) {
-          let bucketPath = {};
-          let scriptAggs: Aggregation[] = [];
-          serie.AggregatedParams?.forEach(aggregatedParam => {
-            bucketPath[aggregatedParam.Name] = aggregatedParam.Name;
-            scriptAggs.push(this.getAggregator(aggregatedParam, aggregatedParam.Name))
-          });
-
-          scriptAggs.push(esb.bucketScriptAggregation(aggName).bucketsPath(bucketPath).script(aggregatedField.Script));
-          if (i === lastIndex && serie.Top && serie.Top?.Max) {
-            const bucketSortAgg = this.buildBucketSortAggregation(aggName, serie);
-            scriptAggs.push(bucketSortAgg);
-          }
-
-          aggregations[aggregations.length - 1].aggs(scriptAggs)
-
-        }
-        else if (aggregatedField.Aggregator == 'Count') {
-
-        } else {
-
-          agg = this.getAggregator(aggregatedField, aggName);
-          if (i === lastIndex && serie.Top && serie.Top?.Max) {
-            const bucketSortAgg = this.buildBucketSortAggregation(aggName, serie);
-            let aggs = [agg, bucketSortAgg];
-
-            aggregations[aggregations.length - 1].aggs(aggs)
-          } else {
-            aggregations.push(agg);
-          }
-
-        }
-        aggregationsList[serie.Name] = aggregations;
-
-      }
+    if (!query.Series || query.Series.length==0){
+      return new DataQueryResponse();
     }
-    let seriesAggregation: any = [];
-    Object.keys(aggregationsList).forEach((seriesName) => {
-      // build nested aggregations from array of aggregations
-      let aggs: esb.Aggregation = this.buildNestedAggregations(aggregationsList[seriesName]);
-      const series = query.Series.filter(x => x.Name === seriesName)[0];
-      //aggs.aggs([test]);
-      // elastic dont allow Duplicate field for e.g 'transaction_lines' but it can be 2 series with same resource so the name to the aggs is '{resource}:{Name} (The series names is unique)
-      let resourceFilter: Query = esb.termQuery('ElasticSearchType', series.Resource);
-      if (series.Filter && Object.keys(series.Filter).length > 0) {
-        const serializedQuery: Query = toKibanaQuery(series.Filter);
-        resourceFilter = esb.boolQuery().must([resourceFilter, serializedQuery]);
-      }
-      const filterAggregation = esb.filterAggregation(seriesName, resourceFilter).agg(aggs);
-      seriesAggregation.push(filterAggregation);
-    });
-    elasticRequestBody.aggs(seriesAggregation);
+    
+    // handle aggregation by series
+    let aggregationsList: { [key: string]: Aggregation[] } = this.buildSeriesAggregationList(query.Series);;
+
+    // build one query with all series (each aggregation have query and aggs)
+    let queryAggregation: any = this.buildAllSeriesAggregation(aggregationsList, query);
+
+    elasticRequestBody.aggs(queryAggregation);
 
     const body = elasticRequestBody.toJSON();
     console.log(`lambdaBody: ${JSON.stringify(body)}`);
@@ -157,785 +73,133 @@ class ElasticService {
     // const lambdaResponse = {
     //   resultObject: null
     // };
-    let response: DataQueryResponse = this.buildResponseFromElasticResults2(lambdaResponse.resultObject, query);
+
+    let response: DataQueryResponse = this.buildResponseFromElasticResults(lambdaResponse.resultObject, query);
 
     return response;
   }
 
-  buildDummyBreakBy(): esb.Aggregation {
+  private buildAllSeriesAggregation(aggregationsList: { [key: string]: esb.Aggregation[]; }, query: DataQuery) {
+    let queryAggregation: any = [];
 
-    let query: Aggregation = esb.termsAggregation('DummyBreakBy').script(esb.script('inline', "'test'"));
+    Object.keys(aggregationsList).forEach((seriesName) => {
+
+      // build nested aggregations from array of aggregations for each series
+      let seriesAggregation: esb.Aggregation = this.buildNestedAggregations(aggregationsList[seriesName]);
+      const series = query.Series.filter(x => x.Name === seriesName)[0];
+
+      // handle filter per series - merge resource filter per series and the filter object to one filter with 'AND' operation ("must" in DSL)
+      let resourceFilter: Query = esb.termQuery('ElasticSearchType', series.Resource);
+
+      if (series.Filter && Object.keys(series.Filter).length > 0) {
+        const serializedQuery: Query = toKibanaQuery(series.Filter);
+        resourceFilter = esb.boolQuery().must([resourceFilter, serializedQuery]);
+      }
+
+      const filterAggregation = esb.filterAggregation(seriesName, resourceFilter).agg(seriesAggregation);
+      queryAggregation.push(filterAggregation);
+    });
+
+    return queryAggregation;
+  }
+
+  private buildSeriesAggregationList(series) {
+
+    let aggregationsList: { [key: string]: Aggregation[] } = {};
+
+    for (const serie of series) {
+      let aggregations: Aggregation[] = [];
+
+      // First level - handle group by of each series
+      if (serie.GroupBy && serie.GroupBy) {
+        serie.GroupBy.forEach(groupBy => {
+          if (groupBy.FieldID) {
+            aggregations.push(this.buildAggregationQuery(groupBy, aggregations));
+          }
+        });
+      }
+
+      // Second level handle break by - if no break by - create dummy break by becuase we works on buckets
+      if (serie.BreakBy && serie.BreakBy.FieldID) {
+        aggregations.push(this.buildAggregationQuery(serie.BreakBy, aggregations));
+      }
+      else {
+        aggregations.push(this.buildDummyBreakBy());
+      }
+
+      // Third level - handle aggregated fields
+      for (let i = 0; i < serie.AggregatedFields.length; i++) {
+        const aggregatedField = serie.AggregatedFields[i];
+        let agg;
+
+        let lastIndex = serie.AggregatedFields.length - 1;
+
+        const aggName = this.buildAggragationFieldString(aggregatedField);
+
+        // if its script aggregation - we need more than one aggregation so we build the script aggs with its params
+        if (aggregatedField.Aggregator === 'Script' && aggregatedField.Script) {
+          let bucketPath = {};
+          let scriptAggs: Aggregation[] = [];
+          serie.AggregatedParams?.forEach(aggregatedParam => {
+            bucketPath[aggregatedParam.Name] = aggregatedParam.Name;
+            scriptAggs.push(this.getAggregator(aggregatedParam, aggregatedParam.Name));
+          });
+
+          scriptAggs.push(esb.bucketScriptAggregation(aggName).bucketsPath(bucketPath).script(aggregatedField.Script));
+
+          // If its the last aggregated fields we need bucket sort aggregation in the last level
+          if (i === lastIndex && serie.Top && serie.Top?.Max) {
+            const bucketSortAgg = this.buildBucketSortAggregation(aggName, serie);
+            scriptAggs.push(bucketSortAgg);
+          }
+          aggregations[aggregations.length - 1].aggs(scriptAggs);
+
+        } else {
+
+          agg = this.getAggregator(aggregatedField, aggName);
+
+          if (i === lastIndex && serie.Top && serie.Top?.Max) {
+            const bucketSortAgg = this.buildBucketSortAggregation(aggName, serie);
+            let aggs = [agg, bucketSortAgg];
+            aggregations[aggregations.length - 1].aggs(aggs);
+
+          } else {
+            aggregations.push(agg);
+          }
+
+        }
+        aggregationsList[serie.Name] = aggregations;
+
+      }
+    }
+    return aggregationsList;
+  }
+
+  buildDummyBreakBy(): esb.Aggregation {
+    let query: Aggregation = esb.termsAggregation('DummyBreakBy').script(esb.script('inline', "'DummyBreakBy'"));
     return query;
   }
 
-  private getAggUniqueName(serie: Serie) {
-    return `${serie.Resource}:${serie.Name}`;
-  }
-
   private buildBucketSortAggregation(aggName, serie) {
-    const order = serie.Top.Ascending ? 'asc' : 'desc';
+    const order = serie.Top.Ascending === true ? 'asc' : 'desc';
     return esb.bucketSortAggregation('sort').sort([esb.sort(aggName, order)]).size(serie.Top.Max)
   }
-  private buildResponseFromElasticResults2(lambdaResponse, query: DataQuery) {
+
+  private buildResponseFromElasticResults(lambdaResponse, query: DataQuery) {
 
     // lambdaResponse = {
     //   "aggregations" : {
-    //     "average" : {
+    //     "Series 1" : {
     //       "doc_count" : 131,
-    //       "Transaction.ActionDateTime" : {
+    //       "DummyBreakBy" : {
+    //         "doc_count_error_upper_bound" : 0,
+    //         "sum_other_doc_count" : 0,
     //         "buckets" : [
     //           {
-    //             "key_as_string" : "Feb",
-    //             "key" : 1485907200000,
-    //             "doc_count" : 1,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 1,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 304000.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 304000.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Mar",
-    //             "key" : 1488326400000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Apr",
-    //             "key" : 1491004800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "May",
-    //             "key" : 1493596800000,
-    //             "doc_count" : 3,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 3,
-    //                   "count" : {
-    //                     "value" : 2
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 912000.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 456000.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jun",
-    //             "key" : 1496275200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jul",
-    //             "key" : 1498867200000,
-    //             "doc_count" : 11,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 11,
-    //                   "count" : {
-    //                     "value" : 2
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 246323.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 123161.5
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Aug",
-    //             "key" : 1501545600000,
-    //             "doc_count" : 1,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 1,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 28532.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 28532.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Sep",
-    //             "key" : 1504224000000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Oct",
-    //             "key" : 1506816000000,
-    //             "doc_count" : 2,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 2,
-    //                   "count" : {
-    //                     "value" : 2
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 215899.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 107949.5
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Nov",
-    //             "key" : 1509494400000,
-    //             "doc_count" : 32,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 32,
-    //                   "count" : {
-    //                     "value" : 5
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 609638.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 121927.6
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Dec",
-    //             "key" : 1512086400000,
-    //             "doc_count" : 1,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 1,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 10532.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 10532.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jan",
-    //             "key" : 1514764800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Feb",
-    //             "key" : 1517443200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Mar",
-    //             "key" : 1519862400000,
-    //             "doc_count" : 46,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 46,
-    //                   "count" : {
-    //                     "value" : 20
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 436207.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 21810.35
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Apr",
-    //             "key" : 1522540800000,
-    //             "doc_count" : 3,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 3,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 1797.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 1797.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "May",
-    //             "key" : 1525132800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jun",
-    //             "key" : 1527811200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jul",
-    //             "key" : 1530403200000,
-    //             "doc_count" : 21,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 21,
-    //                   "count" : {
-    //                     "value" : 10
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 60279.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 6027.9
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Aug",
-    //             "key" : 1533081600000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Sep",
-    //             "key" : 1535760000000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Oct",
-    //             "key" : 1538352000000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Nov",
-    //             "key" : 1541030400000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Dec",
-    //             "key" : 1543622400000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jan",
-    //             "key" : 1546300800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Feb",
-    //             "key" : 1548979200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Mar",
-    //             "key" : 1551398400000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Apr",
-    //             "key" : 1554076800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "May",
-    //             "key" : 1556668800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jun",
-    //             "key" : 1559347200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jul",
-    //             "key" : 1561939200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Aug",
-    //             "key" : 1564617600000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Sep",
-    //             "key" : 1567296000000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Oct",
-    //             "key" : 1569888000000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Nov",
-    //             "key" : 1572566400000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Dec",
-    //             "key" : 1575158400000,
-    //             "doc_count" : 1,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 1,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 719.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 719.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jan",
-    //             "key" : 1577836800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Feb",
-    //             "key" : 1580515200000,
-    //             "doc_count" : 1,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 1,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 654.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 654.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Mar",
-    //             "key" : 1583020800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Apr",
-    //             "key" : 1585699200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "May",
-    //             "key" : 1588291200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jun",
-    //             "key" : 1590969600000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jul",
-    //             "key" : 1593561600000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Aug",
-    //             "key" : 1596240000000,
-    //             "doc_count" : 3,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 3,
-    //                   "count" : {
-    //                     "value" : 2
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 1977.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 988.5
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Sep",
-    //             "key" : 1598918400000,
-    //             "doc_count" : 1,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 1,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 359.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 359.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Oct",
-    //             "key" : 1601510400000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Nov",
-    //             "key" : 1604188800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Dec",
-    //             "key" : 1606780800000,
-    //             "doc_count" : 2,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 2,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 2098.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 2098.0
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jan",
-    //             "key" : 1609459200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Feb",
-    //             "key" : 1612137600000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Mar",
-    //             "key" : 1614556800000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Apr",
-    //             "key" : 1617235200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "May",
-    //             "key" : 1619827200000,
-    //             "doc_count" : 0,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [ ]
-    //             }
-    //           },
-    //           {
-    //             "key_as_string" : "Jun",
-    //             "key" : 1622505600000,
-    //             "doc_count" : 2,
-    //             "DummyBreakBy" : {
-    //               "doc_count_error_upper_bound" : 0,
-    //               "sum_other_doc_count" : 0,
-    //               "buckets" : [
-    //                 {
-    //                   "key" : "test",
-    //                   "doc_count" : 2,
-    //                   "count" : {
-    //                     "value" : 1
-    //                   },
-    //                   "sum" : {
-    //                     "value" : 638.0
-    //                   },
-    //                   "Script" : {
-    //                     "value" : 638.0
-    //                   }
-    //                 }
-    //               ]
+    //             "key" : "DummyBreakBy",
+    //             "doc_count" : 131,
+    //             "TransactionSubTotal_Sum" : {
+    //               "value" : 2831652.0
     //             }
     //           }
     //         ]
@@ -945,57 +209,65 @@ class ElasticService {
     // }
 
     let response: DataQueryResponse = new DataQueryResponse();
+
     query.Series.forEach(series => {
-      let seriesData = new SeriesData();
-      seriesData.Name = series.Name;
 
-      const resourceAggs = lambdaResponse.aggregations[series.Name];
+      let seriesData = new SeriesData(series.Name);
+
+      const seriesAggregation = lambdaResponse.aggregations[series.Name];
+
       if (series.GroupBy && series.GroupBy[0].FieldID) {
+
         series.GroupBy.forEach(groupBy => {
+          let groupByString = groupBy.FieldID;
+
           if (groupBy.Alias) {
-            seriesData.Groups.push(groupBy.Alias);
-          } else {
-            seriesData.Groups.push(this.cutDotNotation(groupBy.FieldID));
+            groupByString = groupBy.Alias;
           }
-          resourceAggs[groupBy.FieldID].buckets.forEach(bucketsGroupBy => {
+
+          seriesData.Groups.push(groupByString);
+          seriesAggregation[groupBy.FieldID].buckets.forEach(groupBybuckets => {
+
+            const seriesName = this.getKeyAggregationName(groupBybuckets).toString();
             const dataSet = {};
-            const seriesName = this.getKeyAggregationName(bucketsGroupBy); // hallmark
-            dataSet[this.cutDotNotation(groupBy.FieldID)] = seriesName;
-            if (series.BreakBy && series.BreakBy.FieldID) {
-
-              this.handleAggregatorsFieldsWithBreakBy(bucketsGroupBy[series.BreakBy.FieldID], series, response, dataSet, seriesData);
-            }
-            else {
-              this.handleAggregatorsFieldsWithBreakBy(bucketsGroupBy['DummyBreakBy'], series, response, dataSet, seriesData);
-
-            }
-            response.DataSet.push(dataSet)
+        
+            dataSet[groupByString] = seriesName;
+            this.handleBreakBy(series, groupBybuckets, response, dataSet, seriesData);
           });
         });
 
       }
-      else if (series.BreakBy?.FieldID) {
+      else {
         let dataSet = {};
-
-        this.handleAggregatorsFieldsWithBreakBy(resourceAggs[series.BreakBy.FieldID], series, response, dataSet, seriesData);
-
-        response.DataSet.push(dataSet);
-
-      } else {
-        const dataSet = {};
-        this.handleAggregatorsFieldsWithBreakBy(resourceAggs['DummyBreakBy'], series, response, dataSet, seriesData);
-        response.DataSet.push(dataSet);
-
+        this.handleBreakBy(series, seriesAggregation, response, dataSet, seriesData);
       }
-      response.MetaData.push(seriesData);
+
+      response.DataQueries.push(seriesData);
     });
 
     return response;
   }
 
-  private handleAggregatorsFieldsWithBreakBy(breakBy: any, series: Serie, response: DataQueryResponse, dataSet: {}, seriesData) {
+  private handleBreakBy(series: Serie, groupBybuckets: any, response: DataQueryResponse, dataSet, seriesData: SeriesData) {
+    if (series.BreakBy && series.BreakBy.FieldID) {
+      this.handleAggregatorsFieldsWithBreakBy(groupBybuckets[series.BreakBy.FieldID], series, dataSet, seriesData);
+    }
+    else {
+      this.handleAggregatorsFieldsWithBreakBy(groupBybuckets['DummyBreakBy'], series, dataSet, seriesData);
+    }
+    response.DataSet.push(dataSet);
+  }
+
+  private handleAggregatorsFieldsWithBreakBy(breakBy: any, series: Serie, dataSet:Map<string,any>, seriesData) {
     breakBy.buckets.forEach(bucket => {
-      const seriesName = this.getKeyAggregationName(bucket);
+      let seriesName;
+      seriesName = this.getKeyAggregationName(bucket);
+      if (seriesName === 'DummyBreakBy'){
+        seriesName = series.Name;
+      }
+      if (series.Label){
+        seriesName = this.buildDataSetKeyString(seriesName,series.Label);
+      }
       if (seriesData.Series.indexOf(seriesName) == -1) {
         seriesData.Series.push(seriesName);
       }
@@ -1004,13 +276,10 @@ class ElasticService {
     });
   }
 
-
-
-  private handleAggregatedFields(seriesName, seriesLabel, seriesAggregation, aggregatedFields, dataSet) {
+  private handleAggregatedFields(seriesName, seriesLabel, seriesAggregation, aggregatedFields, dataSet:Map<string,any>) {
     aggregatedFields.forEach((aggregatedField) => {
 
       const keyString = this.buildAggragationFieldString(aggregatedField);
-      const dataSetKeyString = this.buildDataSetKeyString(seriesName, seriesLabel);
       let val;
       if (seriesAggregation[keyString]?.value) {
         val = seriesAggregation[keyString].value;
@@ -1019,44 +288,8 @@ class ElasticService {
         val = seriesAggregation.doc_count;
 
       }
-      dataSet[dataSetKeyString] = val;
+      dataSet[seriesName] = val;
     })
-  }
-
-
-  private extractTermAggregation(bucket: any, keyString: string, query: DataQuery, response: DataQueryResponse) {
-    let dataSet = {};
-    const keyName = this.getKeyAggregationName(bucket);
-    dataSet[keyString] = keyName;
-    query.Series.forEach(series => {
-      if (series.BreakBy) {
-        bucket[series.BreakBy.FieldID].buckets.forEach(serieBucket => {
-          this.handleAggregationFields(series, serieBucket, response, dataSet);
-        });
-      } else {
-        this.handleAggregationFields(series, bucket, response, dataSet);
-      }
-      response.DataSet.push(dataSet);
-    });
-  }
-
-  private handleAggregationFields(series: Serie, serieBucket: any, response: DataQueryResponse, dataSet: {}) {
-    series.AggregatedFields.forEach(aggregationField => {
-
-      const keyName = this.getKeyAggregationName(serieBucket);;
-      const keyString = this.cutDotNotation(keyName);
-
-      // if the series already exists in series - dont add it
-      if (response.MetaData[series.Name].Series.indexOf(keyString) == -1) {
-        response.MetaData[series.Name].Series.push(keyString);
-      }
-      const aggName = this.buildAggragationFieldString(aggregationField);
-      dataSet[keyString] = serieBucket[aggName].value;
-    });
-  }
-
-  private cutDotNotation(key: string) {
-    return key.replace('.', '');
   }
 
   private getKeyAggregationName(bucket: any) {
@@ -1115,8 +348,7 @@ class ElasticService {
   }
 
   buildDataSetKeyString(keyName: string, pattern: string) {
-    const key = pattern.replace('${label}', keyName);
-    return this.cutDotNotation(key);
+    return pattern.replace('${label}', keyName);
   }
 
   private getAggregator(aggregatedField: AggregatedField, aggName: string) {
@@ -1128,6 +360,9 @@ class ElasticService {
       case 'CountDistinct':
         agg = esb.cardinalityAggregation(aggName, aggregatedField.FieldID);
         break;
+      case 'Count':
+        agg = esb.valueCountAggregation(aggName, '_id');
+        break;
       case 'Average':
         agg = esb.avgAggregation(aggName, aggregatedField.FieldID);
         break;
@@ -1138,17 +373,17 @@ class ElasticService {
 
   private async getUserDefinedQuery(request: Request) {
 
-    const queryKey = request.body.QueryId;
+    const queryKey = request.query.key;
 
     if (!queryKey) {
-      throw new Error(`Missing request parameters: query_id`);
+      throw new Error(`Missing request parameters: key`);
     }
 
     const adal = this.papiClient.addons.data.uuid(config.AddonUUID).table(DATA_QUREIES_TABLE_NAME);
     const query = await adal.key(queryKey).get();
 
     if (!query) {
-      throw new Error(`Invalid request parameters: query_id`);
+      throw new Error(`Invalid request parameters: key`);
     }
     return <DataQuery>query;
   }

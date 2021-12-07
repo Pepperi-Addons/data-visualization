@@ -2,17 +2,18 @@ import { TranslateService } from '@ngx-translate/core';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import 'systemjs'
 import 'systemjs-babel'
+import { PepAddonService } from '@pepperi-addons/ngx-lib';
+import { config } from '../addon.config';
 
 @Component({
-    selector: 'chart-block',
-    templateUrl: './chart-block.component.html',
-    styleUrls: ['./chart-block.component.scss']
+    selector: 'chart',
+    templateUrl: './chart.component.html',
+    styleUrls: ['./chart.component.scss']
 })
-export class DataVisualizationComponent implements OnInit {
+export class ChartComponent implements OnInit {
 
     _hostObject;
     existing: any;
-    data;
     chartID;
     isLibraryAlreadyLoaded = {};
     @Input('hostObject')
@@ -22,25 +23,23 @@ export class DataVisualizationComponent implements OnInit {
     set hostObject(value) {
 
         // If only things of meta data have changed, like 'label',there is no need to redraw the graph
-        const newChart = value.configuration?.chart?.Key;
-        const newData = value.configuration?.data;
-      
+        // const newChart = value.configuration?.chart?.Key;
+        // const newData = value.configuration?.data;
+
         this._hostObject = value;
-        const needToChangeChart = !(newChart && this.chartID && newData && this.data && newChart == this.chartID &&
-                                        JSON.stringify(newData) == JSON.stringify(this.data))
-        if (!needToChangeChart) {
-            return;
-        }
-        if (newChart && newData) {
+        // const needToChangeChart = !(newChart && this.chartID && newData && this.data && newChart == this.chartID &&
+        //                                 JSON.stringify(newData) == JSON.stringify(this.data))
+        // if (!needToChangeChart) {
+        //     return;
+        // }
+        if (value.configuration?.chart?.Key && value.configuration?.query.Key && value.configuration?.query?.Series && value.configuration?.query?.Series.length > 0) {
 
             this.drawChart(this._hostObject.configuration);
         }
         else {
             this.deleteChart();
         }
-        this.chartID=value.configuration?.chart?.Key;
-        this.data=value.configuration?.data;
-
+        this.chartID = value.configuration?.chart?.Key;
     }
 
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
@@ -49,7 +48,7 @@ export class DataVisualizationComponent implements OnInit {
 
     oldDefine: any;
 
-    constructor(private translate: TranslateService) { }
+    constructor(private translate: TranslateService, private addonService: PepAddonService) { }
 
     ngOnInit(): void {
         // When finish load raise block-loaded.
@@ -59,30 +58,35 @@ export class DataVisualizationComponent implements OnInit {
     ngOnChanges(e: any): void {
     }
 
+    async executeQuery(queryID) {
+        const params = {
+            key: queryID
+        };
+        return this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', null, { params: params }).toPromise();
+    }
+
     drawChart(configuration: any) {
-        try {
+        this.executeQuery(configuration.query.Key).then((data) => {
             debugger;
             System.import(configuration.chart.ScriptURI).then((res) => {
                 const configuration = {
                     label: 'Sales'
                 }
-
-
                 this.loadSrcJSFiles(res.deps).then(() => {
                     this.chartInstance = new res.default(this.divView.nativeElement, configuration);
-                    this.chartInstance.data = this.hostObject.configuration.data;
+                    this.chartInstance.data = data;
                     this.chartInstance.update();
 
                 }).catch(err => {
-                    console.log(err);
+                    this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
                 })
             }).catch(err => {
-                console.log(err);
+                this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chart.ScriptURI}, error: ${err}`;
             });
-        }
-        catch (err) {
+        }).catch((err) => {
+            this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query.Key} , error: ${err}`;;
+        })
 
-        }
     }
 
     getRandomNumber() {
@@ -128,6 +132,7 @@ export class DataVisualizationComponent implements OnInit {
     }
 
     deleteChart() {
-        this.chartInstance = undefined;
+        if (this.divView)
+            this.divView.nativeElement.innerHTML = "";
     }
 }

@@ -40,8 +40,8 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
     // If there is any change run migration code here
-    // const res = await runMigration(client);
-    // return {success:true,resultObject:{res}}
+    const res = await runMigration(client);
+    return {success:true,resultObject:{res}}
     
     return {success:true,resultObject:{}}
 }
@@ -52,7 +52,7 @@ export async function downgrade(client: Client, request: Request): Promise<any> 
 
 async function runMigration(client){
     try {
-        const blockName = 'DataVisualization';
+        let blockName = 'Chart';
 
         const pageComponentRelation: Relation = {
             RelationName: "PageBlock",
@@ -61,7 +61,22 @@ async function runMigration(client){
             Type: "NgComponent",
             SubType: "NG11",
             AddonUUID: client.AddonUUID,
-            AddonRelativeURL: 'data_visualization', 
+            AddonRelativeURL: 'chart', 
+            ComponentName: `${blockName}Component`, 
+            ModuleName: `${blockName}Module`, 
+            EditorComponentName: `${blockName}EditorComponent`, 
+            EditorModuleName: `${blockName}EditorModule`
+        };
+        blockName = 'Scorecards';
+     
+        const ScorecardsComponentRelation: Relation = {
+            RelationName: "PageBlock",
+            Name: blockName, 
+            Description: `Scorecards`, 
+            Type: "NgComponent",
+            SubType: "NG11",
+            AddonUUID: client.AddonUUID,
+            AddonRelativeURL: 'scorecards', 
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
@@ -69,8 +84,10 @@ async function runMigration(client){
         };
 
         const service = new MyService(client);
-        const result = await service.upsertRelation(pageComponentRelation);
-        return { success:true, resultObject: result };
+        await service.upsertRelation(pageComponentRelation);
+        await service.upsertRelation(ScorecardsComponentRelation);
+
+        return { success:true, resultObject: null };
     } catch(err) {
         return { success: false, resultObject: err };
     }

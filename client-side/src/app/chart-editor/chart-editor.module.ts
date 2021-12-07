@@ -6,7 +6,7 @@ import { PepAddonService, PepCustomizationService, PepFileService } from '@peppe
 import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 import { PepSelectModule } from '@pepperi-addons/ngx-lib/select';
 import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
-import { DataVisualizationEditorComponent } from './data-visualization-editor.component';
+import { ChartEditorComponent } from './chart-editor.component';
 import { PepGroupButtonsModule } from '@pepperi-addons/ngx-lib/group-buttons';
 import { PepTextareaModule } from '@pepperi-addons/ngx-lib/textarea';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -23,7 +23,7 @@ const pepIcons = [
 ];
 
 @NgModule({
-    declarations: [DataVisualizationEditorComponent],
+    declarations: [ChartEditorComponent],
     imports: [
         PepSelectModule,
         PepTextboxModule,
@@ -44,7 +44,7 @@ const pepIcons = [
             }, isolate: false
         }),
     ],
-    exports: [DataVisualizationEditorComponent],
+    exports: [ChartEditorComponent],
     providers: [
         TranslateStore,
         AddonService,
@@ -56,7 +56,7 @@ const pepIcons = [
         PepFileService,
     ]
 })
-export class DataVisualizationEditorModule {
+export class ChartEditorModule {
     constructor(
         translate: TranslateService,
         private pepAddonService: PepAddonService,

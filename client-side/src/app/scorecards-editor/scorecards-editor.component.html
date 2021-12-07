@@ -1,0 +1,26 @@
+<div pep-main-area style="height: inherit">
+    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="100ms">
+        <mat-tab id="1" label="{{'General' | translate}}">
+            <div *ngIf="blockLoaded">
+                <pep-checkbox [value]="useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onSlideshowFieldChange('dropShadow.useDropShadow',$event)">
+                </pep-checkbox>
+                <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
+                <pep-group-buttons [buttons]="SlideDropShadowStyle" buttonsClass="md regular" (buttonClick)="onSlideshowFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
+                </pep-group-buttons>
+                <pep-slider [label]="'ShadowIntensity' | translate" [minValue]="0" [maxValue]="100" (valueChange)="onSlideshowFieldChange('dropShadow.intensity',$event)">
+                </pep-slider>
+            </div>
+        </mat-tab>
+        <mat-tab id="2" label="{{'Content' | translate}}">
+            <h2>{{'DataQueries' | translate}}
+            </h2>
+            <div class="queries-containter">
+                <div *ngFor="let qureiesButton of seriesButtons">
+                    <pep-group-buttons [buttons]="qureiesButton" [buttonsDisabled]="false" [viewType]="'split'">
+                    </pep-group-buttons>
+                </div>
+                <pep-button style="width: 4rem;" [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+</div>

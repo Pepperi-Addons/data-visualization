@@ -10,11 +10,23 @@
     align-items:flex-end;
 
 }
+.margin3{
+    margin: 3px;
+}
 .flex-gap{
     display: flex; gap: 0.5rem;
 }
 .flex{
-    flex: 1;
+    flex-basis: 50%;
+}
+.flex25{
+    flex-basis: 25%;
+}
+.flex5{
+    flex-basis: 5%;
+}
+.flex22{
+    flex-basis: 22.5%;
 }
 .half-width{
     width: 50%;

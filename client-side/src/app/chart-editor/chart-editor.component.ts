@@ -8,18 +8,21 @@ import { AddonService } from '../addon.service';
 import { config } from '../addon.config';
 import { DataQuery, Serie } from '../../../../server-side/models/data-query';
 import { SeriesEditorComponent } from '../series-editor/series-editor.component';
+import { Overlay } from '../models/overlay ';
+
 import { PepDialogActionButton, PepDialogData, PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { MatDialogRef } from '@angular/material/dialog';
 import { v4 as uuid } from 'uuid';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { DataVisualizationService } from 'src/services/data-visualization.service';
 
 @Component({
-    selector: 'data-visualization-editor',
-    templateUrl: './data-visualization-editor.component.html',
-    styleUrls: ['./data-visualization-editor.component.scss']
+    selector: 'chart-editor',
+    templateUrl: './chart-editor.component.html',
+    styleUrls: ['./chart-editor.component.scss']
 })
 
-export class DataVisualizationEditorComponent implements OnInit {
+export class ChartEditorComponent implements OnInit {
 
     private _hostObject: any
     @Input()
@@ -38,13 +41,13 @@ export class DataVisualizationEditorComponent implements OnInit {
     _configuration = {
         chart: null,
         query: null,
-        label: '',
-        data: null
+        label: ''
     };
 
     get configuration() {
         return this._configuration;
     }
+    enableLabel = false;
     activeTabIndex = 0;
     charts: any;
     dialogRef: MatDialogRef<any>;
@@ -62,6 +65,7 @@ export class DataVisualizationEditorComponent implements OnInit {
         public route: ActivatedRoute,
         private translate: TranslateService,
         private dialogService: PepDialogService,
+        private dataVisualizationService: DataVisualizationService,
         public pluginService: AddonService) {
         this.pluginService.addonUUID = this.routeParams.snapshot.params['addon_uuid'];
     }
@@ -75,16 +79,19 @@ export class DataVisualizationEditorComponent implements OnInit {
 
         this.fillChartsOptions().then(() => {
             const queryID = this.configuration?.query?.Key;
+            this.enableLabel = this.configuration?.label ? true : false;
             if (queryID) {
                 this.getSeriesByKey(queryID).then((res) => {
                     this._configuration.query = res[0];
                     this.blockLoaded = true;
                     this.buildSeriesButtons();
-                    this.executeQuery().then((res) => {
-                        this._configuration.data = res;
-                        this.updateHostObject();
+                    this.updateHostObject();
 
-                    })
+                    // this.executeQuery().then((res) => {
+                    //     this._configuration.data = res;
+                    //     this.updateHostObject();
+
+                    // })
                     this.hostEvents.emit({ action: 'block-editor-loaded' });
                 })
             } else {
@@ -105,8 +112,8 @@ export class DataVisualizationEditorComponent implements OnInit {
 
     }
     getSeriesByKey(Key: string) {
-        const params = { where: `Key=${Key}` };
-        return this.addonService.getAddonApiCall(config.AddonUUID, 'api', 'queries', params).toPromise()
+        const params = { where: `Key='${Key}'` };
+        return this.addonService.getAddonApiCall(config.AddonUUID, 'api', 'queries', { params: params }).toPromise()
 
     }
 
@@ -115,7 +122,12 @@ export class DataVisualizationEditorComponent implements OnInit {
 
     private fillChartsOptions() {
         return this.addonService.getAddonApiCall('3d118baf-f576-4cdb-a81e-c2cc9af4d7ad', 'api', 'charts').toPromise().then((charts) => {
-            this.charts = charts;
+            this.charts = charts.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
+            if (!this._configuration.chart) {
+                // set the first chart to be default
+                const firstChart = this.charts[0];
+                this._configuration.chart = firstChart;
+            }
             charts.forEach(chart => {
                 this.chartsOptions.push({ key: chart.Key, value: chart.Name });
             });
@@ -162,7 +174,6 @@ export class DataVisualizationEditorComponent implements OnInit {
         this.hostEvents.emit({
             action: 'set-configuration',
             configuration: this.configuration,
-
         });
     }
 
@@ -183,12 +194,8 @@ export class DataVisualizationEditorComponent implements OnInit {
                 break;
         }
 
-        promise.then((res) => {
-            if (type && type === 'Query') {
-                this._configuration.data = res;
-            }
-            this.updateHostObject();
-        })
+        this.updateHostObject();
+
 
     }
 
@@ -207,6 +214,9 @@ export class DataVisualizationEditorComponent implements OnInit {
     }
 
     onEventCheckboxChanged(eventType, event) {
+        if (eventType === 'Label') {
+            this.enableLabel = event;
+        }
 
     }
 
@@ -216,10 +226,14 @@ export class DataVisualizationEditorComponent implements OnInit {
             className: "",
             callback: null,
         };
+        const seriesCount = this._configuration.query?.Series?.length ? this._configuration.query?.Series?.length : 0
         const input = {
-            currentSeries: series
+            currentSeries: series,
+            parent: 'chart',
+            seriesName: series?.Name ? series.Name : `Series ${seriesCount + 1}`
+
         }
-        this.openDialog(this.translate.instant('EditSeries'), SeriesEditorComponent, actionButton, input, (seriesToAddOrUpdate) => {
+        this.openDialog(this.translate.instant('EditQuery'), SeriesEditorComponent, actionButton, input, (seriesToAddOrUpdate) => {
             if (seriesToAddOrUpdate) {
                 this.updateQuerySeries(seriesToAddOrUpdate);
                 this.addonService.postAddonApiCall(
@@ -229,10 +243,12 @@ export class DataVisualizationEditorComponent implements OnInit {
                     this._configuration.query).toPromise().then((res) => {
                         this._configuration.query = res;
                         this.buildSeriesButtons();
-                        this.executeQuery().then((res) => {
-                            this._configuration.data = res;
-                            this.updateHostObject();
-                        })
+                        this.updateHostObject();
+
+                        // this.executeQuery().then((res) => {
+                        //     this._configuration.data = res;
+                        //     this.updateHostObject();
+                        // })
 
                     })
             }
@@ -251,13 +267,6 @@ export class DataVisualizationEditorComponent implements OnInit {
             }
             this._configuration.query.Series.push(seriesToAddOrUpdate);
         }
-    }
-
-    async executeQuery() {
-        const body = {
-            QueryId: this._configuration.query.Key
-        };
-        return this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', body).toPromise();
     }
 
     openDialog(title, content, buttons, input, callbackFunc = null): void {
@@ -292,13 +301,15 @@ export class DataVisualizationEditorComponent implements OnInit {
             this._configuration.query.Series.splice(idx, 1);
         }
 
-        this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this._configuration.query.Series).toPromise().then((res) => {
+        this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this._configuration.query).toPromise().then((res) => {
             this._configuration.query = res;
             this.buildSeriesButtons();
-            this.executeQuery().then((res) => {
-                this._configuration.data = res;
-                this.updateHostObject();
-            })
+            this.updateHostObject();
+
+            // this.executeQuery().then((res) => {
+            //     this._configuration.data = res;
+            //     this.updateHostObject();
+            // })
         });
     }
 
@@ -326,5 +337,19 @@ export class DataVisualizationEditorComponent implements OnInit {
                 },
             ]);
         });
+    }
+
+    getSliderBackground(color){
+        if (!color) return;
+        let alignTo = 'right';
+
+        let col: Overlay = new Overlay();
+
+        col.color = color;
+        col.opacity = '100';
+
+        let gradStr = this.dataVisualizationService.getRGBAcolor(col,0) +' , '+ this.dataVisualizationService.getRGBAcolor(col);
+        
+        return 'linear-gradient(to ' + alignTo +', ' +  gradStr +')';
     }
 }

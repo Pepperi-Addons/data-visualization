@@ -5,6 +5,7 @@ import config from '../../addon.config.json'
 import { DATA_QUREIES_TABLE_NAME, Interval, Intervals, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../models/data-query';
 import { validate } from 'jsonschema';
 import { QueriesScheme } from '../models/queries-scheme';
+import jwtDecode from 'jwt-decode';
 
 class QueryService {
 
@@ -94,6 +95,3 @@ class QueryService {
 
 export default QueryService;
 
-function jwtDecode(OAuthAccessToken: string): any {
-    throw new Error('Function not implemented.');
-}

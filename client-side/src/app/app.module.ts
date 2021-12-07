@@ -1,15 +1,16 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
-import { DataVisualizationModule } from './block/chart-block.module';
-import { SeriesEditorComponent } from './series-editor/series-editor.component';
+import { ChartModule } from './chart/chart.module';
 import { SeriesEditorModule } from './series-editor';
+import { ScorecardsModule } from './scorecards';
 
 @NgModule({
     imports: [
         BrowserModule,
-        DataVisualizationModule,
-        SeriesEditorModule
+        ChartModule,
+        SeriesEditorModule,
+        ScorecardsModule,
     ],
     declarations: [
         AppComponent,
