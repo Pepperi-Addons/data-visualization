@@ -32,12 +32,18 @@ export class ScorecardsEditorComponent implements OnInit {
     }
   }
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
+  public PepSizes: Array<PepButton> = [];
 
   label = false;
   _configuration = {
     chart: null,
     query: null,
-    label: ''
+    label: '',
+    useBorder: false,
+    useDropshadow: false,
+    useText: false,
+    titleSize:'xl',
+    valueSize:'xl'
   };
 
   get configuration() {
@@ -65,6 +71,12 @@ export class ScorecardsEditorComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.PepSizes = [
+      { key: 'sm', value: this.translate.instant('SM') },
+      { key: 'md', value: this.translate.instant('MD') },
+      { key: 'lg', value: this.translate.instant('LG') },
+      { key: 'xl', value: this.translate.instant('XL') }
+  ]
 
     this.SlideDropShadowStyle = [
       { key: 'Soft', value: this.translate.instant('Soft') },
@@ -91,6 +103,18 @@ export class ScorecardsEditorComponent implements OnInit {
 
 
   }
+
+  
+  onFieldChange(key, event){
+    const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value :  event;
+
+    this.configuration[key] = value;
+
+
+    this.updateHostObject();
+
+   
+}
 
   upsertDataQuery() {
     const body = {

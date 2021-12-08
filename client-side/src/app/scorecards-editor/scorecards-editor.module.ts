@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ScorecardsEditorComponent } from '.';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { PepAddonService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepCustomizationService, PepFileService, PepHttpService } from '@pepperi-addons/ngx-lib';
 import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 import { PepSelectModule } from '@pepperi-addons/ngx-lib/select';
 import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
@@ -56,17 +56,18 @@ const pepIcons = [
     TranslateService,
     HttpClient,
     PepFileService,
+    PepHttpService,
   ]
 })
 export class ScorecardsEditorModule {
   constructor(
     translate: TranslateService,
-    private pepAddonService: PepAddonService,
-    private pepperiIconRegistry: PepIconRegistry
+    private pepIconRegistry: PepIconRegistry,
+    private pepAddonService: PepAddonService
 
   ) {
     this.pepAddonService.setDefaultTranslateLang(translate);
-    this.pepperiIconRegistry.registerIcons(pepIcons);
+    this.pepIconRegistry.registerIcons(pepIcons);
 
   }
 }

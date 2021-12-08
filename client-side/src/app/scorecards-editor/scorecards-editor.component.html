@@ -2,6 +2,18 @@
     <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="100ms">
         <mat-tab id="1" label="{{'General' | translate}}">
             <div *ngIf="blockLoaded">
+
+                <pep-checkbox [value]="configuration?.useText" [label]="'Text' | translate" [renderTitle]="false" (valueChange)="onSlideshowFieldChange('dropShadow.useDropShadow',$event)">
+                </pep-checkbox>
+
+
+                <label class="body-xs normal ellipsis">{{'TitleSize' | translate}}</label>
+                <pep-group-buttons [buttons]="PepSizes" [selectedButtonKey]="configuration?.titleSize" buttonsClass="md regular" (buttonClick)="onFieldChange('titleSize',$event)" viewType="toggle" stretch="true">
+                </pep-group-buttons>
+                <label class="body-xs normal ellipsis">{{'ValueSize' | translate}}</label>
+                <pep-group-buttons [buttons]="PepSizes" [selectedButtonKey]="configuration?.valueSize" buttonsClass="md regular" (buttonClick)="onFieldChange('valueSize',$event)" viewType="toggle" stretch="true">
+                </pep-group-buttons>
+
                 <pep-checkbox [value]="useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onSlideshowFieldChange('dropShadow.useDropShadow',$event)">
                 </pep-checkbox>
                 <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
@@ -14,7 +26,7 @@
         <mat-tab id="2" label="{{'Content' | translate}}">
             <h2>{{'DataQueries' | translate}}
             </h2>
-            <div class="queries-containter">
+            <div id="seriesButtons" class="queries-containter">
                 <div *ngFor="let qureiesButton of seriesButtons">
                     <pep-group-buttons [buttons]="qureiesButton" [buttonsDisabled]="false" [viewType]="'split'">
                     </pep-group-buttons>

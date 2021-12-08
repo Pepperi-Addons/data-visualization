@@ -75,7 +75,14 @@
     "Week":"Week",
     "ShadowIntensity":"Shadow intensity",
     "DropShadow":"Drop shadow",
-    "ShadowType":"Shadow type"
+    "ShadowType":"Shadow type",
+    "SM":"SM",
+    "MD": "MD",
+    "LG": "LG",
+    "XL": "XL",
+    "Text":"Text",
+    "TitleSize":"Title size",
+    "ValueSize":"Value size"
 
 
 }

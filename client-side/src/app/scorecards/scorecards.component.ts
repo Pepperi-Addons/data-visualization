@@ -46,24 +46,13 @@ export class ScorecardsComponent implements OnInit {
   drawScorecards(configuration) {
     this.executeQuery(configuration.query.Key).then((data) => {
       try {
+        const seriesNames = data.DataQueries.map((data) => data.Name);
         const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
         const dataset = Object.assign.apply(Object, data.DataSet);
         let content = `<div style="display: flex;flex-direction: column;gap: 2rem;">
         <div style="margin:1rem;display: flex;gap: 2rem;">`;
         for (let i = 0; i < series.length; i++) {
-          content += `<div style="padding: 2rem 2.5rem;
-          background: rgb(255, 255, 255);
-          box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.05),
-                0px 8px 16px 0px rgba(0, 0, 0, 0.04),
-                0px 12px 24px 0px rgba(0, 0, 0, 0.04);
-          border-radius: 8px;">
-        <p style="text-align: center; margin: 10px 0px" class="color-dimmed">
-          ${series[i]}
-        </p>
-        <p style="text-align: center; margin: 10px 0px" class="bold" >  
-          ${dataset[series[i]]}
-        </p>
-      </div>`;
+          content += this.getScorecardsHTML(series[i], dataset[series[i]]);
         };
         content += `</div></div>`;
         this.divView.nativeElement.innerHTML = content;
@@ -74,6 +63,22 @@ export class ScorecardsComponent implements OnInit {
     }).catch((err) => {
       this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query.Key} , error: ${err}`;
     })
+  }
+
+  private getScorecardsHTML(name: string, value: any) {
+    return `<div style="padding: 2rem 2.5rem;
+          background: rgb(255, 255, 255);
+          box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.05),
+                0px 8px 16px 0px rgba(0, 0, 0, 0.04),
+                0px 12px 24px 0px rgba(0, 0, 0, 0.04);
+          border-radius: 8px;">
+        <p style="text-align: center; margin: 10px 0px" class="color-dimmed title-${this.hostObject.configuration.titleSize} ellipsis">
+          ${name}
+        </p>
+        <p style="text-align: center; margin: 10px 0px" class="bold title-${this.hostObject.configuration.valueSize} ellipsis" >  
+          ${value}
+        </p>
+      </div>`;
   }
 
   getRandomNumber() {
