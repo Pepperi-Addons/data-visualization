@@ -68,9 +68,6 @@ export class SeriesEditorModule {
     translate: TranslateService,
     private pepAddonService: PepAddonService
   ) {
-
     this.pepAddonService.setDefaultTranslateLang(translate);
-
-  
   }
 }

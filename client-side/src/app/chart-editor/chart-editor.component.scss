@@ -125,3 +125,19 @@ pep-checkbox{
 ::ng-deep .group-buttons-container {
     margin-bottom: 0rem!important;
 }
+
+pep-group-buttons{
+    ::ng-deep{
+        pep-icon{
+            max-height: 1rem;
+            
+        }
+        .group-buttons-container{
+        flex-direction: column;
+        }
+        .split-buttons {
+            grid-template-columns: auto 2.5rem;
+        }
+
+    }
+} 

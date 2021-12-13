@@ -1,7 +1,11 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
+import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { config } from '../addon.config';
+import { Color } from '../models/color';
+import { Overlay } from '../models/overlay ';
+import { ScorecardsConfiguration } from '../models/scorecards-configuration';
 
 @Component({
   selector: 'app-scorecards',
@@ -11,18 +15,20 @@ import { config } from '../addon.config';
 export class ScorecardsComponent implements OnInit {
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
-  _hostObject;
+
   existing: any;
   chartID;
   isLibraryAlreadyLoaded = {};
-  @Input('hostObject')
-  get hostObject() {
-    return this._hostObject;
+  private _configuration: ScorecardsConfiguration;
+  get configuration(): ScorecardsConfiguration {
+    return this._configuration;
   }
+
+  @Input('hostObject')
   set hostObject(value) {
-    this._hostObject = value;
-    if (value.configuration?.query.Key && value.configuration?.query?.Series && value.configuration?.query?.Series.length > 0) {
-      this.drawScorecards(this._hostObject.configuration);
+    this._configuration = value?.configuration;
+    if (value.configuration?.query?.Key && value.configuration?.query?.Series && value.configuration?.query?.Series.length > 0) {
+      this.drawScorecards(this.configuration);
     }
     else {
       this.deleteScorecards();
@@ -33,7 +39,9 @@ export class ScorecardsComponent implements OnInit {
   @ViewChild('scorecardsPreviewArea', { static: true }) divView: ElementRef;
   oldDefine: any;
 
-  constructor(private translate: TranslateService, private addonService: PepAddonService) { }
+  constructor(private translate: TranslateService,
+    private addonService: PepAddonService,
+    private dataVisualizationService: DataVisualizationService) { }
 
   ngOnInit(): void {
     // When finish load raise block-loaded.
@@ -66,16 +74,16 @@ export class ScorecardsComponent implements OnInit {
   }
 
   private getScorecardsHTML(name: string, value: any) {
+    const boxShadow = this.configuration?.useDropShadow === true ? this.dataVisualizationService.getCardShadow(this.configuration?.dropShadow?.intensity / 100, this.configuration?.dropShadow?.type) : 'unset';
     return `<div style="padding: 2rem 2.5rem;
           background: rgb(255, 255, 255);
-          box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.05),
-                0px 8px 16px 0px rgba(0, 0, 0, 0.04),
-                0px 12px 24px 0px rgba(0, 0, 0, 0.04);
+          border: ${this.dataVisualizationService.getChartBorder(this.configuration?.useBorder, this.configuration?.border)};
+          box-shadow: ${boxShadow};
           border-radius: 8px;">
-        <p style="text-align: center; margin: 10px 0px" class="color-dimmed title-${this.hostObject.configuration.titleSize} ellipsis">
+        <p style="text-align: center; margin: 10px 0px" class="color-dimmed title-${this.configuration.titleSize} ellipsis">
           ${name}
         </p>
-        <p style="text-align: center; margin: 10px 0px" class="bold title-${this.hostObject.configuration.valueSize} ellipsis" >  
+        <p style="text-align: center; margin: 10px 0px" class="bold title-${this.configuration.valueSize} ellipsis" >  
           ${value}
         </p>
       </div>`;
@@ -97,4 +105,5 @@ export class ScorecardsComponent implements OnInit {
       this.divView.nativeElement.innerHTML = "";
     }
   }
+
 }

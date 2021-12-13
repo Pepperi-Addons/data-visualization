@@ -1,9 +1,12 @@
-<ng-container pep-top-area >
-    <pep-top-bar [title]="this._hostObject?.configuration?.label">
-    </pep-top-bar>
-</ng-container>
-<div>
-    <div #previewArea>
+<div class="minHeight" [ngStyle]="{'border': dataVisualizationService.getChartBorder(this.configuration?.useBorder, this.configuration?.border),
+                 'box-shadow': configuration?.useDropShadow === true ? dataVisualizationService.getCardShadow(this.configuration?.dropShadow?.intensity/100,configuration?.dropShadow?.type) : 'unset'}">
+    <div pep-top-area>
+        <pep-top-bar [title]="configuration?.label">
+        </pep-top-bar>
     </div>
-</div>
+    <div>
+        <div #previewArea>
+        </div>
+    </div>
 
+</div>

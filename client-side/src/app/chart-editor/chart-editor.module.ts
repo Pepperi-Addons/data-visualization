@@ -2,7 +2,7 @@ import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } fr
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { PepAddonService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepColorService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
 import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 import { PepSelectModule } from '@pepperi-addons/ngx-lib/select';
 import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
@@ -17,6 +17,7 @@ import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { PepIconRegistry, pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
 import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
 import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
+import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 
 const pepIcons = [
     pepIconSystemBin,
@@ -35,6 +36,7 @@ const pepIcons = [
         PepSliderModule,
         PepGroupButtonsModule,
         MatTabsModule,
+        PepColorModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
@@ -54,6 +56,7 @@ const pepIcons = [
         TranslateService,  
         HttpClient,
         PepFileService,
+        PepColorService
     ]
 })
 export class ChartEditorModule {

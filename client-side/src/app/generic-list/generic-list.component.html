@@ -1,0 +1,24 @@
+<div>
+
+    <ng-container *ngIf="inline; then inlineBlock; else regularBlock"></ng-container>
+
+    <ng-template #inlineBlock>
+        <ng-container *ngTemplateOutlet="listTemplate"></ng-container>
+    </ng-template>
+    <ng-template #regularBlock>
+        <div class="main-content">
+            <div class="content">
+                <ng-container *ngTemplateOutlet="listTemplate"></ng-container>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #listTemplate>
+        <div class="list-wrapper" #listContainer id="listContainer" [ngStyle]="{'height':listHeight}">
+            <pep-list [viewType]="viewType" [supportSorting]="supportSorting" [supportResizing]="false"
+            [parentScroll]="listContainer" [showCardSelection]="true"
+             [selectionTypeForActions]="'none'"
+              [noDataFoundMsg]="'No data' | translate">
+            </pep-list>
+        </div>
+    </ng-template>
+</div>

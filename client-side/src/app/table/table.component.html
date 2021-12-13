@@ -1,0 +1,17 @@
+<div class="list-wrapper" #listContainer id="listContainer">
+    <generic-list style="overflow: auto; height: 100%;" [viewType]="'table'" [allowMultipleSelection]="true" [inline]="true" 
+    [dataSource]="listDataSource" [listData]="dataSet">
+    <div right-buttons>
+    </div>
+</generic-list>
+</div>
+
+<!-- <ng-template #listTemplate>
+    <div class="list-wrapper" #listContainer id="listContainer">
+        <pep-list [supportSorting]="false" [supportResizing]="true"
+        [parentScroll]="listContainer" 
+         [selectionTypeForActions]="'none'"
+          [noDataFoundMsg]="'No data' | translate" (fieldClick)="onCustomizeFieldClick($event)" (selectedItemsChange)="selectedRowsChanged($event)">
+        </pep-list>
+    </div>
+</ng-template> -->

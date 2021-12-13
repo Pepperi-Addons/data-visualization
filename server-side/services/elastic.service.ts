@@ -51,7 +51,7 @@ class ElasticService {
     if (!query.Series || query.Series.length==0){
       return new DataQueryResponse();
     }
-    
+
     // handle aggregation by series
     let aggregationsList: { [key: string]: Aggregation[] } = this.buildSeriesAggregationList(query.Series);;
 
@@ -176,7 +176,7 @@ class ElasticService {
   }
 
   buildDummyBreakBy(): esb.Aggregation {
-    let query: Aggregation = esb.termsAggregation('DummyBreakBy').script(esb.script('inline', "'DummyBreakBy'"));
+    let query: Aggregation = esb.termsAggregation('DummyBreakBy').script(esb.script('inline', "'DummyBreakBy'")).minDocCount(0);
     return query;
   }
 

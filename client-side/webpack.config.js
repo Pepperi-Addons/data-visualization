@@ -3,6 +3,7 @@ const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPl
 // TODO: Change block name (if it more then one word put '_' between).
 const blockName = 'chart';
 const blockNameScorecars = 'scorecards';
+const blockNameTable = 'table';
 
 module.exports = {
     output: {
@@ -36,6 +37,22 @@ module.exports = {
             exposes: {
                 './ScorecardsModule': './src/app/scorecards/index',
                 './ScorecardsEditorModule': './src/app/scorecards-editor/index'
+            },
+            shared: {
+                "@angular/core": { eager: true, singleton: true, strictVersion: false },
+                "@angular/common": { eager: true, singleton: true, strictVersion: false },
+                "@angular/common/http": { eager: true, singleton: true, strictVersion: false },
+                "rxjs": { eager: true, singleton: true, strictVersion: false },
+                "@ngx-translate/core": { eager: true, singleton: true, strictVersion: false },
+                "@angular/router": { eager: true, singleton: true,  strictVersion: false }
+            }
+        }),
+        new ModuleFederationPlugin({
+            name: blockNameTable,
+            filename: `${blockNameTable}.js`,
+            exposes: {
+                './TableModule': './src/app/table/index',
+                './TableEditorModule': './src/app/table-editor/index'
             },
             shared: {
                 "@angular/core": { eager: true, singleton: true, strictVersion: false },

@@ -20,11 +20,11 @@ import { Overlay } from '../models/overlay ';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 
 @Component({
-  selector: 'app-scorecards-editor',
-  templateUrl: './scorecards-editor.component.html',
-  styleUrls: ['./scorecards-editor.component.scss']
+  selector: 'app-list-editor',
+  templateUrl: './table-editor.component.html',
+  styleUrls: ['./table-editor.component.scss']
 })
-export class ScorecardsEditorComponent implements OnInit {
+export class TableEditorComponent implements OnInit {
 
   private _hostObject: any
   @Input()
@@ -184,7 +184,6 @@ export class ScorecardsEditorComponent implements OnInit {
     }
     this.showSeriesEditorDialog(this.currentSeries);
   }
-
   tabClick(event) {
 
   }
@@ -206,10 +205,9 @@ export class ScorecardsEditorComponent implements OnInit {
 
     const input = {
       currentSeries: series,
-      parent: 'scorecards',
+      parent: 'table',
       seriesName: series?.Name ? series.Name : `Series ${seriesCount + 1}`
     }
-  
     this.openDialog(this.translate.instant('EditQuery'), SeriesEditorComponent, actionButton, input, (seriesToAddOrUpdate) => {
       if (seriesToAddOrUpdate) {
         this.updateQuerySeries(seriesToAddOrUpdate);

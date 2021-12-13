@@ -69,7 +69,7 @@ async function runMigration(client){
         };
         blockName = 'Scorecards';
      
-        const ScorecardsComponentRelation: Relation = {
+        const scorecardsComponentRelation: Relation = {
             RelationName: "PageBlock",
             Name: blockName, 
             Description: `Scorecards`, 
@@ -83,9 +83,27 @@ async function runMigration(client){
             EditorModuleName: `${blockName}EditorModule`
         };
 
+        blockName = 'Table';
+     
+        const tableComponentRelation: Relation = {
+            RelationName: "PageBlock",
+            Name: blockName, 
+            Description: `Table`, 
+            Type: "NgComponent",
+            SubType: "NG11",
+            AddonUUID: client.AddonUUID,
+            AddonRelativeURL: 'table', 
+            ComponentName: `${blockName}Component`, 
+            ModuleName: `${blockName}Module`, 
+            EditorComponentName: `${blockName}EditorComponent`, 
+            EditorModuleName: `${blockName}EditorModule`
+        };
+
+
         const service = new MyService(client);
         await service.upsertRelation(pageComponentRelation);
-        await service.upsertRelation(ScorecardsComponentRelation);
+        await service.upsertRelation(scorecardsComponentRelation);
+        await service.upsertRelation(tableComponentRelation);
 
         return { success:true, resultObject: null };
     } catch(err) {

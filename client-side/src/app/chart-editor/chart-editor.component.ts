@@ -15,6 +15,9 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { v4 as uuid } from 'uuid';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
+import { Color } from '../models/color';
+import { DropShadow } from '../models/dropshadow';
+import { ChartConfiguration } from '../models/chart-configuration';
 
 @Component({
     selector: 'chart-editor',
@@ -31,18 +34,16 @@ export class ChartEditorComponent implements OnInit {
             this._configuration = value.configuration
         } else {
             if (this.blockLoaded) {
-                this.updateHostObject();
+                this.loadDefaultConfiguration();
             }
         }
     }
+
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
+    private _configuration: ChartConfiguration;
 
     label = false;
-    _configuration = {
-        chart: null,
-        query: null,
-        label: ''
-    };
+
 
     get configuration() {
         return this._configuration;
@@ -57,7 +58,7 @@ export class ChartEditorComponent implements OnInit {
     chartsOptions: { key: string, value: string }[] = [];
     seriesButtons: Array<Array<PepButton>> = [];
     chartInstance: any;
-    SlideDropShadowStyle: Array<PepButton> = [];
+    DropShadowStyle: Array<PepButton> = [];
 
     constructor(private addonService: PepAddonService,
         public routeParams: ActivatedRoute,
@@ -71,8 +72,10 @@ export class ChartEditorComponent implements OnInit {
     }
 
     ngOnInit(): void {
-
-        this.SlideDropShadowStyle = [
+        if (!this.configuration) {
+            this.loadDefaultConfiguration();
+        }
+        this.DropShadowStyle = [
             { key: 'Soft', value: this.translate.instant('Soft') },
             { key: 'Regular', value: this.translate.instant('Regular') }
         ];
@@ -102,6 +105,15 @@ export class ChartEditorComponent implements OnInit {
             }
         });
 
+    }
+
+    private loadDefaultConfiguration() {
+        this._configuration = this.getDefaultHostObject();
+        this.updateHostObject();
+    }
+
+    private getDefaultHostObject(): ChartConfiguration {
+        return new ChartConfiguration();
     }
 
     upsertDataQuery() {
@@ -203,6 +215,22 @@ export class ChartEditorComponent implements OnInit {
         this.showSeriesEditorDialog(null);
     }
 
+    onFieldChange(key, event) {
+        const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value : event;
+
+        if (key.indexOf('.') > -1) {
+            let keyObj = key.split('.');
+            this.configuration[keyObj[0]][keyObj[1]] = value;
+        }
+        else {
+            this.configuration[key] = value;
+        }
+
+        this.updateHostObject();
+
+
+    }
+
     editSeries(event) {
         if (event) {
             this.currentSeries = this._configuration.query.Series.filter(s => s.Key === event.source.key)[0] as Serie
@@ -256,6 +284,7 @@ export class ChartEditorComponent implements OnInit {
         });
     }
 
+    
     private updateQuerySeries(seriesToAddOrUpdate: any) {
         const idx = this._configuration.query.Series?.findIndex(item => item.Key === seriesToAddOrUpdate.Key);
         if (idx > -1) {
@@ -313,13 +342,6 @@ export class ChartEditorComponent implements OnInit {
         });
     }
 
-
-    onSlideshowFieldChange(key, event) {
-
-
-        this.updateHostObject();
-    }
-
     private buildSeriesButtons() {
         this.seriesButtons = [];
         this._configuration.query?.Series?.forEach(serise => {
@@ -339,7 +361,7 @@ export class ChartEditorComponent implements OnInit {
         });
     }
 
-    getSliderBackground(color){
+    getSliderBackground(color) {
         if (!color) return;
         let alignTo = 'right';
 
@@ -348,8 +370,8 @@ export class ChartEditorComponent implements OnInit {
         col.color = color;
         col.opacity = '100';
 
-        let gradStr = this.dataVisualizationService.getRGBAcolor(col,0) +' , '+ this.dataVisualizationService.getRGBAcolor(col);
-        
-        return 'linear-gradient(to ' + alignTo +', ' +  gradStr +')';
+        let gradStr = this.dataVisualizationService.getRGBAcolor(col, 0) + ' , ' + this.dataVisualizationService.getRGBAcolor(col);
+
+        return 'linear-gradient(to ' + alignTo + ', ' + gradStr + ')';
     }
 }

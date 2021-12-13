@@ -4,6 +4,9 @@ import 'systemjs'
 import 'systemjs-babel'
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
 import { config } from '../addon.config';
+import { Color } from '../models/color';
+import { DataVisualizationService } from 'src/services/data-visualization.service';
+import { ChartConfiguration } from '../models/chart-configuration';
 
 @Component({
     selector: 'chart',
@@ -12,29 +15,15 @@ import { config } from '../addon.config';
 })
 export class ChartComponent implements OnInit {
 
-    _hostObject;
     existing: any;
     chartID;
     isLibraryAlreadyLoaded = {};
     @Input('hostObject')
-    get hostObject() {
-        return this._hostObject;
-    }
     set hostObject(value) {
-
-        // If only things of meta data have changed, like 'label',there is no need to redraw the graph
-        // const newChart = value.configuration?.chart?.Key;
-        // const newData = value.configuration?.data;
-
-        this._hostObject = value;
-        // const needToChangeChart = !(newChart && this.chartID && newData && this.data && newChart == this.chartID &&
-        //                                 JSON.stringify(newData) == JSON.stringify(this.data))
-        // if (!needToChangeChart) {
-        //     return;
-        // }
+        this._configuration = value?.configuration;
         if (value.configuration?.chart?.Key && value.configuration?.query.Key && value.configuration?.query?.Series && value.configuration?.query?.Series.length > 0) {
 
-            this.drawChart(this._hostObject.configuration);
+            this.drawChart(this.configuration);
         }
         else {
             this.deleteChart();
@@ -46,9 +35,13 @@ export class ChartComponent implements OnInit {
     chartInstance: any;
     @ViewChild("previewArea") divView: ElementRef;
 
+    private _configuration: ChartConfiguration;
+    get configuration(): ChartConfiguration {
+        return this._configuration;
+    }
     oldDefine: any;
 
-    constructor(private translate: TranslateService, private addonService: PepAddonService) { }
+    constructor(private translate: TranslateService, private addonService: PepAddonService, public dataVisualizationService: DataVisualizationService) { }
 
     ngOnInit(): void {
         // When finish load raise block-loaded.
@@ -131,8 +124,19 @@ export class ChartComponent implements OnInit {
         return Promise.all(promises);
     }
 
+    getGalleryBorder() {
+        if (this.configuration?.useBorder) {
+            let col: Color = this.configuration?.border;
+            return '1px solid ' + this.dataVisualizationService.getRGBAcolor(col);
+        }
+        else {
+            return 'none';
+        }
+    }
+
     deleteChart() {
         if (this.divView)
             this.divView.nativeElement.innerHTML = "";
     }
+
 }

@@ -39,4 +39,21 @@ export class DataVisualizationService {
         document.body.style.cursor = 'unset';
     }
 
+    getCardShadow(intensity, type) {
+        let shadow = type === 'Soft' ? '0px 3px 6px 0px rgba(0, 0, 0, ' + intensity + '),0px 4px 8px 0px rgba(0, 0, 0, ' + intensity + '),0px 6px 12px 0px rgba(0, 0, 0, ' + intensity + ')' :
+          '0px 8px 16px 0px rgba(0, 0, 0, ' + intensity + '), 0px 12px 24px 0px rgba(0, 0, 0, ' + intensity + '),0px 24px 48px 0px rgba(0, 0, 0, ' + intensity + ')'
+    
+        return `${shadow}`;
+      }
+
+      getChartBorder(useBorder, border) {
+        if (useBorder) {
+          let col: Color = border;
+          return '1px solid ' + this.getRGBAcolor(col);
+        }
+        else {
+          return 'none';
+        }
+      }
+
 }

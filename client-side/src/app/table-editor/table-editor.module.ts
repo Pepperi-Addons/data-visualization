@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ScorecardsEditorComponent } from '.';
+import { TableEditorComponent } from '.';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { PepAddonService, PepCustomizationService, PepFileService, PepHttpService } from '@pepperi-addons/ngx-lib';
@@ -25,7 +25,7 @@ const pepIcons = [
   pepIconSystemBin,
 ];
 @NgModule({
-  declarations: [ScorecardsEditorComponent],
+  declarations: [TableEditorComponent],
   imports: [
     PepSelectModule,
     PepTextboxModule,
@@ -48,7 +48,7 @@ const pepIcons = [
       }, isolate: false
     }),
   ],
-  exports: [ScorecardsEditorComponent],
+  exports: [TableEditorComponent],
   providers: [
     TranslateStore,
     AddonService,
@@ -61,7 +61,7 @@ const pepIcons = [
     PepHttpService,
   ]
 })
-export class ScorecardsEditorModule {
+export class TableEditorModule {
   constructor(
     translate: TranslateService,
     private pepIconRegistry: PepIconRegistry,

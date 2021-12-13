@@ -6,27 +6,22 @@
                 <pep-textbox [label]="'TitleText' | translate" [type]="'text'" [disabled]="!enableLabel" [(value)]="_configuration.label" (valueChange)="onValueChanged('Label', $event)"></pep-textbox>
                 <h2>{{'ChartDesign' | translate}}
                 </h2>
-                <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="this._configuration.chart?.Key" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">
+                <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="configuration.chart?.Key" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">
                 </pep-select>
                 <div id="border">
-                    <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onGalleryFieldChange('useBorder',$event)"></pep-checkbox>
-                    <pep-color [value]="configuration?.galleryConfig?.border?.color" [label]="'BorderColor' | translate" [disabled]="" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onGalleryFieldChange('border.color',$event)">
+                    <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
+                    <pep-color [value]="configuration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
                     </pep-color>
-                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.galleryConfig?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.galleryConfig?.useBorder" [value]="configuration?.galleryConfig?.border?.opacity" [background]="getSliderBackground(configuration?.galleryConfig?.border?.color)" (valueChange)="onGalleryFieldChange('border.opacity',$event)">
-                    </pep-slider>
-                    <pep-checkbox [value]="configuration?.useGradientOverlay" [label]="'GradientOverlay' | translate" [renderTitle]="false" (valueChange)="onGalleryFieldChange('useGradientOverlay',$event)"></pep-checkbox>
-                    <pep-color [value]="configuration?.galleryConfig?.gradientOverlay?.color" [label]="'GradientOverlayColor' | translate" [disabled]="!configuration?.galleryConfig?.useGradientOverlay" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onGalleryFieldChange('gradientOverlay.color',$event)">
-                    </pep-color>
-                    <pep-slider [label]="'GradientOverlayOpacity' | translate" [hint]="configuration?.galleryConfig?.gradientOverlay?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.galleryConfig?.useGradientOverlay" [value]="configuration?.galleryConfig?.gradientOverlay?.opacity" [background]="getSliderBackground(configuration?.galleryConfig?.gradientOverlay?.color)" (valueChange)="onGalleryFieldChange('gradientOverlay.opacity',$event)">
+                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useBorder" [value]="configuration?.border?.opacity" [background]="getSliderBackground(configuration?.border?.color)" (valueChange)="onFieldChange('border.opacity',$event)">
                     </pep-slider>
                 </div>
                 <div id="dropShadow">
-                    <pep-checkbox [value]="configuration.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onSlideshowFieldChange('dropShadow.useDropShadow',$event)">
+                    <pep-checkbox [value]="configuration?.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
                     </pep-checkbox>
-                    <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
-                    <pep-group-buttons [buttons]="SlideDropShadowStyle" buttonsClass="md regular" (buttonClick)="onSlideshowFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
+                    <label class="body-xs normal ellipsis">{{'ShadowIntensity' | translate}}</label>
+                    <pep-group-buttons [buttons]="DropShadowStyle" [selectedButtonKey]="configuration?.dropShadow?.type" buttonsClass="md regular" [buttonsDisabled]="!configuration?.useDropShadow" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
                     </pep-group-buttons>
-                    <pep-slider [label]="'ShadowIntensity' | translate" [minValue]="0" [maxValue]="100" (valueChange)="onSlideshowFieldChange('dropShadow.intensity',$event)">
+                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useDropShadow" [value]="configuration?.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
                     </pep-slider>
                 </div>
                 <!-- <pep-select  [key]="'querySelect'" [label]="'Select a data query'" [value]="this._configuration.query?.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onValueChanged('Query',$event)">
@@ -44,7 +39,7 @@
                     <pep-group-buttons [buttons]="qureiesButton" [buttonsDisabled]="false" [viewType]="'split'">
                     </pep-group-buttons>
                 </div>
-                <pep-button style="width: 4rem;" [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
+                <pep-button [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
             </div>
 
         </mat-tab>

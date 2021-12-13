@@ -10,7 +10,6 @@ import { ScorecardsModule } from './scorecards';
         BrowserModule,
         ChartModule,
         SeriesEditorModule,
-        ScorecardsModule,
     ],
     declarations: [
         AppComponent,

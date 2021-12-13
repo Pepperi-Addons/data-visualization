@@ -68,7 +68,7 @@
                         </pep-textarea>
                     </div>
                 </div>
-                <div id="categories" *ngIf="this.seriesEditorType === 'chart'">
+                <div id="categories" *ngIf="this.seriesEditorType !== 'scorecards'">
                     <pep-checkbox [value]="formFlags.useCategories" [label]="'Categories' | translate" [renderTitle]="false" (valueChange)="onEventCheckboxChanged('Categories',$event)"></pep-checkbox>
                     <hr>
                     <pep-field-title [label]="'CategoriesDescription' | translate" class="header">
@@ -84,7 +84,7 @@
                     </div>
                     <pep-textbox class="half-width" [disabled]="!formFlags.useCategories" [mandatory]="formFlags.useCategories" [(value)]="series.GroupBy[0].Alias" [label]="'Alias' | translate" [type]="'text'"></pep-textbox>
                 </div>
-                <div id="dynamic-series" *ngIf="this.seriesEditorType === 'chart'">
+                <div id="dynamic-series" *ngIf="this.seriesEditorType !== 'scorecards'">
                     <pep-checkbox [value]="formFlags.useDynamicSeries" [label]="'DynamicSeries' | translate" [renderTitle]="false" (valueChange)="onEventCheckboxChanged('DynamicSeries',$event)"></pep-checkbox>
 
                     <pep-field-title [label]="'DynamicSeriesDescriptions' | translate" class="header">
