@@ -63,16 +63,16 @@ class ElasticService {
     const body = elasticRequestBody.toJSON();
     console.log(`lambdaBody: ${JSON.stringify(body)}`);
 
-    // const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
-    // console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
+    const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
+    console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
 
-    // if (!lambdaResponse.success) {
-    //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
-    //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
-    // }
-    const lambdaResponse = {
-      resultObject: null
-    };
+    if (!lambdaResponse.success) {
+      console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
+      throw new Error(`Failed to execute data query ID: ${query.Key}`);
+    }
+    // const lambdaResponse = {
+    //   resultObject: null
+    // };
 
     let response: DataQueryResponse = this.buildResponseFromElasticResults(lambdaResponse.resultObject, query);
 
@@ -187,638 +187,638 @@ class ElasticService {
 
   private buildResponseFromElasticResults(lambdaResponse, query: DataQuery) {
 
-    lambdaResponse = {
-      "aggregations": {
-        "Series 1": {
-          "doc_count": 1982,
-          "Account.Name": {
-            "doc_count_error_upper_bound": 0,
-            "sum_other_doc_count": 145,
-            "buckets": [
-              {
-                "key": "A Paris Food",
-                "doc_count": 684,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2017",
-                      "key": 1483228800000,
-                      "doc_count": 27,
-                      "QuantitiesTotal_Sum": {
-                        "value": 8.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 125,
-                      "QuantitiesTotal_Sum": {
-                        "value": 172.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 143,
-                      "QuantitiesTotal_Sum": {
-                        "value": 567.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 130,
-                      "QuantitiesTotal_Sum": {
-                        "value": 4688.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 259,
-                      "QuantitiesTotal_Sum": {
-                        "value": 2301.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "A store1",
-                "doc_count": 315,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2017",
-                      "key": 1483228800000,
-                      "doc_count": 42,
-                      "QuantitiesTotal_Sum": {
-                        "value": 10083.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 143,
-                      "QuantitiesTotal_Sum": {
-                        "value": 299.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 30,
-                      "QuantitiesTotal_Sum": {
-                        "value": 67.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 35,
-                      "QuantitiesTotal_Sum": {
-                        "value": 23178.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 65,
-                      "QuantitiesTotal_Sum": {
-                        "value": 1347.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "acount of myAccount type",
-                "doc_count": 201,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2017",
-                      "key": 1483228800000,
-                      "doc_count": 13,
-                      "QuantitiesTotal_Sum": {
-                        "value": 0.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 44,
-                      "QuantitiesTotal_Sum": {
-                        "value": 91.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 62,
-                      "QuantitiesTotal_Sum": {
-                        "value": 257.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 30,
-                      "QuantitiesTotal_Sum": {
-                        "value": 231.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 52,
-                      "QuantitiesTotal_Sum": {
-                        "value": 257.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Account2",
-                "doc_count": 188,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 3,
-                      "QuantitiesTotal_Sum": {
-                        "value": 0.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 44,
-                      "QuantitiesTotal_Sum": {
-                        "value": 156.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 62,
-                      "QuantitiesTotal_Sum": {
-                        "value": 14763.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 79,
-                      "QuantitiesTotal_Sum": {
-                        "value": 2384.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Before every one else Australia Sydney",
-                "doc_count": 187,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2017",
-                      "key": 1483228800000,
-                      "doc_count": 2,
-                      "QuantitiesTotal_Sum": {
-                        "value": 0.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 26,
-                      "QuantitiesTotal_Sum": {
-                        "value": 64.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 45,
-                      "QuantitiesTotal_Sum": {
-                        "value": 216.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 64,
-                      "QuantitiesTotal_Sum": {
-                        "value": 540.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 50,
-                      "QuantitiesTotal_Sum": {
-                        "value": 4599.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Before every one else Australia Sydney New",
-                "doc_count": 77,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2017",
-                      "key": 1483228800000,
-                      "doc_count": 2,
-                      "QuantitiesTotal_Sum": {
-                        "value": 0.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 12,
-                      "QuantitiesTotal_Sum": {
-                        "value": 27.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 26,
-                      "QuantitiesTotal_Sum": {
-                        "value": 193.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 25,
-                      "QuantitiesTotal_Sum": {
-                        "value": 121.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 12,
-                      "QuantitiesTotal_Sum": {
-                        "value": 262.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Cat n Dog New",
-                "doc_count": 57,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 5,
-                      "QuantitiesTotal_Sum": {
-                        "value": 2.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 32,
-                      "QuantitiesTotal_Sum": {
-                        "value": 112.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 14,
-                      "QuantitiesTotal_Sum": {
-                        "value": 27.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 6,
-                      "QuantitiesTotal_Sum": {
-                        "value": 31.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Born to be COOL Australia Melbourne",
-                "doc_count": 54,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2017",
-                      "key": 1483228800000,
-                      "doc_count": 2,
-                      "QuantitiesTotal_Sum": {
-                        "value": 0.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 5,
-                      "QuantitiesTotal_Sum": {
-                        "value": 13.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 20,
-                      "QuantitiesTotal_Sum": {
-                        "value": 49.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 19,
-                      "QuantitiesTotal_Sum": {
-                        "value": 70.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 8,
-                      "QuantitiesTotal_Sum": {
-                        "value": 171.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Born to be COOL Australia Melbourne New",
-                "doc_count": 46,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 3,
-                      "QuantitiesTotal_Sum": {
-                        "value": 17.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 24,
-                      "QuantitiesTotal_Sum": {
-                        "value": 554.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 14,
-                      "QuantitiesTotal_Sum": {
-                        "value": 110.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2021",
-                      "key": 1609459200000,
-                      "doc_count": 5,
-                      "QuantitiesTotal_Sum": {
-                        "value": 3.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Central park Toys New",
-                "doc_count": 28,
-                "ActionDateTime": {
-                  "buckets": [
-                    {
-                      "key_as_string": "2018",
-                      "key": 1514764800000,
-                      "doc_count": 5,
-                      "QuantitiesTotal_Sum": {
-                        "value": 77.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2019",
-                      "key": 1546300800000,
-                      "doc_count": 15,
-                      "QuantitiesTotal_Sum": {
-                        "value": 51.0
-                      }
-                    },
-                    {
-                      "key_as_string": "2020",
-                      "key": 1577836800000,
-                      "doc_count": 8,
-                      "QuantitiesTotal_Sum": {
-                        "value": 31.0
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        "Series 2": {
-          "doc_count": 1982,
-          "Account.Name": {
-            "doc_count_error_upper_bound": 0,
-            "sum_other_doc_count": 145,
-            "buckets": [
-              {
-                "key": "A Paris Food",
-                "doc_count": 684,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 684,
-                      "_Count": {
-                        "value": 684
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "A store1",
-                "doc_count": 315,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 315,
-                      "_Count": {
-                        "value": 315
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "acount of myAccount type",
-                "doc_count": 201,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 201,
-                      "_Count": {
-                        "value": 201
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Account2",
-                "doc_count": 188,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 188,
-                      "_Count": {
-                        "value": 188
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Before every one else Australia Sydney",
-                "doc_count": 187,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 187,
-                      "_Count": {
-                        "value": 187
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Before every one else Australia Sydney New",
-                "doc_count": 77,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 77,
-                      "_Count": {
-                        "value": 77
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Cat n Dog New",
-                "doc_count": 57,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 57,
-                      "_Count": {
-                        "value": 57
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Born to be COOL Australia Melbourne",
-                "doc_count": 54,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 54,
-                      "_Count": {
-                        "value": 54
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Born to be COOL Australia Melbourne New",
-                "doc_count": 46,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 46,
-                      "_Count": {
-                        "value": 46
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key": "Central park Toys New",
-                "doc_count": 28,
-                "DummyBreakBy": {
-                  "doc_count_error_upper_bound": 0,
-                  "sum_other_doc_count": 0,
-                  "buckets": [
-                    {
-                      "key": "DummyBreakBy",
-                      "doc_count": 28,
-                      "_Count": {
-                        "value": 28
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
+    // lambdaResponse = {
+    //   "aggregations": {
+    //     "Series 1": {
+    //       "doc_count": 1982,
+    //       "Account.Name": {
+    //         "doc_count_error_upper_bound": 0,
+    //         "sum_other_doc_count": 145,
+    //         "buckets": [
+    //           {
+    //             "key": "A Paris Food",
+    //             "doc_count": 684,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2017",
+    //                   "key": 1483228800000,
+    //                   "doc_count": 27,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 8.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 125,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 172.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 143,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 567.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 130,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 4688.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 259,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 2301.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "A store1",
+    //             "doc_count": 315,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2017",
+    //                   "key": 1483228800000,
+    //                   "doc_count": 42,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 10083.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 143,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 299.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 30,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 67.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 35,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 23178.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 65,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 1347.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "acount of myAccount type",
+    //             "doc_count": 201,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2017",
+    //                   "key": 1483228800000,
+    //                   "doc_count": 13,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 0.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 44,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 91.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 62,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 257.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 30,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 231.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 52,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 257.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Account2",
+    //             "doc_count": 188,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 3,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 0.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 44,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 156.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 62,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 14763.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 79,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 2384.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Before every one else Australia Sydney",
+    //             "doc_count": 187,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2017",
+    //                   "key": 1483228800000,
+    //                   "doc_count": 2,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 0.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 26,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 64.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 45,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 216.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 64,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 540.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 50,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 4599.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Before every one else Australia Sydney New",
+    //             "doc_count": 77,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2017",
+    //                   "key": 1483228800000,
+    //                   "doc_count": 2,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 0.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 12,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 27.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 26,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 193.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 25,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 121.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 12,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 262.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Cat n Dog New",
+    //             "doc_count": 57,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 5,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 2.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 32,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 112.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 14,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 27.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 6,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 31.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Born to be COOL Australia Melbourne",
+    //             "doc_count": 54,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2017",
+    //                   "key": 1483228800000,
+    //                   "doc_count": 2,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 0.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 5,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 13.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 20,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 49.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 19,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 70.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 8,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 171.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Born to be COOL Australia Melbourne New",
+    //             "doc_count": 46,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 3,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 17.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 24,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 554.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 14,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 110.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2021",
+    //                   "key": 1609459200000,
+    //                   "doc_count": 5,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 3.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Central park Toys New",
+    //             "doc_count": 28,
+    //             "ActionDateTime": {
+    //               "buckets": [
+    //                 {
+    //                   "key_as_string": "2018",
+    //                   "key": 1514764800000,
+    //                   "doc_count": 5,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 77.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2019",
+    //                   "key": 1546300800000,
+    //                   "doc_count": 15,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 51.0
+    //                   }
+    //                 },
+    //                 {
+    //                   "key_as_string": "2020",
+    //                   "key": 1577836800000,
+    //                   "doc_count": 8,
+    //                   "QuantitiesTotal_Sum": {
+    //                     "value": 31.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     },
+    //     "Series 2": {
+    //       "doc_count": 1982,
+    //       "Account.Name": {
+    //         "doc_count_error_upper_bound": 0,
+    //         "sum_other_doc_count": 145,
+    //         "buckets": [
+    //           {
+    //             "key": "A Paris Food",
+    //             "doc_count": 684,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 684,
+    //                   "_Count": {
+    //                     "value": 684
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "A store1",
+    //             "doc_count": 315,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 315,
+    //                   "_Count": {
+    //                     "value": 315
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "acount of myAccount type",
+    //             "doc_count": 201,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 201,
+    //                   "_Count": {
+    //                     "value": 201
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Account2",
+    //             "doc_count": 188,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 188,
+    //                   "_Count": {
+    //                     "value": 188
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Before every one else Australia Sydney",
+    //             "doc_count": 187,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 187,
+    //                   "_Count": {
+    //                     "value": 187
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Before every one else Australia Sydney New",
+    //             "doc_count": 77,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 77,
+    //                   "_Count": {
+    //                     "value": 77
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Cat n Dog New",
+    //             "doc_count": 57,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 57,
+    //                   "_Count": {
+    //                     "value": 57
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Born to be COOL Australia Melbourne",
+    //             "doc_count": 54,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 54,
+    //                   "_Count": {
+    //                     "value": 54
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Born to be COOL Australia Melbourne New",
+    //             "doc_count": 46,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 46,
+    //                   "_Count": {
+    //                     "value": 46
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key": "Central park Toys New",
+    //             "doc_count": 28,
+    //             "DummyBreakBy": {
+    //               "doc_count_error_upper_bound": 0,
+    //               "sum_other_doc_count": 0,
+    //               "buckets": [
+    //                 {
+    //                   "key": "DummyBreakBy",
+    //                   "doc_count": 28,
+    //                   "_Count": {
+    //                     "value": 28
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     }
+    //   }
+    // }
 
     let response: DataQueryResponse = new DataQueryResponse();
 
