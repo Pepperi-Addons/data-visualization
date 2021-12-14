@@ -8,6 +8,9 @@ import { ChartComponent } from './chart.component';
 
 import { config } from '../addon.config';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
+import { DataVisualizationService } from 'src/services/data-visualization.service';
+import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 @NgModule({
     declarations: [ChartComponent],
@@ -17,7 +20,7 @@ import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
-                useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) => 
+                useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) =>
                     PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
                 deps: [HttpClient, PepFileService, PepAddonService],
             }, isolate: false
@@ -26,8 +29,13 @@ import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
     exports: [ChartComponent],
     providers: [
         TranslateStore,
-        PepCustomizationService
-        // Add here all used services.
+        PepCustomizationService,
+        DataVisualizationService,
+        PepDialogService,
+        {
+            provide: MatDialog,
+            useValue: {}
+        },
     ]
 })
 export class ChartModule {

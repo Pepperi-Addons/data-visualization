@@ -1,16 +1,7 @@
 <div pep-main-area style="height: inherit">
     <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="100ms">
         <mat-tab id="1" label="{{'General' | translate}}">
-            <div *ngIf="blockLoaded">
-                <h2>{{'Text' | translate}}
-                </h2>
-                <label class="body-xs normal ellipsis">{{'TitleSize' | translate}}</label>
-                <pep-group-buttons [buttons]="PepSizes" [selectedButtonKey]="configuration?.titleSize" buttonsClass="md regular" (buttonClick)="onFieldChange('titleSize',$event)" viewType="toggle" stretch="true">
-                </pep-group-buttons>
-                <label class="body-xs normal ellipsis">{{'ValueSize' | translate}}</label>
-                <pep-group-buttons [buttons]="PepSizes" [selectedButtonKey]="configuration?.valueSize" buttonsClass="md regular" (buttonClick)="onFieldChange('valueSize',$event)" viewType="toggle" stretch="true">
-                </pep-group-buttons>
-
+            <div>
                 <div id="border">
                     <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
                     <pep-color [value]="configuration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">

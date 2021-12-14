@@ -1,10 +1,10 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ObjectsDataRow, PepAddonService, PepDataConvertorService, PepRowData } from '@pepperi-addons/ngx-lib';
+import { ObjectsDataRow, PepAddonService, PepDataConvertorService, PepLoaderService, PepRowData } from '@pepperi-addons/ngx-lib';
 import { PepListComponent } from '@pepperi-addons/ngx-lib/list';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { config } from '../addon.config';
-import { AddonService } from '../addon.service';
+import { AddonService } from '../../services/addon.service';
 import { Color } from '../models/color';
 import { Overlay } from '../models/overlay ';
 import { ScorecardsConfiguration } from '../models/scorecards-configuration';
@@ -13,6 +13,7 @@ import { GenericListDataSource } from '../generic-list/generic-list.component';
 import { pageFiltersDataView } from 'src/services/list-data-source.service';
 import { CardsGridDataView, PageProduce } from '@pepperi-addons/papi-sdk';
 import { from, of } from 'rxjs';
+import { BaseConfiguration } from '../models/base-configuration';
 
 @Component({
   selector: 'table-scorecards',
@@ -30,15 +31,15 @@ export class TableComponent implements OnInit {
   existing: any;
   chartID;
   isLibraryAlreadyLoaded = {};
-  private _configuration: ScorecardsConfiguration;
-  get configuration(): ScorecardsConfiguration {
+  private _configuration: BaseConfiguration;
+  get configuration(): BaseConfiguration {
     return this._configuration;
   }
 
   @Input('hostObject')
   set hostObject(value) {
     this._configuration = value?.configuration;
-    if (value.configuration?.query?.Key && value.configuration?.query?.Series && value.configuration?.query?.Series.length > 0) {
+    if (value.configuration?.query?.Key && value.configuration.executeQuery) {
       this.drawList(this.configuration);
     }
     else {
@@ -55,7 +56,9 @@ export class TableComponent implements OnInit {
     private addonService: PepAddonService,
     private pluginService: AddonService,
     private dataConvertorService: PepDataConvertorService,
-    private dataVisualizationService: DataVisualizationService) {
+    public loaderService: PepLoaderService,
+
+    public dataVisualizationService: DataVisualizationService) {
     // this.dataSet.push({
     //   Resource: 'test1',
     //   Fields: "gdfg"
@@ -67,16 +70,7 @@ export class TableComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.dataSet = [];
-    this.dataSet.push({
-      test1: 'test1',
-      test2: "gdfg"
-    });
-    this.dataSet.push({
-      test1: 'test2',
-      test2: "dsgfd"
-    });
-    this.listDataSource = this.getListDataSource(["test1","test2"]);
+    this.hostEvents.emit({ action: 'block-loaded' });
   }
 
   private getListDataSource(fields): GenericListDataSource {
@@ -116,8 +110,10 @@ export class TableComponent implements OnInit {
   }
 
   drawList(configuration) {
+    this.loaderService.show();
+
     this.dataSet = [];
-    this.executeQuery(configuration.query.Key).then((data) => {
+    this.pluginService.executeQuery(configuration.query.Key).then((data) => {
       try {
         const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
         const groups = data.DataQueries.map((data) => data.Groups).reduce((x, value) => x.concat(value), []);
@@ -125,7 +121,9 @@ export class TableComponent implements OnInit {
           this.dataSet.push(dataSet);
         });
         this.dataSet = this.dataSet.slice();
-        this.listDataSource = this.getListDataSource([...groups,...series]);
+        this.listDataSource = this.getListDataSource([...groups, ...series]);
+        this.loaderService.hide();
+
       }
       catch (err) {
         console.log(err);
@@ -146,7 +144,7 @@ export class TableComponent implements OnInit {
         XAlignment: 1,
         FormattedValue: object[field.FieldID] || '',
         Value: object[field.FieldID] || '',
-        ColumnWidth: dataView['Columns'][i]?.Width? dataView['Columns'][i]?.Width : 10,
+        ColumnWidth: dataView['Columns'][i]?.Width ? dataView['Columns'][i]?.Width : 10,
         AdditionalValue: '',
         OptionalValues: [],
         FieldType: DataViewFieldTypes[field.Type],
@@ -161,13 +159,6 @@ export class TableComponent implements OnInit {
 
   getRandomNumber() {
     return Math.floor(Math.random() * 100);
-  }
-
-  async executeQuery(queryID) {
-    const params = {
-      key: queryID
-    };
-    return this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', null, { params: params }).toPromise();
   }
 
   deleteList() {

@@ -1,6 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
+import { AddonService } from 'src/services/addon.service';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { config } from '../addon.config';
 import { Color } from '../models/color';
@@ -27,7 +28,7 @@ export class ScorecardsComponent implements OnInit {
   @Input('hostObject')
   set hostObject(value) {
     this._configuration = value?.configuration;
-    if (value.configuration?.query?.Key && value.configuration?.query?.Series && value.configuration?.query?.Series.length > 0) {
+    if (value.configuration?.query?.Key && value.configuration.executeQuery) {
       this.drawScorecards(this.configuration);
     }
     else {
@@ -41,10 +42,10 @@ export class ScorecardsComponent implements OnInit {
 
   constructor(private translate: TranslateService,
     private addonService: PepAddonService,
-    private dataVisualizationService: DataVisualizationService) { }
+    private dataVisualizationService: DataVisualizationService,
+    private pluginService: AddonService) { }
 
   ngOnInit(): void {
-    // When finish load raise block-loaded.
     this.hostEvents.emit({ action: 'block-loaded' });
   }
 
@@ -52,9 +53,8 @@ export class ScorecardsComponent implements OnInit {
   }
 
   drawScorecards(configuration) {
-    this.executeQuery(configuration.query.Key).then((data) => {
+    this.pluginService.executeQuery(configuration.query.Key).then((data) => {
       try {
-        const seriesNames = data.DataQueries.map((data) => data.Name);
         const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
         const dataset = Object.assign.apply(Object, data.DataSet);
         let content = `<div style="display: flex;flex-direction: column;gap: 2rem;">
@@ -91,13 +91,6 @@ export class ScorecardsComponent implements OnInit {
 
   getRandomNumber() {
     return Math.floor(Math.random() * 100);
-  }
-
-  async executeQuery(queryID) {
-    const params = {
-      key: queryID
-    };
-    return this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', null, { params: params }).toPromise();
   }
 
   deleteScorecards() {

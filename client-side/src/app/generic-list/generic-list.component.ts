@@ -34,13 +34,6 @@ export class GenericListComponent implements OnInit, AfterViewInit, AfterViewChe
   get listData() {
     return this._listData;
   }
-  listHeight
-  dataView: DataView;
-
-  @Input('getSelectActions') getSelectActions: (selectedObjects: ObjectsDataRow[]) => Promise<{
-    title: string;
-    handler: (obj: any) => Promise<void>;
-  }[]>;
 
   @Input()
   set dataSource(value) {
@@ -50,6 +43,16 @@ export class GenericListComponent implements OnInit, AfterViewInit, AfterViewChe
   get dataSource(){
     return this._dataSource;
   }
+
+  listHeight
+  dataView: DataView;
+
+  @Input('getSelectActions') getSelectActions: (selectedObjects: ObjectsDataRow[]) => Promise<{
+    title: string;
+    handler: (obj: any) => Promise<void>;
+  }[]>;
+
+  
   dataObjects: any[] = []
 
   searchString: string = '';
@@ -128,6 +131,7 @@ export class GenericListComponent implements OnInit, AfterViewInit, AfterViewChe
     this.searchString = $event.value
     this.reload();
   }
+  
   async reload() {
     if (this.customList && this.dataSource) {
       // this.dataObjects = await this.dataSource.getList({

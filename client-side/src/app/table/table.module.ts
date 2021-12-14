@@ -3,15 +3,15 @@ import { CommonModule } from '@angular/common';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { TranslateLoader, TranslateModule, TranslateStore } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
-import { PepAddonService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepCustomizationService, PepFileService, PepLoaderService } from '@pepperi-addons/ngx-lib';
 import { config } from '../addon.config';
 import { TableComponent as TableComponent } from './table.component';
-import { AddonService } from '../addon.service';
+import { AddonService } from '../../services/addon.service';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
-import { MatDialog } from '@angular/material/dialog';
 import { PepListModule } from '@pepperi-addons/ngx-lib/list';
 import { GenericListModule } from '../generic-list/generic-list.module';
 import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
+import { DataVisualizationService } from 'src/services/data-visualization.service';
 
 
 
@@ -34,14 +34,12 @@ import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
     ],
     exports: [TableComponent],
     providers: [
-        {
-            provide: MatDialog,
-            useValue: {}
-        },
         TranslateStore,
         PepCustomizationService,
         PepDialogService,
-        AddonService 
+        DataVisualizationService,
+        AddonService,
+        PepLoaderService
         // Add here all used services.
     ]
 })

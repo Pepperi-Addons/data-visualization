@@ -1,30 +1,36 @@
 import { CdkDragDrop, copyArrayItem, moveItemInArray, transferArrayItem } from "@angular/cdk/drag-drop";
 import { Injectable } from "@angular/core";
+import { MatDialogRef } from "@angular/material/dialog";
+import { TranslateService } from "@ngx-translate/core";
 import { PepColorService } from "@pepperi-addons/ngx-lib";
+import { PepDialogActionButton, PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
+import { AddonService } from "src/services/addon.service";
 import { Color } from "src/app/models/color";
+import { SeriesEditorComponent } from "src/app/series-editor";
+import { DataQuery } from "../../../server-side/models/data-query";
 
 
 @Injectable({
     providedIn: 'root',
 })
 export class DataVisualizationService {
-    
+    dialogRef: MatDialogRef<any>;
+    constructor(private pepColorService: PepColorService,
+        private dialogService: PepDialogService) { };
 
-    constructor(private pepColorService: PepColorService) {};
-
-    getRGBAcolor(colObj: Color, opac = null){
+    getRGBAcolor(colObj: Color, opac = null) {
         let rgba = 'rgba(255,255,255,0';
-            if(colObj){
-                let color = colObj.color;
-                let opacity = opac != null ? opac : parseInt(colObj.opacity);
+        if (colObj) {
+            let color = colObj.color;
+            let opacity = opac != null ? opac : parseInt(colObj.opacity);
 
-                opacity = opacity > 0 ? opacity / 100 : 0;
-                //check if allready rgba
-                
-                let hsl = this.pepColorService.hslString2hsl(color);
-                let rgb = this.pepColorService.hsl2rgb(hsl);
-                
-                rgba = 'rgba('+ rgb.r + ','  + rgb.g + ',' + rgb.b + ',' + opacity + ')';
+            opacity = opacity > 0 ? opacity / 100 : 0;
+            //check if allready rgba
+
+            let hsl = this.pepColorService.hslString2hsl(color);
+            let rgb = this.pepColorService.hsl2rgb(hsl);
+
+            rgba = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + opacity + ')';
         }
         return rgba;
     }
@@ -41,19 +47,46 @@ export class DataVisualizationService {
 
     getCardShadow(intensity, type) {
         let shadow = type === 'Soft' ? '0px 3px 6px 0px rgba(0, 0, 0, ' + intensity + '),0px 4px 8px 0px rgba(0, 0, 0, ' + intensity + '),0px 6px 12px 0px rgba(0, 0, 0, ' + intensity + ')' :
-          '0px 8px 16px 0px rgba(0, 0, 0, ' + intensity + '), 0px 12px 24px 0px rgba(0, 0, 0, ' + intensity + '),0px 24px 48px 0px rgba(0, 0, 0, ' + intensity + ')'
-    
-        return `${shadow}`;
-      }
+            '0px 8px 16px 0px rgba(0, 0, 0, ' + intensity + '), 0px 12px 24px 0px rgba(0, 0, 0, ' + intensity + '),0px 24px 48px 0px rgba(0, 0, 0, ' + intensity + ')'
 
-      getChartBorder(useBorder, border) {
+        return `${shadow}`;
+    }
+
+    
+    openDialog(title, content, buttons, input, callbackFunc = null): void {
+        const config = this.dialogService.getDialogConfig(
+            {
+                disableClose: true,
+                panelClass: 'pepperi-standalone'
+            },
+            'inline'
+        );
+        const data = new PepDialogData({
+            title: title,
+            content: content,
+            actionButtons: buttons,
+            actionsType: "custom",
+            showHeader: true,
+            showFooter: true,
+            showClose: true
+        })
+        config.data = data;
+
+        this.dialogRef = this.dialogService.openDialog(content, input, config);
+        this.dialogRef.afterClosed().subscribe(res => {
+            callbackFunc(res);
+        });
+    }
+
+
+    getChartBorder(useBorder, border) {
         if (useBorder) {
-          let col: Color = border;
-          return '1px solid ' + this.getRGBAcolor(col);
+            let col: Color = border;
+            return '1px solid ' + this.getRGBAcolor(col);
         }
         else {
-          return 'none';
+            return 'none';
         }
-      }
+    }
 
 }

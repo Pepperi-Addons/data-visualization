@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IPepFieldValueChangeEvent, PepAddonService } from '@pepperi-addons/ngx-lib';
 import { IPepButtonClickEvent, PepButton } from '@pepperi-addons/ngx-lib/button';
 import { pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
-import { AddonService } from '../addon.service';
+import { AddonService } from '../../services/addon.service';
 import { config } from '../addon.config';
 import { AccountTypes, Aggregators, DateOperation, Intervals, OrderType, ResourceTypes, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../../../../server-side/models/data-query';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';

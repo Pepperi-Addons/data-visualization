@@ -7,7 +7,7 @@ import { PepGroupButtonsModule } from '@pepperi-addons/ngx-lib/group-buttons';
 import { PepTextareaModule } from '@pepperi-addons/ngx-lib/textarea';
 import { PepAddonService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
 import { PepDialogModule, PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
-import { AddonService } from '../addon.service';
+import { AddonService } from '../../services/addon.service';
 import { SeriesEditorComponent } from './series-editor.component';
 import { PepFieldTitleModule } from '@pepperi-addons/ngx-lib/field-title';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';

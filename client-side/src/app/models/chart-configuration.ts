@@ -5,6 +5,7 @@ import { DropShadow } from "./dropshadow";
 
 export class ChartConfiguration extends BaseConfiguration {
     chart: Chart = null;
+    useLabel: boolean = false;
     label: string = '';
 }
 export class Chart {

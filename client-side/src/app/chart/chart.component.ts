@@ -7,6 +7,7 @@ import { config } from '../addon.config';
 import { Color } from '../models/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { ChartConfiguration } from '../models/chart-configuration';
+import { AddonService } from 'src/services/addon.service';
 
 @Component({
     selector: 'chart',
@@ -15,52 +16,42 @@ import { ChartConfiguration } from '../models/chart-configuration';
 })
 export class ChartComponent implements OnInit {
 
-    existing: any;
-    chartID;
-    isLibraryAlreadyLoaded = {};
     @Input('hostObject')
     set hostObject(value) {
         this._configuration = value?.configuration;
-        if (value.configuration?.chart?.Key && value.configuration?.query.Key && value.configuration?.query?.Series && value.configuration?.query?.Series.length > 0) {
+        if (value.configuration?.chart?.Key && value.configuration?.query?.Key && value.configuration.executeQuery) {
 
             this.drawChart(this.configuration);
         }
         else {
             this.deleteChart();
         }
-        this.chartID = value.configuration?.chart?.Key;
     }
 
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
-    chartInstance: any;
     @ViewChild("previewArea") divView: ElementRef;
-
     private _configuration: ChartConfiguration;
     get configuration(): ChartConfiguration {
         return this._configuration;
     }
+    chartInstance: any;
+    isLibraryAlreadyLoaded = {};
     oldDefine: any;
 
-    constructor(private translate: TranslateService, private addonService: PepAddonService, public dataVisualizationService: DataVisualizationService) { }
+    constructor(private translate: TranslateService,
+        private pluginService: AddonService,
+        private addonService: PepAddonService,
+        public dataVisualizationService: DataVisualizationService) { }
 
     ngOnInit(): void {
-        // When finish load raise block-loaded.
         this.hostEvents.emit({ action: 'block-loaded' });
     }
 
     ngOnChanges(e: any): void {
     }
 
-    async executeQuery(queryID) {
-        const params = {
-            key: queryID
-        };
-        return this.addonService.postAddonApiCall(config.AddonUUID, 'elastic', 'execute', null, { params: params }).toPromise();
-    }
-
     drawChart(configuration: any) {
-        this.executeQuery(configuration.query.Key).then((data) => {
-            debugger;
+        this.pluginService.executeQuery(configuration.query.Key).then((data) => {
             System.import(configuration.chart.ScriptURI).then((res) => {
                 const configuration = {
                     label: 'Sales'
@@ -106,13 +97,10 @@ export class ChartComponent implements OnInit {
                     node.onload = (script) => {
                         window['define'] = _oldDefine;
                         this.isLibraryAlreadyLoaded[src] = true;
-                        //this.lockObject = false;
+                        console.log(`${src} loaded`)
                         resolve()
                     };
                     node.onerror = (script) => {
-                        // this.handleErrorDialog(this.translate.instant("FailedLoadLibrary", {
-                        //   library: script['target'].id
-                        // }));
                     };
                     document.getElementsByTagName('head')[0].appendChild(node);
                 }

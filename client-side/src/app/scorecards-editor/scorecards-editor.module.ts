@@ -11,7 +11,7 @@ import { PepGroupButtonsModule } from '@pepperi-addons/ngx-lib/group-buttons';
 import { PepTextareaModule } from '@pepperi-addons/ngx-lib/textarea';
 import { MatTabsModule } from '@angular/material/tabs';
 import { config } from '../addon.config';
-import { AddonService } from '../addon.service';
+import { AddonService } from '../../services/addon.service';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { PepIconRegistry, pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
@@ -19,6 +19,7 @@ import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
 import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
 import { ChartEditorModule } from '../chart-editor';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
+import { DataVisualizationService } from 'src/services/data-visualization.service';
 
 
 const pepIcons = [
@@ -59,6 +60,7 @@ const pepIcons = [
     HttpClient,
     PepFileService,
     PepHttpService,
+    DataVisualizationService
   ]
 })
 export class ScorecardsEditorModule {
