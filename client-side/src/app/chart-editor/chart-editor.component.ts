@@ -129,9 +129,7 @@ export class ChartEditorComponent implements OnInit {
 
         imports.forEach(src => {
             promises.push(new Promise<void>((resolve) => {
-                debugger
                 const existing = document.getElementById(src);
-                debugger;
                 if (!existing) {
                     let _oldDefine = window['define'];
                     const node = document.createElement('script');

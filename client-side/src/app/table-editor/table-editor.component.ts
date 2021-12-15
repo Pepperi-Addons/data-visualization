@@ -68,7 +68,6 @@ export class TableEditorComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    debugger;
     if (!this.configuration) {
       this.loadDefaultConfiguration();
     }

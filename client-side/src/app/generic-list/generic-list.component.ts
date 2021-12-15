@@ -113,7 +113,6 @@ export class GenericListComponent implements OnInit, AfterViewInit, AfterViewChe
 
     const objects = uuids.map(uuid => this.getObject(uuid))
     if (objects === undefined) {
-      debugger;
       throw new Error("undefined objects");
     }
     return objects;
@@ -131,7 +130,7 @@ export class GenericListComponent implements OnInit, AfterViewInit, AfterViewChe
     this.searchString = $event.value
     this.reload();
   }
-  
+
   async reload() {
     if (this.customList && this.dataSource) {
       // this.dataObjects = await this.dataSource.getList({

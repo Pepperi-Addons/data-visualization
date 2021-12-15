@@ -66,7 +66,7 @@ export class ScorecardsEditorComponent implements OnInit {
     this.pluginService.addonUUID = this.routeParams.snapshot.params['addon_uuid'];
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     if (!this.configuration) {
       this.loadDefaultConfiguration();
     }
@@ -94,16 +94,14 @@ export class ScorecardsEditorComponent implements OnInit {
         this.hostEvents.emit({ action: 'block-editor-loaded' });
       })
     } else {
-      this.pluginService.upsertDataQuery({
+      const query = await this.pluginService.upsertDataQuery({
         Name: uuid()
-      }).then((res) => {
-        this.currentDataQuery = res;
-        this.configuration.query = { Key: res.Key }
       });
+      this.currentDataQuery = query;
+      this.configuration.query = { Key: query.Key }
+
       this.blockLoaded = true;
     }
-
-
   }
 
 

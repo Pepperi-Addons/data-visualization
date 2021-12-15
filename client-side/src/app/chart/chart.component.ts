@@ -83,7 +83,6 @@ export class ChartComponent implements OnInit {
 
         imports.forEach(src => {
             promises.push(new Promise<void>((resolve) => {
-                debugger
                 this.isLibraryAlreadyLoaded[src] = false;
                 if (!this.isLibraryAlreadyLoaded[src]) {
                     let _oldDefine = window['define'];

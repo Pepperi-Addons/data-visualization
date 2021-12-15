@@ -31,10 +31,6 @@ export class ScorecardsComponent implements OnInit {
     if (value.configuration?.query?.Key && value.configuration.executeQuery) {
       this.drawScorecards(this.configuration);
     }
-    else {
-      this.deleteScorecards();
-    }
-
   }
 
   @ViewChild('scorecardsPreviewArea', { static: true }) divView: ElementRef;
@@ -53,17 +49,22 @@ export class ScorecardsComponent implements OnInit {
   }
 
   drawScorecards(configuration) {
-    this.pluginService.executeQuery(configuration.query.Key).then((data) => {
+    this.pluginService.executeQuery(configuration.query.Key).then((result) => {
       try {
-        const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
-        const dataset = Object.assign.apply(Object, data.DataSet);
-        let content = `<div style="display: flex;flex-direction: column;gap: 2rem;">
-        <div style="margin:1rem;display: flex;gap: 2rem;">`;
-        for (let i = 0; i < series.length; i++) {
-          content += this.getScorecardsHTML(series[i], dataset[series[i]]);
-        };
-        content += `</div></div>`;
-        this.divView.nativeElement.innerHTML = content;
+        const series = result.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
+        if (series.length > 0) {
+          const dataset = Object.assign.apply(Object, result.DataSet);
+          let content = `<div style="display: flex;flex-direction: column;gap: 2rem;">
+          <div style="margin:1rem;display: flex;gap: 2rem;">`;
+          for (let i = 0; i < series.length; i++) {
+            content += this.getScorecardsHTML(series[i], dataset[series[i]]);
+          };
+          content += `</div></div>`;
+          this.divView.nativeElement.innerHTML = content;
+        }
+        else {
+          this.divView.nativeElement.innerHTML = "";
+        }
       }
       catch (err) {
         this.divView.nativeElement.innerHTML = `Failed to draw scorecards:  , error: ${err}`;
@@ -91,12 +92,6 @@ export class ScorecardsComponent implements OnInit {
 
   getRandomNumber() {
     return Math.floor(Math.random() * 100);
-  }
-
-  deleteScorecards() {
-    if (this.divView) {
-      this.divView.nativeElement.innerHTML = "";
-    }
   }
 
 }

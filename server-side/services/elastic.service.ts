@@ -63,18 +63,18 @@ class ElasticService {
     const body = elasticRequestBody.toJSON();
     console.log(`lambdaBody: ${JSON.stringify(body)}`);
 
-    // const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
-    // console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
+    const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
+    console.log(`lambdaResponse: ${JSON.stringify(lambdaResponse)}`);
 
-    // if (!lambdaResponse.success) {
-    //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
-    //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
-    // }
+    if (!lambdaResponse.success) {
+      console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
+      throw new Error(`Failed to execute data query ID: ${query.Key}`);
+    }
 
-    // for debugging
-    const lambdaResponse = {
-      resultObject: null
-    };
+    // // for debugging
+    // const lambdaResponse = {
+    //   resultObject: null
+    // };
 
     let response: DataQueryResponse = this.buildResponseFromElasticResults(lambdaResponse.resultObject, query);
 
@@ -190,164 +190,164 @@ class ElasticService {
   private buildResponseFromElasticResults(lambdaResponse, query: DataQuery) {
 
     // for debugging
-    lambdaResponse = {
-      "aggregations" : {
-        "Total sales ($)" : {
-          "doc_count" : 6122,
-          "Item.MainCategory" : {
-            "doc_count_error_upper_bound" : 0,
-            "sum_other_doc_count" : 0,
-            "buckets" : [
-              {
-                "key" : "Pharmacy",
-                "doc_count" : 5203,
-                "DummyBreakBy" : {
-                  "doc_count_error_upper_bound" : 0,
-                  "sum_other_doc_count" : 0,
-                  "buckets" : [
-                    {
-                      "key" : "DummyBreakBy",
-                      "doc_count" : 5203,
-                      "TotalUnitsPriceAfterDiscount_Sum" : {
-                        "value" : 1310815.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key" : "Skincare",
-                "doc_count" : 779,
-                "DummyBreakBy" : {
-                  "doc_count_error_upper_bound" : 0,
-                  "sum_other_doc_count" : 0,
-                  "buckets" : [
-                    {
-                      "key" : "DummyBreakBy",
-                      "doc_count" : 779,
-                      "TotalUnitsPriceAfterDiscount_Sum" : {
-                        "value" : 83446.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key" : "Hand Cosmetics",
-                "doc_count" : 139,
-                "DummyBreakBy" : {
-                  "doc_count_error_upper_bound" : 0,
-                  "sum_other_doc_count" : 0,
-                  "buckets" : [
-                    {
-                      "key" : "DummyBreakBy",
-                      "doc_count" : 139,
-                      "TotalUnitsPriceAfterDiscount_Sum" : {
-                        "value" : 3879.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key" : "PPI_Package1",
-                "doc_count" : 1,
-                "DummyBreakBy" : {
-                  "doc_count_error_upper_bound" : 0,
-                  "sum_other_doc_count" : 0,
-                  "buckets" : [
-                    {
-                      "key" : "DummyBreakBy",
-                      "doc_count" : 1,
-                      "TotalUnitsPriceAfterDiscount_Sum" : {
-                        "value" : 57.0
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        "Total sales (QTY)" : {
-          "doc_count" : 6122,
-          "Item.MainCategory" : {
-            "doc_count_error_upper_bound" : 0,
-            "sum_other_doc_count" : 0,
-            "buckets" : [
-              {
-                "key" : "Pharmacy",
-                "doc_count" : 5203,
-                "DummyBreakBy" : {
-                  "doc_count_error_upper_bound" : 0,
-                  "sum_other_doc_count" : 0,
-                  "buckets" : [
-                    {
-                      "key" : "DummyBreakBy",
-                      "doc_count" : 5203,
-                      "UnitsQuantity_Sum" : {
-                        "value" : 66906.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key" : "Skincare",
-                "doc_count" : 779,
-                "DummyBreakBy" : {
-                  "doc_count_error_upper_bound" : 0,
-                  "sum_other_doc_count" : 0,
-                  "buckets" : [
-                    {
-                      "key" : "DummyBreakBy",
-                      "doc_count" : 779,
-                      "UnitsQuantity_Sum" : {
-                        "value" : 3742.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key" : "Hand Cosmetics",
-                "doc_count" : 139,
-                "DummyBreakBy" : {
-                  "doc_count_error_upper_bound" : 0,
-                  "sum_other_doc_count" : 0,
-                  "buckets" : [
-                    {
-                      "key" : "DummyBreakBy",
-                      "doc_count" : 139,
-                      "UnitsQuantity_Sum" : {
-                        "value" : 211.0
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "key" : "PPI_Package1",
-                "doc_count" : 1,
-                "DummyBreakBy" : {
-                  "doc_count_error_upper_bound" : 0,
-                  "sum_other_doc_count" : 0,
-                  "buckets" : [
-                    {
-                      "key" : "DummyBreakBy",
-                      "doc_count" : 1,
-                      "UnitsQuantity_Sum" : {
-                        "value" : 1.0
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
+    // lambdaResponse = {
+    //   "aggregations" : {
+    //     "Total sales ($)" : {
+    //       "doc_count" : 6122,
+    //       "Item.MainCategory" : {
+    //         "doc_count_error_upper_bound" : 0,
+    //         "sum_other_doc_count" : 0,
+    //         "buckets" : [
+    //           {
+    //             "key" : "Pharmacy",
+    //             "doc_count" : 5203,
+    //             "DummyBreakBy" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "DummyBreakBy",
+    //                   "doc_count" : 5203,
+    //                   "TotalUnitsPriceAfterDiscount_Sum" : {
+    //                     "value" : 1310815.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key" : "Skincare",
+    //             "doc_count" : 779,
+    //             "DummyBreakBy" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "DummyBreakBy",
+    //                   "doc_count" : 779,
+    //                   "TotalUnitsPriceAfterDiscount_Sum" : {
+    //                     "value" : 83446.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key" : "Hand Cosmetics",
+    //             "doc_count" : 139,
+    //             "DummyBreakBy" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "DummyBreakBy",
+    //                   "doc_count" : 139,
+    //                   "TotalUnitsPriceAfterDiscount_Sum" : {
+    //                     "value" : 3879.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key" : "PPI_Package1",
+    //             "doc_count" : 1,
+    //             "DummyBreakBy" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "DummyBreakBy",
+    //                   "doc_count" : 1,
+    //                   "TotalUnitsPriceAfterDiscount_Sum" : {
+    //                     "value" : 57.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     },
+    //     "Total sales (QTY)" : {
+    //       "doc_count" : 6122,
+    //       "Item.MainCategory" : {
+    //         "doc_count_error_upper_bound" : 0,
+    //         "sum_other_doc_count" : 0,
+    //         "buckets" : [
+    //           {
+    //             "key" : "Pharmacy",
+    //             "doc_count" : 5203,
+    //             "DummyBreakBy" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "DummyBreakBy",
+    //                   "doc_count" : 5203,
+    //                   "UnitsQuantity_Sum" : {
+    //                     "value" : 66906.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key" : "Skincare",
+    //             "doc_count" : 779,
+    //             "DummyBreakBy" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "DummyBreakBy",
+    //                   "doc_count" : 779,
+    //                   "UnitsQuantity_Sum" : {
+    //                     "value" : 3742.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key" : "Hand Cosmetics",
+    //             "doc_count" : 139,
+    //             "DummyBreakBy" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "DummyBreakBy",
+    //                   "doc_count" : 139,
+    //                   "UnitsQuantity_Sum" : {
+    //                     "value" : 211.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //           {
+    //             "key" : "PPI_Package1",
+    //             "doc_count" : 1,
+    //             "DummyBreakBy" : {
+    //               "doc_count_error_upper_bound" : 0,
+    //               "sum_other_doc_count" : 0,
+    //               "buckets" : [
+    //                 {
+    //                   "key" : "DummyBreakBy",
+    //                   "doc_count" : 1,
+    //                   "UnitsQuantity_Sum" : {
+    //                     "value" : 1.0
+    //                   }
+    //                 }
+    //               ]
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     }
+    //   }
+    // }
 
     let response: DataQueryResponse = new DataQueryResponse();
 
