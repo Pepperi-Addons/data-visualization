@@ -70,6 +70,8 @@ class ElasticService {
     //   console.log(`Failed to execute data query ID: ${query.Key}, lambdaBody: ${JSON.stringify(body)}`)
     //   throw new Error(`Failed to execute data query ID: ${query.Key}`);
     // }
+
+    // for debugging
     const lambdaResponse = {
       resultObject: null
     };
@@ -187,6 +189,7 @@ class ElasticService {
 
   private buildResponseFromElasticResults(lambdaResponse, query: DataQuery) {
 
+    // for debugging
     lambdaResponse = {
       "aggregations" : {
         "Total sales ($)" : {
@@ -381,7 +384,6 @@ class ElasticService {
               response.DataSet.push(dataSet);
             }
             this.handleBreakBy(series, groupBybuckets, response, dataSet, seriesData);
-            response.DataSet.push(dataSet);
           });
         });
       }

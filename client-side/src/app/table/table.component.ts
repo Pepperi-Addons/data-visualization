@@ -42,10 +42,6 @@ export class TableComponent implements OnInit {
     if (value.configuration?.query?.Key && value.configuration.executeQuery) {
       this.drawList(this.configuration);
     }
-    else {
-      this.deleteList();
-    }
-
   }
 
   oldDefine: any;
@@ -59,14 +55,6 @@ export class TableComponent implements OnInit {
     public loaderService: PepLoaderService,
 
     public dataVisualizationService: DataVisualizationService) {
-    // this.dataSet.push({
-    //   Resource: 'test1',
-    //   Fields: "gdfg"
-    // });
-    // this.dataSet.push({
-    //   Resource: 'test2',
-    //   Fields: "dsgfd"
-    // });
   }
 
   ngOnInit(): void {
@@ -115,13 +103,18 @@ export class TableComponent implements OnInit {
     this.dataSet = [];
     this.pluginService.executeQuery(configuration.query.Key).then((data) => {
       try {
+        // flat the series & groups
         const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
         const groups = data.DataQueries.map((data) => data.Groups).reduce((x, value) => x.concat(value), []);
+
+        const distinctSeries = this.getDistinct(series);
+        const distinctgroups = this.getDistinct(groups);
+
         data.DataSet.forEach(dataSet => {
           this.dataSet.push(dataSet);
         });
         this.dataSet = this.dataSet.slice();
-        this.listDataSource = this.getListDataSource([...groups, ...series]);
+        this.listDataSource = this.getListDataSource([...distinctSeries, ...distinctgroups]);
         this.loaderService.hide();
 
       }
@@ -131,6 +124,12 @@ export class TableComponent implements OnInit {
     }).catch((err) => {
       console.log(err);
     })
+  }
+
+  getDistinct(arr) {
+    return arr.filter(function (elem, index, self) {
+      return index === self.indexOf(elem);
+    });
   }
 
   convertToPepRowData(object: any, dataView: DataView) {
