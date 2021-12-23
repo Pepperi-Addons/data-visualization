@@ -114,7 +114,7 @@ export class TableComponent implements OnInit {
           this.dataSet.push(dataSet);
         });
         this.dataSet = this.dataSet.slice();
-        this.listDataSource = this.getListDataSource([...distinctSeries, ...distinctgroups]);
+        this.listDataSource = this.getListDataSource([...distinctgroups,...distinctSeries ]);
         this.loaderService.hide();
 
       }
