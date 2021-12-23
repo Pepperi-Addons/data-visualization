@@ -99,7 +99,7 @@ export class ChartEditorComponent implements OnInit {
 
     private loadDefaultConfiguration() {
         this._configuration = this.getDefaultHostObject();
-        this.updateHostObject();
+         this.updateHostObject();
     }
 
     private getDefaultHostObject(): ChartConfiguration {
@@ -201,7 +201,8 @@ export class ChartEditorComponent implements OnInit {
 
     editSeries(event) {
         if (event) {
-            this.currentSeries = this.currentDataQuery.Series.filter(s => s.Key === event.source.key)[0] as Serie
+            let serie =  this.currentDataQuery.Series.filter(s => s.Key === event.source.key)[0];
+            this.currentSeries = this.dataVisualizationService.deepCloneObject(serie) as Serie; // deep clone because if not the oblect will change also if cancel will be pressed
         }
         this.showSeriesEditorDialog(this.currentSeries);
     }
