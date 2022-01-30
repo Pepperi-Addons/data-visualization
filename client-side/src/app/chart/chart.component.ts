@@ -19,13 +19,16 @@ export class ChartComponent implements OnInit {
     @Input('hostObject')
     set hostObject(value) {
         this._configuration = value?.configuration;
-        if (value.configuration?.chart?.Key && value.configuration?.query?.Key && value.configuration.executeQuery) {
-
-            this.drawChart(this.configuration);
+        if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
+            if(value.configuration.executeQuery)
+                this.drawChart(this.configuration);
         }
         else {
             this.deleteChart();
         }
+
+        if(value.configuration)
+            value.configuration.executeQuery=true;
     }
 
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
@@ -60,6 +63,7 @@ export class ChartComponent implements OnInit {
                     this.chartInstance = new res.default(this.divView.nativeElement, configuration);
                     this.chartInstance.data = data;
                     this.chartInstance.update();
+                    window.dispatchEvent(new Event('resize'));
 
                 }).catch(err => {
                     this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;

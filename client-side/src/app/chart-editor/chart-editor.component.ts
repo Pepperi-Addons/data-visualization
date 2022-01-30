@@ -198,6 +198,16 @@ export class ChartEditorComponent implements OnInit {
         this.configuration.executeQuery = false;
         this.updateHostObject();
     }
+    onEventCheckboxChanged(key, event){
+        switch(key){
+            case "Label":
+                this.configuration.useLabel=event;
+                if(!event){
+                    this.configuration.label="";
+                }
+        }
+
+    }
 
     editSeries(event) {
         if (event) {

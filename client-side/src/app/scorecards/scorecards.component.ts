@@ -20,6 +20,7 @@ export class ScorecardsComponent implements OnInit {
   existing: any;
   chartID;
   isLibraryAlreadyLoaded = {};
+  queryResult:any;
   private _configuration: ScorecardsConfiguration;
   get configuration(): ScorecardsConfiguration {
     return this._configuration;
@@ -28,9 +29,11 @@ export class ScorecardsComponent implements OnInit {
   @Input('hostObject')
   set hostObject(value) {
     this._configuration = value?.configuration;
-    if (value.configuration?.query?.Key && value.configuration.executeQuery) {
+    if (value.configuration?.query?.Key) {
       this.drawScorecards(this.configuration);
     }
+    if(value.configuration)
+      value.configuration.executeQuery=true;
   }
 
   @ViewChild('scorecardsPreviewArea', { static: true }) divView: ElementRef;
@@ -49,29 +52,41 @@ export class ScorecardsComponent implements OnInit {
   }
 
   drawScorecards(configuration) {
-    this.pluginService.executeQuery(configuration.query.Key).then((result) => {
-      try {
-        const series = result.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
-        if (series.length > 0) {
-          const dataset = Object.assign.apply(Object, result.DataSet);
-          let content = `<div style="display: flex;flex-direction: column;gap: 2rem;">
-          <div style="margin:1rem;display: flex;gap: 2rem;">`;
-          for (let i = 0; i < series.length; i++) {
-            content += this.getScorecardsHTML(series[i], dataset[series[i]]);
-          };
-          content += `</div></div>`;
-          this.divView.nativeElement.innerHTML = content;
+    if(configuration?.executeQuery)
+    {
+      this.pluginService.executeQuery(configuration.query.Key).then((result) => {
+        try {
+          this.queryResult = result;
+          this.setScorcardsUIElement();
         }
-        else {
-          this.divView.nativeElement.innerHTML = "";
+        catch (err) {
+          this.divView.nativeElement.innerHTML = `Failed to draw scorecards:  , error: ${err}`;
         }
-      }
-      catch (err) {
-        this.divView.nativeElement.innerHTML = `Failed to draw scorecards:  , error: ${err}`;
-      }
-    }).catch((err) => {
-      this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query.Key} , error: ${err}`;
-    })
+      }).catch((err) => {
+        this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query.Key} , error: ${err}`;
+      })
+    }
+    else
+    {
+      this.setScorcardsUIElement()
+    }
+
+  }
+
+  private setScorcardsUIElement() {
+    const series = this.queryResult.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
+          if (series.length > 0) {
+            const dataset = Object.assign.apply(Object, this.queryResult.DataSet);
+            let content = `<div style="display: flex;flex-direction: column;gap: 2rem;">
+                  <div style="margin:1rem;display: flex;gap: 2rem;">`;
+            for (let i = 0; i < series.length; i++) {
+              content += this.getScorecardsHTML(series[i], dataset[series[i]]);
+            };
+            content += `</div></div>`;
+            this.divView.nativeElement.innerHTML = content;          }
+          else {
+            this.divView.nativeElement.innerHTML = "";
+          }
   }
 
   private getScorecardsHTML(name: string, value: any) {

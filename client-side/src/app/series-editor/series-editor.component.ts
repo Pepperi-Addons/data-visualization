@@ -24,12 +24,17 @@ export class SeriesEditorComponent implements OnInit {
   intervalOptions: Array<PepButton> = [];
   formatOptions: Array<PepButton> = [];
   orderOptions: Array<PepButton> = [];
-  userFilterFieldOptions: Array<PepButton> = [];
+  //userFilterFieldOptions: Array<PepButton> = [];
   userFilterOptions: Array<PepButton> = [];
-  accountFilterFieldOptions: Array<PepButton> = [];
+  //accountFilterFieldOptions: Array<PepButton> = [];
   accountFilterOptions: Array<PepButton> = [];
   periodOptions: Array<PepButton> = [];
   isLoaded = false;
+  filterRuleFieldsOptions: any=[];
+  isformValid = true;
+  filterRule = null;
+  seriesFilterRule = null;
+  outputSeries = null;
 
   formFlags={
     useDynamicSeries:false,
@@ -96,7 +101,7 @@ export class SeriesEditorComponent implements OnInit {
     'q':'Quarter',
     'q yyyy':'QuarterYear'
   }
-  trnsactionLinesFields: any;
+  transactionLinesFields: any;
   allActivitiesFields: any;
   JSON: JSON;
 
@@ -111,6 +116,7 @@ export class SeriesEditorComponent implements OnInit {
     if (incoming?.currentSeries) {
       this.mode = 'Update';
       this.series = incoming.currentSeries;
+      this.seriesFilterRule = this.series.Filter;
       this.formFlags.useCategories = this.series.GroupBy[0].FieldID ? true : false;
       this.formFlags.useDynamicSeries = this.series.BreakBy.FieldID ? true : false;
       this.formFlags.useDynamicFilter = this.series.DynamicFilterFields.length > 0;
@@ -129,10 +135,13 @@ export class SeriesEditorComponent implements OnInit {
   ngOnInit(): void {
     this.getDataIndexFields().then(() => {
       this.fillAggregatedFieldsType();
+      this.setFilterRuleFieldsOptions()
+      this.setAuthorizationFiltersFields();
+      if(this.series.Filter)
+        this.filterRule = JSON.parse(JSON.stringify(this.series.Filter));
       this.isLoaded = true;
 
     })
-
     Aggregators.forEach(aggregator => {
       this.aggregationsOptions.push({ key: aggregator, value: this.translate.instant(aggregator) });
     });
@@ -141,7 +150,7 @@ export class SeriesEditorComponent implements OnInit {
       this.intervalOptions.push({ key: intervalUnit, value: intervalUnit });
     });
 
-    ResourceTypes.forEach(resourceType => {
+    ResourceTypes.forEach(resourceType => {null
       this.resourceOptions.push({ key: resourceType, value: resourceType });
     });
 
@@ -166,13 +175,19 @@ export class SeriesEditorComponent implements OnInit {
 
   }
 
+
+  private setAuthorizationFiltersFields() {
+    this.userFilterOptions = [{ value: this.translate.instant("All_Users"), key: "AllUsers" }, { value: this.translate.instant("Current_User"), key: "CurrentUser" }],
+      this.accountFilterOptions = [{ value: this.translate.instant("All_Accounts"), key: "AllAccounts" }, { value: this.translate.instant("Assgined_Accounts"), key: "AccountsAssignedToCurrentUser" }];
+  }
+
   private fillAggregatedFieldsType() {
     switch (this.series.Resource) {
       case 'transaction_lines':
-        this.fillAggregatorField(this.trnsactionLinesFields);
+        this.fillAggregatorField(this.transactionLinesFields.map(function(f) {return f.FieldID;}));
         break;
       case 'all_activities':
-        this.fillAggregatorField(this.allActivitiesFields);
+        this.fillAggregatorField(this.allActivitiesFields.map(function(f) {return f.FieldID;}));
         break;
     }
   }
@@ -182,12 +197,12 @@ export class SeriesEditorComponent implements OnInit {
     this.aggregationsFieldsOptions = [];
     fields.forEach(field => {
       this.aggregationsFieldsOptions.push({ key: field, value: field });
-      if (field.startsWith('Account')) {
+      /*if (field.startsWith('Account')) {
         this.accountFilterFieldOptions.push({ key: field, value: field });
       }
       if (field.startsWith('Agent')) {
         this.userFilterFieldOptions.push({ key: field, value: field });
-      }
+      }*/
     });
   }
 
@@ -196,13 +211,60 @@ export class SeriesEditorComponent implements OnInit {
   }
 
   getDataIndexFields() {
-    return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'all_activities_fields').toPromise().then((allActivitiesFields) => {
-      return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'transaction_lines_fields').toPromise().then((trnsactionLinesFields) => {
-        this.allActivitiesFields = allActivitiesFields.Fields.sort((one, two) => (one > two ? 1 : -1));
-        this.trnsactionLinesFields = trnsactionLinesFields.Fields.sort((one, two) => (one > two ? 1 : -1));
+    return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'all_activities_schema').toPromise().then((allActivitiesFields) => {
+      return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'transaction_lines_schema').toPromise().then((trnsactionLinesFields) => {
+        this.allActivitiesFields = allActivitiesFields.Fields.sort((obj1, obj2) => (obj1.FieldID > obj2.FieldID ? 1 : -1));
+        this.transactionLinesFields = trnsactionLinesFields.Fields.sort((obj1, obj2) => (obj1.FieldID > obj2.FieldID ? 1 : -1));
       });
     });
   }
+
+  setFilterRuleFieldsOptions(){
+    switch (this.series.Resource) {
+      case 'transaction_lines':
+        this.filterRuleFieldsOptions = this.transactionLinesFields.map(f=> ({
+          FieldID:f.FieldID,
+          FieldType:this.getFilterBuilderFieldType(f.Type),
+          Title:f.FieldID,
+          OptionalValues: []
+        }));
+        break;
+      case 'all_activities':
+        this.filterRuleFieldsOptions = this.allActivitiesFields.map(f=> ({
+          FieldID:f.FieldID,
+          FieldType:this.getFilterBuilderFieldType(f.Type),
+          Title:f.FieldID
+          ,
+          OptionalValues: []
+        }));        
+        break;
+    }
+    this
+  }
+
+  getFilterBuilderFieldType(type){
+    switch(type){
+      case "long":
+      case "integer":
+        return "Integer";
+      case "float":
+      case "double":
+        return "Double";
+      case "string":
+      case "keyword":
+        return "String";
+      case "date":
+        return "DateTime";
+      case "boolean":
+        return "Bool";
+
+    }
+    //'JsonBool'
+    //'Date'
+    //'MultipleStringValues'
+    //'Guid'
+  }
+  
 
   onEventCheckboxChanged(eventType, event) {
     switch (eventType) {
@@ -221,8 +283,20 @@ export class SeriesEditorComponent implements OnInit {
     }
   }
 
-  onValueChanged(element, $event) {
+  onValueChanged(element, $event){}
+
+  onAuthorizationFilterChange(scope, $event) {
+    switch(scope){
+      case "account":
+
+        break;
+      case "user":
+
+        break;
+    }
   }
+
+  
 
   getScript() {
     return this.series.AggregatedFields.filter(af => af.Script)[0]?.Script;
@@ -270,6 +344,9 @@ export class SeriesEditorComponent implements OnInit {
       this.series.BreakBy.Interval = 'None';
       this.series.BreakBy.Format = '';
     }
+      this.series.Filter = JSON.parse(JSON.stringify(this.filterRule));
+      
+
   }
 
   onTypeChange(e) {
@@ -284,6 +361,7 @@ export class SeriesEditorComponent implements OnInit {
   }
   onResourceChange(event) {
     this.fillAggregatedFieldsType();
+    this.setFilterRuleFieldsOptions()
   }
 
   deleteDynamicFilterFields(index) {
@@ -317,10 +395,11 @@ export class SeriesEditorComponent implements OnInit {
 
   onFilterRuleChanged(event) {
     if (event) {
-
-      this.series.Filter = JSON.parse(event)
+      this.filterRule = event;
+      //this.series.Filter = event
     } else {
-      this.series.Filter = null;
+      this.filterRule = null;
+      //this.series.Filter = null;
     }
   }
 

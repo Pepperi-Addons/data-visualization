@@ -16,7 +16,10 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@angular/common": "^13.1.1",
+		"@pepperi-addons/ngx-lib": "^0.2.58-beta.1",
 		"@pepperi-addons/pepperi-filters": "file:../pepperi-filters/pepperi-filters",
-		"@pepperi-addons/scripts": "^2.0.4"
+		"@pepperi-addons/scripts": "^2.0.4",
+		"ngx-virtual-scroller": "^4.0.3"
 	}
 }

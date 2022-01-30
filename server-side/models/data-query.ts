@@ -59,7 +59,7 @@ export interface AggregatedParam {
 export const UserTypes = ["AllUsers", "CurrentUser", "UsersWithTheSameFieldValue", "UnderCurrentUserRoleHierarchy"];
 export declare type UserType = typeof UserTypes[number];
 
-export const AccountTypes = ["AllAccounts", "CurrentAccount", "AccountsWithTheSameFieldValue"];
+export const AccountTypes = ["AllAccounts", "CurrentAccount", "AccountsAssignedToCurrentUser","AccountsWithTheSameFieldValue"];
 export declare type AccountType = typeof AccountTypes[number];
 
 export const ResourceTypes = ["all_activities", "transaction_lines"];

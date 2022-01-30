@@ -19,6 +19,7 @@ import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
 import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
+import { SeriesEditorModule } from '../series-editor';
 
 const pepIcons = [
     pepIconSystemBin,
@@ -38,6 +39,7 @@ const pepIcons = [
         PepGroupButtonsModule,
         MatTabsModule,
         PepColorModule,
+        SeriesEditorModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,

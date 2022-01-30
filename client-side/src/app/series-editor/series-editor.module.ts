@@ -16,8 +16,10 @@ import { config } from '../addon.config';
 import { PepIconModule } from '@pepperi-addons/ngx-lib/icon';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
+import {PepQueryBuilderModule} from '@pepperi-addons/ngx-lib/query-builder'
+
 
 
 
@@ -25,7 +27,7 @@ import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
   declarations: [SeriesEditorComponent],
   imports: [
     CommonModule,
-
+    FormsModule,
     ReactiveFormsModule,
     PepSelectModule,
     PepTextboxModule,
@@ -40,7 +42,7 @@ import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
     PepIconModule,
     MatIconModule,
     MatDialogModule,
-    
+    PepQueryBuilderModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
