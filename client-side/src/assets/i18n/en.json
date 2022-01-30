@@ -30,6 +30,7 @@
     "Interval": "Interval",
     "NumberOf": "Number Of",
     "Filter": "Filter",
+    "Authorization_Filter": "Authorization Filter",
     "DynamicFilter": "Dynamic Filter",
     "UserFilterField": "User Filter Field",
     "UserFilter": "User Filter",
@@ -82,7 +83,9 @@
     "XL": "XL",
     "Text":"Text",
     "TitleSize":"Title size",
-    "ValueSize":"Value size"
-
-
+    "ValueSize":"Value size",
+    "All_Accounts":"All accounts",
+    "Assgined_Accounts":"Accounts assigned to current user",
+    "All_Users": "All users",
+    "Current_User":"Current user"
 }

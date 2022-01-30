@@ -52,6 +52,10 @@ export class DataVisualizationService {
         return `${shadow}`;
     }
 
+    deepCloneObject(object) {
+        var str = JSON.stringify(object)
+        return JSON.parse(str) ;
+    }
     
     openDialog(title, content, buttons, input, callbackFunc = null): void {
         const config = this.dialogService.getDialogConfig(

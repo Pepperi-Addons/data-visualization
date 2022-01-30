@@ -42,6 +42,8 @@ export class TableComponent implements OnInit {
     if (value.configuration?.query?.Key && value.configuration.executeQuery) {
       this.drawList(this.configuration);
     }
+    if(value.configuration)
+      value.configuration.executeQuery=true;
   }
 
   oldDefine: any;
@@ -114,7 +116,7 @@ export class TableComponent implements OnInit {
           this.dataSet.push(dataSet);
         });
         this.dataSet = this.dataSet.slice();
-        this.listDataSource = this.getListDataSource([...distinctSeries, ...distinctgroups]);
+        this.listDataSource = this.getListDataSource([...distinctgroups,...distinctSeries ]);
         this.loaderService.hide();
 
       }
