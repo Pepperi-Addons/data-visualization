@@ -6,5 +6,5 @@ import { DropShadow } from "./dropshadow";
 
 export class ScorecardsConfiguration extends BaseConfiguration {
     titleSize: PepSizeType = 'sm';
-    valueSize: PepSizeType = 'sm';
+    valueSize: PepSizeType = 'xl';
 }

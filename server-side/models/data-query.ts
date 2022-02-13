@@ -53,7 +53,7 @@ export interface AggregatedField {
 }
 export interface AggregatedParam {
     FieldID: string,
-    Aggregator: Aggregator,
+    Aggregator: ScriptAggregator,
     Name: string,
 }
 export const UserTypes = ["AllUsers", "CurrentUser", "UsersWithTheSameFieldValue", "UnderCurrentUserRoleHierarchy"];
@@ -73,6 +73,9 @@ export declare type Interval = typeof Intervals[number];
 
 export const Aggregators = ["Sum", "Count", "Average", "Script", "CountDistinct"];
 export declare type Aggregator = typeof Aggregators[number];
+
+export const ScriptAggregators = ["Sum", "Count", "CountDistinct"];
+export declare type ScriptAggregator = typeof ScriptAggregators[number];
 
 export const DateOperation = ['InTheLast', 'Today', 'ThisWeek', 'ThisMonth', 'Before', 'After', 'Between', 'DueIn', 'On', 'NotInTheLast', 'NotDueIn', 'IsEmpty', 'IsNotEmpty']
 export const OrderType = ["Ascending", "Decending"];

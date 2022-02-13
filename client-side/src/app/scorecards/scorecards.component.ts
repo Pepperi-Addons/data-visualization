@@ -78,7 +78,7 @@ export class ScorecardsComponent implements OnInit {
           if (series.length > 0) {
             const dataset = Object.assign.apply(Object, this.queryResult.DataSet);
             let content = `<div style="display: flex;flex-direction: column;gap: 2rem;">
-                  <div style="margin:1rem;display: flex;gap: 2rem;">`;
+                  <div style="display: flex;gap: 2rem;">`;
             for (let i = 0; i < series.length; i++) {
               content += this.getScorecardsHTML(series[i], dataset[series[i]]);
             };
@@ -91,16 +91,16 @@ export class ScorecardsComponent implements OnInit {
 
   private getScorecardsHTML(name: string, value: any) {
     const boxShadow = this.configuration?.useDropShadow === true ? this.dataVisualizationService.getCardShadow(this.configuration?.dropShadow?.intensity / 100, this.configuration?.dropShadow?.type) : 'unset';
-    return `<div style="padding: 2rem 2.5rem;
+    return `<div style="padding: 1.5rem 2rem 1rem;
           background: rgb(255, 255, 255);
           border: ${this.dataVisualizationService.getChartBorder(this.configuration?.useBorder, this.configuration?.border)};
           box-shadow: ${boxShadow};
-          border-radius: 8px;">
+          border-radius: 0.5rem;">
         <p style="text-align: center; margin: 10px 0px" class="color-dimmed title-${this.configuration.titleSize} ellipsis">
           ${name}
         </p>
         <p style="text-align: center; margin: 10px 0px" class="bold title-${this.configuration.valueSize} ellipsis" >  
-          ${value}
+          ${Math.trunc(value).toLocaleString()}
         </p>
       </div>`;
   }
