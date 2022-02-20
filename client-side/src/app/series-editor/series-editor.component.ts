@@ -6,7 +6,7 @@ import { IPepButtonClickEvent, PepButton } from '@pepperi-addons/ngx-lib/button'
 import { pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
 import { AddonService } from '../../services/addon.service';
 import { config } from '../addon.config';
-import { AccountTypes, Aggregators, DateOperation, Intervals, OrderType, ResourceTypes, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../../../../server-side/models/data-query';
+import { AccountTypes, Aggregators, DateOperation, Intervals, OrderType, ResourceTypes, ScriptAggregators, Serie, SERIES_LABEL_DEFAULT_VALUE, UserTypes } from '../../../../server-side/models/data-query';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { v4 as uuid } from 'uuid';
 
@@ -20,7 +20,8 @@ export class SeriesEditorComponent implements OnInit {
   currentSeries: Serie;
   resourceOptions: Array<PepButton> = [];
   aggregationsOptions: Array<PepButton> = [];
-  aggregationsFieldsOptions: Array<PepButton> = [];
+  scriptAggregationsOptions: Array<PepButton> = [];
+  aggregationsFieldsOptions: any = {};
   intervalOptions: Array<PepButton> = [];
   formatOptions: Array<PepButton> = [];
   orderOptions: Array<PepButton> = [];
@@ -101,9 +102,13 @@ export class SeriesEditorComponent implements OnInit {
     'q':'Quarter',
     'q yyyy':'QuarterYear'
   }
-  transactionLinesFields: any;
-  allActivitiesFields: any;
+
+  resourcesFields:any={};
+
   JSON: JSON;
+  IsDateGroupBy: boolean;
+  IsDateBreakBy: boolean;
+
 
   constructor(private addonService: PepAddonService,
     public routeParams: ActivatedRoute,
@@ -134,16 +139,28 @@ export class SeriesEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.getDataIndexFields().then(() => {
+
       this.fillAggregatedFieldsType();
       this.setFilterRuleFieldsOptions()
       this.setAuthorizationFiltersFields();
+
       if(this.series.Filter)
         this.filterRule = JSON.parse(JSON.stringify(this.series.Filter));
+
+      if (this.series.GroupBy && this.series.GroupBy[0])
+         this.IsDateGroupBy = this.isAggragationFieldIsDate( this.series.GroupBy[0].FieldID);
+      if (this.series.BreakBy)
+        this.IsDateBreakBy = this.isAggragationFieldIsDate( this.series.BreakBy.FieldID);
+
       this.isLoaded = true;
 
     })
     Aggregators.forEach(aggregator => {
       this.aggregationsOptions.push({ key: aggregator, value: this.translate.instant(aggregator) });
+    });
+
+    ScriptAggregators.forEach(aggregator => {
+      this.scriptAggregationsOptions.push({ key: aggregator, value: this.translate.instant(aggregator) });
     });
 
     Intervals.forEach(intervalUnit => {
@@ -182,28 +199,31 @@ export class SeriesEditorComponent implements OnInit {
   }
 
   private fillAggregatedFieldsType() {
-    switch (this.series.Resource) {
-      case 'transaction_lines':
-        this.fillAggregatorField(this.transactionLinesFields.map(function(f) {return f.FieldID;}));
-        break;
-      case 'all_activities':
-        this.fillAggregatorField(this.allActivitiesFields.map(function(f) {return f.FieldID;}));
-        break;
+    if(this.series.AggregatedFields && this.series.AggregatedFields[0].Aggregator){
+        this.fillAggregatorField();
     }
   }
 
-
-  private fillAggregatorField(fields) {
+  /*private fillAggregatorField(fields) {
     this.aggregationsFieldsOptions = [];
     fields.forEach(field => {
       this.aggregationsFieldsOptions.push({ key: field, value: field });
-      /*if (field.startsWith('Account')) {
+      if (field.startsWith('Account')) {
         this.accountFilterFieldOptions.push({ key: field, value: field });
       }
       if (field.startsWith('Agent')) {
         this.userFilterFieldOptions.push({ key: field, value: field });
-      }*/
+      }
     });
+  }*/
+
+  private fillAggregatorField(){
+    this.aggregationsFieldsOptions = {};
+    if(this.series.Resource && this.resourcesFields[this.series.Resource]){
+          this.aggregationsFieldsOptions["Number"] =  this.resourcesFields[this.series.Resource].filter(f=>f.Type == "long" || f.Type == "integer" || f.Type == "float"|| f.Type == "double").map(function(f) {return { key: f.FieldID, value: f.FieldID }})
+          this.aggregationsFieldsOptions["Date"] =  this.resourcesFields[this.series.Resource].filter(f=>f.Type == "date").map(function(f) {return { key: f.FieldID, value: f.FieldID }})
+          this.aggregationsFieldsOptions["All"] = this.resourcesFields[this.series.Resource].map(function(f) {return { key: f.FieldID, value: f.FieldID }});
+    }
   }
 
   getResource(resource) {
@@ -213,33 +233,21 @@ export class SeriesEditorComponent implements OnInit {
   getDataIndexFields() {
     return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'all_activities_schema').toPromise().then((allActivitiesFields) => {
       return this.addonService.getAddonApiCall('10979a11-d7f4-41df-8993-f06bfd778304', 'data_index_meta_data', 'transaction_lines_schema').toPromise().then((trnsactionLinesFields) => {
-        this.allActivitiesFields = allActivitiesFields.Fields.sort((obj1, obj2) => (obj1.FieldID > obj2.FieldID ? 1 : -1));
-        this.transactionLinesFields = trnsactionLinesFields.Fields.sort((obj1, obj2) => (obj1.FieldID > obj2.FieldID ? 1 : -1));
+        this.resourcesFields["all_activities"] = allActivitiesFields.Fields.sort((obj1, obj2) => (obj1.FieldID > obj2.FieldID ? 1 : -1));
+        this.resourcesFields["transaction_lines"] = trnsactionLinesFields.Fields.sort((obj1, obj2) => (obj1.FieldID > obj2.FieldID ? 1 : -1));
       });
     });
   }
 
   setFilterRuleFieldsOptions(){
-    switch (this.series.Resource) {
-      case 'transaction_lines':
-        this.filterRuleFieldsOptions = this.transactionLinesFields.map(f=> ({
-          FieldID:f.FieldID,
-          FieldType:this.getFilterBuilderFieldType(f.Type),
-          Title:f.FieldID,
-          OptionalValues: []
-        }));
-        break;
-      case 'all_activities':
-        this.filterRuleFieldsOptions = this.allActivitiesFields.map(f=> ({
-          FieldID:f.FieldID,
-          FieldType:this.getFilterBuilderFieldType(f.Type),
-          Title:f.FieldID
-          ,
-          OptionalValues: []
-        }));        
-        break;
+    if(this.resourcesFields[this.series.Resource]){
+      this.filterRuleFieldsOptions = this.resourcesFields[this.series.Resource].map(f=> ({
+        FieldID:f.FieldID,
+        FieldType:this.getFilterBuilderFieldType(f.Type),
+        Title:f.FieldID,
+        OptionalValues: []
+      }));
     }
-    this
   }
 
   getFilterBuilderFieldType(type){
@@ -306,12 +314,12 @@ export class SeriesEditorComponent implements OnInit {
     switch (aggregatorType) {
       case 'GroupBy':
         if (this.series.GroupBy && this.series.GroupBy[0]?.FieldID) {
-          return this.aggregationsFieldsOptions.filter(x => x.value === this.series.GroupBy[0].FieldID)[0].key;
+          return this.aggregationsFieldsOptions["All"].filter(x => x.value === this.series.GroupBy[0].FieldID)[0].key;
         }
         break;
       case 'BreakBy':
         if (this.series.BreakBy?.FieldID) {
-          return this.aggregationsFieldsOptions.filter(x => x.value === this.series.BreakBy.FieldID)[0].key;
+          return this.aggregationsFieldsOptions["All"].filter(x => x.value === this.series.BreakBy.FieldID)[0].key;
         }
         break;
     }
@@ -353,12 +361,13 @@ export class SeriesEditorComponent implements OnInit {
 
   }
 
-  onAggregatorSelected(aggregator) {
+  onAggregatorSelected(aggregator){
     switch (aggregator) {
       case 'Script':
         break;
     }
   }
+  
   onResourceChange(event) {
     this.fillAggregatedFieldsType();
     this.setFilterRuleFieldsOptions()
@@ -391,6 +400,21 @@ export class SeriesEditorComponent implements OnInit {
     var alias = parts[parts.length - 1];
     this.series.GroupBy[0].Alias = alias;
 
+    this.IsDateGroupBy = this.isAggragationFieldIsDate( this.series.GroupBy[0].FieldID)
+  }
+
+  onBreakByFieldSelected(event) {
+    this.IsDateBreakBy = this.isAggragationFieldIsDate( this.series.BreakBy.FieldID)
+  }
+
+
+  isAggragationFieldIsDate(fieldID){
+    if(this.aggregationsFieldsOptions["Date"]){
+      var field  = this.aggregationsFieldsOptions["Date"].find(field=>field.key == fieldID)
+      if(field)//it is a date breakBy by field
+        return true;
+    }
+    return false
   }
 
   onFilterRuleChanged(event) {

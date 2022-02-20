@@ -20,9 +20,12 @@
                     <pep-field-title [label]="'AggregationDescription' | translate" class="header">
                     </pep-field-title>
                     <div class="flex-gap">
-                        <pep-select [disabled]="!isLoaded" class="flex" [emptyOption]="false" [(value)]="series.AggregatedFields[0].Aggregator" [key]="'aggregationsSelect'" [label]="'Aggregator' | translate" [xAlignment]="'left'" [options]='aggregationsOptions' (valueChange)="onAggregatorSelected($event)">
+                        <pep-select [disabled]="!isLoaded" class="flex" [emptyOption]="false" [(value)]="series.AggregatedFields[0].Aggregator" [key]="'aggregationsSelect'" [label]="'Aggregator' | translate" [xAlignment]="'left'" 
+                        [options]='aggregationsOptions' (valueChange)="onAggregatorSelected($event)">
                         </pep-select>
-                        <pep-select [disabled]="!isLoaded" *ngIf="series.AggregatedFields[0].Aggregator=='Sum' || series.AggregatedFields[0].Aggregator=='Average' || series.AggregatedFields[0].Aggregator=='CountDistinct'" [mandatory]="true" class="flex" [emptyOption]="false" [(value)]="series.AggregatedFields[0].FieldID" [key]="'fieldAggregationsSelect'" [label]="'AggregatedField' | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' (valueChange)="onChartSelected($event)">
+                        <pep-select [disabled]="!isLoaded" *ngIf="series.AggregatedFields[0].Aggregator=='Sum' || series.AggregatedFields[0].Aggregator=='Average' || series.AggregatedFields[0].Aggregator=='CountDistinct'"
+                         [mandatory]="true" class="flex" [emptyOption]="false" [(value)]="series.AggregatedFields[0].FieldID" [key]="'fieldAggregationsSelect'" [label]="'AggregatedField' | translate" [xAlignment]="'left'" 
+                        [options]="series.AggregatedFields[0].Aggregator=='Sum' || series.AggregatedFields[0].Aggregator=='Average' ? aggregationsFieldsOptions['Number'] : aggregationsFieldsOptions['All']" (valueChange)="onChartSelected($event)">
                         </pep-select>
                     </div>
                     <div id="scripts" *ngIf="series.AggregatedFields[0].Aggregator === 'Script'">
@@ -54,8 +57,10 @@
                             <div *ngFor="let aggregatedParam of series.AggregatedParams; let i = index">
                                 <div style="display: flex;">
                                     <pep-textbox [disabled]="!isLoaded" class="flex margin3" [(value)]="aggregatedParam.Name" [label]="'Name' | translate" [showTitle]="i==0" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
-                                    <pep-select [disabled]="!isLoaded" class="flex22 margin3" [(value)]="aggregatedParam.Aggregator" [emptyOption]="false" [label]="'Aggregation' | translate" [showTitle]="i==0" (valueChange)="onTypeChange($event)" [options]="aggregationsOptions"></pep-select>
-                                    <pep-select [disabled]="!isLoaded" class="flex22 margin3" [mandatory]="true" [(value)]="aggregatedParam.FieldID" [emptyOption]="false" [label]="'Field' | translate" [showTitle]="i==0" (valueChange)="onTypeChange($event)" [options]="aggregationsFieldsOptions"></pep-select>
+                                    <pep-select [disabled]="!isLoaded" class="flex22 margin3" [(value)]="aggregatedParam.Aggregator" [emptyOption]="false" [label]="'Aggregation' | translate" [showTitle]="i==0" 
+                                     [options]="scriptAggregationsOptions"></pep-select>
+                                    <pep-select [disabled]="!isLoaded" *ngIf="aggregatedParam.Aggregator=='Sum' || aggregatedParam.Aggregator=='CountDistinct'" class="flex22 margin3" [mandatory]="true" [(value)]="aggregatedParam.FieldID" [emptyOption]="false" [label]="'Field' | translate" [showTitle]="i==0"
+                                     [options]="aggregatedParam.Aggregator=='Sum'  ? aggregationsFieldsOptions['Number'] : aggregationsFieldsOptions['All']"></pep-select>
                                     <button  [disabled]="!isLoaded" (click)="deleteAggregatedParam(i)" class="flex5 margin3 top mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
                                         <mat-icon style="padding: 1.2rem;">
                                             <pep-icon name="system_bin"></pep-icon>
@@ -74,12 +79,13 @@
                     <pep-field-title [label]="'CategoriesDescription' | translate" class="header">
                     </pep-field-title>
                     <div class="flex-gap">
-                        <pep-select class="flex" [disabled]=" !isLoaded || !formFlags.useCategories" [emptyOption]="false" [(value)]="series.GroupBy && series.GroupBy[0] && series.GroupBy[0].FieldID" [key]="'GroupBySelect'" [label]="'GroupByField'  | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' (valueChange)="onGroupByFieldSelected($event)">
+                        <pep-select class="flex" [disabled]=" !isLoaded || !formFlags.useCategories" [emptyOption]="false" [(value)]="series.GroupBy && series.GroupBy[0] && series.GroupBy[0].FieldID" 
+                        [key]="'GroupBySelect'" [label]="'GroupByField'  | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions["All"]' (valueChange)="onGroupByFieldSelected($event)">
                         </pep-select>
                         <!-- <pep-textbox class="flex" [disabled]="!useCategories" [value]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Interval"  [label]="'Interval'  | translate" [type]="'int'" (valueChange)="onGroupByIntervalChanged($event)"></pep-textbox> -->
-                        <pep-select  *ngIf="series.GroupBy && series.GroupBy[0] && series.GroupBy[0].FieldID.indexOf('Date') > -1" class="flex25" [label]="'Interval' | translate" [disabled]=" !isLoaded || !formFlags.useCategories" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [(value)]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Interval" [options]='intervalOptions' >
+                        <pep-select  *ngIf="IsDateGroupBy"  class="flex25" [label]="'Interval' | translate" [disabled]=" !isLoaded || !formFlags.useCategories" [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [(value)]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Interval" [options]='intervalOptions' >
                         </pep-select>
-                        <pep-select *ngIf="series.GroupBy && series.GroupBy[0] && series.GroupBy[0].FieldID.indexOf('Date') > -1" class="flex25" [label]="'Format' | translate" [disabled]=" !isLoaded || !formFlags.useCategories" [emptyOption]="false" [key]="'formatSelect'" [xAlignment]="'left'" [(value)]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Format" [options]='formatOptions'>
+                        <pep-select *ngIf="IsDateGroupBy"  class="flex25" [label]="'Format' | translate" [disabled]=" !isLoaded || !formFlags.useCategories" [emptyOption]="false" [key]="'formatSelect'" [xAlignment]="'left'" [(value)]="series.GroupBy && series.GroupBy[0] &&series.GroupBy[0].Format" [options]='formatOptions'>
                         </pep-select>
                     </div>
                     <pep-textbox class="half-width" [disabled]=" !isLoaded || !formFlags.useCategories" [mandatory]="formFlags.useCategories" [(value)]="series.GroupBy[0].Alias" [label]="'Alias' | translate" [type]="'text'"></pep-textbox>
@@ -90,11 +96,11 @@
                     <pep-field-title [label]="'DynamicSeriesDescriptions' | translate" class="header">
                     </pep-field-title>
                     <div class="flex-gap">
-                        <pep-select class="flex" [disabled]=" !isLoaded || !formFlags.useDynamicSeries" [mandatory]="formFlags.useDynamicSeries" [emptyOption]="false" [key]="'groupBySelect'" [(value)]="series.BreakBy.FieldID" [label]="'BreakByField' | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions' >
+                        <pep-select class="flex" [disabled]=" !isLoaded || !formFlags.useDynamicSeries" [mandatory]="formFlags.useDynamicSeries" [emptyOption]="false" [key]="'groupBySelect'" [(value)]="series.BreakBy.FieldID" [label]="'BreakByField' | translate" [xAlignment]="'left'" [options]='aggregationsFieldsOptions["All"]' (valueChange)="onBreakByFieldSelected($event)" >
                         </pep-select>
-                        <pep-select *ngIf="series.BreakBy && series.BreakBy.FieldID.indexOf('Date') > -1" class="flex25" [disabled]="!isLoaded ||!formFlags.useDynamicSeries"   [(value)]="series.BreakBy.Interval"  [label]="'Interval' | translate"  [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='intervalOptions' (valueChange)="onChartSelected($event)">
+                        <pep-select *ngIf="IsDateBreakBy" class="flex25" [disabled]="!isLoaded ||!formFlags.useDynamicSeries"   [(value)]="series.BreakBy.Interval"  [label]="'Interval' | translate"  [emptyOption]="false" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='intervalOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>
-                        <pep-select *ngIf="series.BreakBy && series.BreakBy.FieldID.indexOf('Date') > -1" class="flex25" [label]="'Format' | translate" [(value)]="series.BreakBy.Format" [disabled]=" !isLoaded || !formFlags.useCategories" [emptyOption]="false" [key]="'formatSelect'" [xAlignment]="'left'" [(value)]="series.BreakBy && series.BreakBy.Format" [options]='formatOptions'>
+                        <pep-select *ngIf="IsDateBreakBy" class="flex25" [label]="'Format' | translate" [(value)]="series.BreakBy.Format" [disabled]=" !isLoaded || !formFlags.useCategories" [emptyOption]="false" [key]="'formatSelect'" [xAlignment]="'left'" [(value)]="series.BreakBy && series.BreakBy.Format" [options]='formatOptions'>
                         </pep-select>
                     </div>
                 </div>
@@ -163,7 +169,7 @@
                     <div id="fields-container">
                         <div class="fieldRow" *ngFor="let dynamicFilterFields of series.DynamicFilterFields;  let i = index">
                             <div id="aggregators-params-container">
-                                <pep-select [disabled]="false" [showTitle]="false" [emptyOption]="false" [options]="aggregationsFieldsOptions" class="pull-left flip" [value]="series.DynamicFilterFields[i]"></pep-select>
+                                <pep-select [disabled]="false" [showTitle]="false" [emptyOption]="false" [options]="aggregationsFieldsOptions["All"]" class="pull-left flip" [value]="series.DynamicFilterFields[i]"></pep-select>
 
                                 <button (click)="deleteDynamicFilterFields(i)" class="mat-focus-indicator mat-button mat-button-base pep-button md weak caution pull-left flip last-button icon-button ng-star-inserted">
                                     <mat-icon style="padding: 1.2rem;">
