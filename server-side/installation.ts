@@ -30,27 +30,37 @@ export async function install(client: Client, request: Request): Promise<any> {
             
         }
     });
-    const res = await runMigration(client);
-    return res;
-}
+
+
+    const res = await setPageBlockRelations(client);
+
+    const res2 = await setUsageMonitorRelation(client);
+
+    let resultObject = {
+        pageBlockRelation:res,
+        usageMonitorRelation:res2
+    };
+
+    let status = res.success && res2.success
+    return {success:status,resultObject:resultObject}}
 
 export async function uninstall(client: Client, request: Request): Promise<any> {
     return {success:true,resultObject:{}}
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
+    const res2 = await setUsageMonitorRelation(client);
+
     // If there is any change run migration code here
-    const res = await runMigration(client);
-    return {success:true,resultObject:{res}}
+    return res2;
     
-    return {success:true,resultObject:{}}
 }
 
 export async function downgrade(client: Client, request: Request): Promise<any> {
     return {success:true,resultObject:{}}
 }
 
-async function runMigration(client){
+async function setPageBlockRelations(client){
     try {
         let blockName = 'Chart';
 
@@ -104,6 +114,28 @@ async function runMigration(client){
         await service.upsertRelation(pageComponentRelation);
         await service.upsertRelation(scorecardsComponentRelation);
         await service.upsertRelation(tableComponentRelation);
+
+        return { success:true, resultObject: null };
+    } catch(err) {
+        return { success: false, resultObject: err };
+    }
+}
+
+
+async function setUsageMonitorRelation(client){
+    try {
+
+        const usageMonitorRelation: Relation = {
+            RelationName: "UsageMonitor",
+            Name: "", 
+            Description: `Data index and queries usage data`, 
+            Type: "AddonAPI",
+            AddonUUID: client.AddonUUID,
+            AddonRelativeURL: 'monitor/usage_data'
+        };
+       
+        const service = new MyService(client);
+       var res =  await service.upsertRelation(usageMonitorRelation);
 
         return { success:true, resultObject: null };
     } catch(err) {
