@@ -23,12 +23,14 @@ export class AddonService {
     }
 
     constructor(
-        public session: PepSessionService
-        , public pepperiDataConverter: PepDataConvertorService
+        public session: PepSessionService,
+        public pepperiDataConverter: PepDataConvertorService,
+        private pepHttp: PepHttpService
     ) {
         const accessToken = this.session.getIdpToken();
         this.parsedToken = jwt(accessToken);
         this.papiBaseURL = this.parsedToken["pepperi.baseurl"]
+        
     }
     ngOnInit() {
     }
@@ -42,7 +44,10 @@ export class AddonService {
     }
 
     async executeQuery(queryID) {
+        //debugger
         return this.papiClient.post(`/data_queries/${queryID}/execute`, null);
+        debugger
+        //return this.pepHttp.postHttpCall(`http://localhost:4500/elastic/execute?query_id=${queryID}`, null).toPromise();
     }
 
     async getDataQueryByKey(Key: string) {

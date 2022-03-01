@@ -42,7 +42,7 @@ export class TableComponent implements OnInit {
     if (value.configuration?.query?.Key && value.configuration.executeQuery) {
       this.drawList(this.configuration);
     }
-    if(value.configuration)
+    if (value.configuration)
       value.configuration.executeQuery=true;
   }
 
