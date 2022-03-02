@@ -27,7 +27,7 @@ export class TableEditorComponent extends BlockHelperService implements OnInit {
 
   enableLabel = false;
 
-  // scorecards configuration? WHY
+  // why scorecards configuration? should it be BaseConfiguration?
   protected getDefaultHostObject(): ScorecardsConfiguration {
     return new ScorecardsConfiguration();
   }
@@ -39,6 +39,5 @@ export class TableEditorComponent extends BlockHelperService implements OnInit {
     if (eventType === 'Label') {
       this.enableLabel = event;
     }
-
   }
 }

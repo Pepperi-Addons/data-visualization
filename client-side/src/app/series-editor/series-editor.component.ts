@@ -139,8 +139,6 @@ export class SeriesEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.getDataIndexFields().then(() => {
-
-      debugger;
       this.fillAggregatedFieldsType();
       this.setFilterRuleFieldsOptions()
       this.setAuthorizationFiltersFields();
@@ -200,7 +198,6 @@ export class SeriesEditorComponent implements OnInit {
   }
 
   private fillAggregatedFieldsType() {
-    debugger
     if(this.series.AggregatedFields && this.series.AggregatedFields[0].Aggregator){
         this.fillAggregatorField();
     }
