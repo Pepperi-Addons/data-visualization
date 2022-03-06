@@ -27,12 +27,9 @@ export class TableEditorComponent extends BlockHelperService implements OnInit {
 
   enableLabel = false;
 
-  // why scorecards configuration? should it be BaseConfiguration?
+  // using the same configuration as scorecards
   protected getDefaultHostObject(): ScorecardsConfiguration {
     return new ScorecardsConfiguration();
-  }
-
-  onValueChanged(type, event) {
   }
 
   onEventCheckboxChanged(eventType, event) {

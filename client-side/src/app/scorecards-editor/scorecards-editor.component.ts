@@ -30,9 +30,6 @@ export class ScorecardsEditorComponent extends BlockHelperService implements OnI
     return new ScorecardsConfiguration();
   }
 
-  onValueChanged(type, event) {
-  }
-
   onEventCheckboxChanged(eventType, event) {
     if (eventType === 'Label') {
       this.enableLabel = event;

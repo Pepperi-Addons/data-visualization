@@ -15,7 +15,7 @@ import { SeriesEditorComponent } from "../series-editor/series-editor.component"
 
 
 @Injectable()
-export class BlockHelperService implements OnInit {
+export abstract class BlockHelperService implements OnInit {
 
   @Input()
   set hostObject(value) {
@@ -98,9 +98,7 @@ export class BlockHelperService implements OnInit {
   }
 
   // need to be overriden
-  protected getDefaultHostObject(): BaseConfiguration{
-    return new BaseConfiguration();
-  }
+  protected abstract getDefaultHostObject();
 
   onEditClick() {
   }
@@ -134,8 +132,6 @@ export class BlockHelperService implements OnInit {
         this.currentDataQuery.Series.splice(idx, 1);
     }
 
-    //which line is better? ask Shir
-    //this.addonService.postAddonApiCall(config.AddonUUID, 'api', 'queries', this.currentDataQuery).toPromise().then((res) => {
     this.pluginService.upsertDataQuery(this.currentDataQuery).then((res) => {
         this.currentDataQuery = res;
         this.buildSeriesButtons();
@@ -180,7 +176,7 @@ export class BlockHelperService implements OnInit {
     const callbackFunc = (seriesToAddOrUpdate) => {
         if (seriesToAddOrUpdate) {
             this.currentDataQuery = this.updateQuerySeries(seriesToAddOrUpdate);
-            this.pluginService.upsertDataQuery(this.currentDataQuery).then((res) => { // is pluginService.upsert good?
+            this.pluginService.upsertDataQuery(this.currentDataQuery).then((res) => {
                 this.currentDataQuery = res;
                 this.buildSeriesButtons();
                 this.configuration.executeQuery = true;

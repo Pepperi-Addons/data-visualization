@@ -6,6 +6,7 @@ import { AddonService } from '../../services/addon.service';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { ChartConfiguration } from '../models/chart-configuration';
 import { BlockHelperService } from '../block-helper/block-helper.service';
+import internal from 'stream';
 
 @Component({
     selector: 'chart-editor',
@@ -15,7 +16,6 @@ import { BlockHelperService } from '../block-helper/block-helper.service';
 
 export class ChartEditorComponent extends BlockHelperService implements OnInit {
 
-    //in the cons, do I have to mention all the fields again?
     constructor(protected addonService: PepAddonService,
         public routeParams: ActivatedRoute,
         public router: Router,
@@ -34,8 +34,7 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
         super.ngOnInit();
     }
 
-    // overrides the one declared in BlockHelperService
-    getDefaultHostObject(): ChartConfiguration {
+    protected getDefaultHostObject(): ChartConfiguration {
       return new ChartConfiguration();
     }
 
@@ -51,34 +50,6 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
                 this.chartsOptions.push({ key: chart.Key, value: chart.Name });
             });
         });
-    }
-
-    //this one has no references at all, should I remove it?
-    loadSrcJSFiles(imports) {
-
-        let promises = [];
-
-        imports.forEach(src => {
-            promises.push(new Promise<void>((resolve) => {
-                const existing = document.getElementById(src);
-                if (!existing) {
-                    let _oldDefine = window['define'];
-                    const node = document.createElement('script');
-                    node.src = src;
-                    node.id = src;
-                    node.onload = (script) => {
-                        resolve()
-                    };
-                    node.onerror = (script) => {
-                    };
-                    document.getElementsByTagName('head')[0].appendChild(node);
-                }
-                else {
-                    resolve();
-                }
-            }));
-        });
-        return Promise.all(promises);
     }
 
     onValueChanged(type, event) {
@@ -100,6 +71,10 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
                 this.configuration.executeQuery = false;
 
                 break;
+            case 'Height':
+                this._configuration.height = event;
+                this.configuration.executeQuery = true;
+
         }
         this.updateHostObject();
     }
@@ -113,7 +88,5 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
                     this.configuration.label="";
                 }
         }
-
     }
-
 }
