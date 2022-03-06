@@ -6,7 +6,6 @@ import { AddonService } from '../../services/addon.service';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { ChartConfiguration } from '../models/chart-configuration';
 import { BlockHelperService } from '../block-helper/block-helper.service';
-import internal from 'stream';
 
 @Component({
     selector: 'chart-editor',
