@@ -7,7 +7,6 @@ export interface DataQuery extends AddonData {
     Name: string;
     Description?: string;
     Series: Serie[],
-
 }
 
 export interface GroupBy {

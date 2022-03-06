@@ -17,9 +17,9 @@ export class ScorecardsComponent implements OnInit {
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
 
-  existing: any;
-  chartID;
-  isLibraryAlreadyLoaded = {};
+  //existing: any;
+  //chartID;
+  //isLibraryAlreadyLoaded = {};
   queryResult:any;
   private _configuration: ScorecardsConfiguration;
   get configuration(): ScorecardsConfiguration {
@@ -37,7 +37,7 @@ export class ScorecardsComponent implements OnInit {
   }
 
   @ViewChild('scorecardsPreviewArea', { static: true }) divView: ElementRef;
-  oldDefine: any;
+  //oldDefine: any;
 
   constructor(private translate: TranslateService,
     private addonService: PepAddonService,

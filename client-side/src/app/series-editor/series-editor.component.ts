@@ -139,7 +139,6 @@ export class SeriesEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.getDataIndexFields().then(() => {
-
       this.fillAggregatedFieldsType();
       this.setFilterRuleFieldsOptions()
       this.setAuthorizationFiltersFields();

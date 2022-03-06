@@ -1,4 +1,3 @@
-import { Observable } from 'rxjs';
 import jwt from 'jwt-decode';
 import { PapiClient } from '@pepperi-addons/papi-sdk';
 import { Injectable } from '@angular/core';
@@ -23,12 +22,12 @@ export class AddonService {
     }
 
     constructor(
-        public session: PepSessionService
-        , public pepperiDataConverter: PepDataConvertorService
-    ) {
-        const accessToken = this.session.getIdpToken();
-        this.parsedToken = jwt(accessToken);
-        this.papiBaseURL = this.parsedToken["pepperi.baseurl"]
+        public session: PepSessionService,
+        public pepperiDataConverter: PepDataConvertorService,
+        private pepHttp: PepHttpService) {
+            const accessToken = this.session.getIdpToken();
+            this.parsedToken = jwt(accessToken);
+            this.papiBaseURL = this.parsedToken["pepperi.baseurl"]
     }
     ngOnInit() {
     }

@@ -13,7 +13,7 @@
                     <pep-checkbox [value]="configuration.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
                     </pep-checkbox>
                     <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
-                    <pep-group-buttons [buttons]="SlideDropShadowStyle" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
+                    <pep-group-buttons [buttons]="DropShadowStyle" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
                     </pep-group-buttons>
                     <pep-slider [label]="'ShadowIntensity' | translate" [minValue]="0" [maxValue]="100" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
                     </pep-slider>
