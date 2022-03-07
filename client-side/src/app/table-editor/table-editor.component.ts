@@ -5,7 +5,6 @@ import { PepAddonService } from '@pepperi-addons/ngx-lib';
 import { AddonService } from '../../services/addon.service';
 import { ScorecardsConfiguration } from '../models/scorecards-configuration';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
-import { BaseConfiguration } from '../models/base-configuration';
 import { BlockHelperService } from '../block-helper/block-helper.service';
 
 @Component({
@@ -25,16 +24,8 @@ export class TableEditorComponent extends BlockHelperService implements OnInit {
     super(addonService,routeParams,router,route,translate,dataVisualizationService,pluginService);
   }
 
-  enableLabel = false;
-
   // using the same configuration as scorecards
   protected getDefaultHostObject(): ScorecardsConfiguration {
     return new ScorecardsConfiguration();
-  }
-
-  onEventCheckboxChanged(eventType, event) {
-    if (eventType === 'Label') {
-      this.enableLabel = event;
-    }
   }
 }

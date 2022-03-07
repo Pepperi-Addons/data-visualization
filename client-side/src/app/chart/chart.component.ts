@@ -3,7 +3,6 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild }
 import 'systemjs'
 import 'systemjs-babel'
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
-import { config } from '../addon.config';
 import { Color } from '../models/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { ChartConfiguration } from '../models/chart-configuration';

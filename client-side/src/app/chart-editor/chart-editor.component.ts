@@ -63,29 +63,24 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
                     this._configuration.chart = null;
                 }
                 this.configuration.executeQuery = true;
-
                 break;
+
             case 'Label':
                 this._configuration.label = event;
                 this.configuration.executeQuery = false;
-
                 break;
+
+            case 'useLabel':
+                this.configuration.useLabel=event;
+                if(!event)
+                    this.configuration.label="";
+                break;
+
             case 'Height':
                 this._configuration.height = event;
                 this.configuration.executeQuery = true;
-
+                break;
         }
         this.updateHostObject();
-    }
-
-    // need to be moved to block helper
-    onEventCheckboxChanged(key, event){
-        switch(key){
-            case "Label":
-                this.configuration.useLabel=event;
-                if(!event){
-                    this.configuration.label="";
-                }
-        }
     }
 }

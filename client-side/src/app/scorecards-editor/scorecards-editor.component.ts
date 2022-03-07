@@ -14,8 +14,6 @@ import { BlockHelperService } from '../block-helper/block-helper.service';
 })
 export class ScorecardsEditorComponent extends BlockHelperService implements OnInit {
 
-  enableLabel = false;
-
   constructor(protected addonService: PepAddonService,
     public routeParams: ActivatedRoute,
     public router: Router,
@@ -28,12 +26,6 @@ export class ScorecardsEditorComponent extends BlockHelperService implements OnI
 
   protected getDefaultHostObject(): ScorecardsConfiguration {
     return new ScorecardsConfiguration();
-  }
-
-  onEventCheckboxChanged(eventType, event) {
-    if (eventType === 'Label') {
-      this.enableLabel = event;
-    }
   }
 
 }
