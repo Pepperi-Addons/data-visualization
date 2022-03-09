@@ -87,5 +87,6 @@
     "All_Accounts":"All accounts",
     "Assgined_Accounts":"Accounts assigned to current user",
     "All_Users": "All users",
-    "Current_User":"Current user"
+    "Current_User":"Current user",
+    "ChartHeight": "Chart Height"
 }
