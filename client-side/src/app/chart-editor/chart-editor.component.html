@@ -2,12 +2,13 @@
     <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="100ms">
         <mat-tab id="1" label="{{'General' | translate}}">
             <div *ngIf="blockLoaded">
-                <pep-checkbox [value]="configuration.useLabel" [label]="'Title' | translate" [renderTitle]="false" (valueChange)="onEventCheckboxChanged('Label',$event)"></pep-checkbox>
+                <pep-checkbox [value]="configuration.useLabel" [label]="'Title' | translate" [renderTitle]="false" (valueChange)="onValueChanged('useLabel',$event)"></pep-checkbox>
                 <pep-textbox [label]="'TitleText' | translate" [type]="'text'" [disabled]="!configuration.useLabel" [(value)]="configuration.label" (valueChange)="onValueChanged('Label', $event)"></pep-textbox>
                 <h2>{{'ChartDesign' | translate}}
                 </h2>
                 <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="configuration.chart?.Key" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">
                 </pep-select>
+                <pep-textbox [label]="'ChartHeight' | translate" [type]="'text'" [(value)]="configuration.height" (valueChange)="onValueChanged('Height', $event)"></pep-textbox>
                 <div id="border">
                     <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
                     <pep-color [value]="configuration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
