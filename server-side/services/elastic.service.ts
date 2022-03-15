@@ -8,7 +8,8 @@ import { callElasticSearchLambda } from '@pepperi-addons/system-addon-utils';
 import jwtDecode from 'jwt-decode';
 import { DataQueryResponse, SeriesData } from '../models/data-query-response';
 import { QueryExecutionScheme } from '../models/query-execution-scheme';
-import { toApiQueryString, toKibanaQuery } from '@pepperi-addons/pepperi-filters';
+import { JSONFilter, toApiQueryString, toKibanaQuery } from '@pepperi-addons/pepperi-filters';
+
 class ElasticService {
 
   papiClient: PapiClient;
@@ -56,7 +57,7 @@ class ElasticService {
     let aggregationsList: { [key: string]: Aggregation[] } = this.buildSeriesAggregationList(query.Series);;
 
     // build one query with all series (each aggregation have query and aggs)
-    let queryAggregation: any = this.buildAllSeriesAggregation(aggregationsList, query);
+    let queryAggregation: any = await this.buildAllSeriesAggregation(aggregationsList, query);
 
     elasticRequestBody.aggs(queryAggregation);
 
@@ -71,20 +72,15 @@ class ElasticService {
       throw new Error(`Failed to execute data query ID: ${query.Key}`);
     }
 
-    // // for debugging
-    // const lambdaResponse = {
-    //   resultObject: null
-    // };
-
     let response: DataQueryResponse = this.buildResponseFromElasticResults(lambdaResponse.resultObject, query);
 
     return response;
   }
 
-  private buildAllSeriesAggregation(aggregationsList: { [key: string]: esb.Aggregation[]; }, query: DataQuery) {
+  private async buildAllSeriesAggregation(aggregationsList: { [key: string]: esb.Aggregation[]; }, query: DataQuery) {
     let queryAggregation: any = [];
 
-    Object.keys(aggregationsList).forEach((seriesName) => {
+    for(var seriesName of Object.keys(aggregationsList)) {
 
       // build nested aggregations from array of aggregations for each series
       let seriesAggregation: esb.Aggregation = this.buildNestedAggregations(aggregationsList[seriesName]);
@@ -98,9 +94,39 @@ class ElasticService {
         resourceFilter = esb.boolQuery().must([resourceFilter, serializedQuery]);
       }
 
+      // if there is scope add user/accounts filters to resourceFilter
+      if (series.Scope.User == "CurrentUser"){
+        const currUserId = (<any>jwtDecode(this.client.OAuthAccessToken))["pepperi.id"];
+        const fieldName = (series.Resource == 'all_activities') ? 'Agent.InternalID' : 'Transaction.Agent.InternalID';
+        var userFilter: JSONFilter = {
+          FieldType: 'String',
+          ApiName: fieldName,
+          Operation: 'IsEqual',
+          Values: [currUserId]
+        }
+        resourceFilter = esb.boolQuery().must([resourceFilter, toKibanaQuery(userFilter)]);
+      }
+
+      if(series.Scope.Account == "AccountsAssignedToCurrentUser"){
+        const currUserId = (<any>jwtDecode(this.client.OAuthAccessToken))["pepperi.id"];
+        const assignedAccounts = await this.papiClient.get(`/account_users?where=User.InternalID=${currUserId}&fields=Account.InternalID`);
+        var assignedAccountsArray: string[] = [];
+        for(var acc of assignedAccounts){
+          assignedAccountsArray.push(acc["Account.InternalID"])
+        }
+        const fieldName = (series.Resource == 'all_activities') ? 'Account.InternalID' : 'Transaction.Account.InternalID';
+        var accountsFilter: JSONFilter = {
+          FieldType: 'String',
+          ApiName: fieldName,
+          Operation: 'IsEqual',
+          Values: assignedAccountsArray
+        }
+        resourceFilter = esb.boolQuery().must([resourceFilter, toKibanaQuery(accountsFilter)]);
+      }
+
       const filterAggregation = esb.filterAggregation(seriesName, resourceFilter).agg(seriesAggregation);
       queryAggregation.push(filterAggregation);
-    });
+    };
 
     return queryAggregation;
   }

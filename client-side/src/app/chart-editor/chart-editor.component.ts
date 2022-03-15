@@ -26,7 +26,7 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     }
 
     async ngOnInit(): Promise<void> {
-        if (!this.configuration) {
+        if (!this.configuration || Object.keys(this.configuration).length == 0) {
             this.loadDefaultConfiguration();
         };
         await this.fillChartsOptions();
@@ -40,10 +40,10 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     private fillChartsOptions() {
         return this.pluginService.getCharts().then((charts) => {
             this.charts = charts.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
-            if (!this._configuration.chart) {
+            if (!this.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = this.charts[0];
-                this._configuration.chart = firstChart;
+                this.configuration.chart = firstChart;
             }
             charts.forEach(chart => {
                 this.chartsOptions.push({ key: chart.Key, value: chart.Name });
@@ -52,21 +52,20 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     }
 
     onValueChanged(type, event) {
-        let promise: Promise<any> = Promise.resolve();
         switch (type) {
             case 'Chart':
                 if (event) {
                     const selectedChart = this.charts.filter(c => c.Key == event)[0];
-                    this._configuration.chart = selectedChart;
+                    this.configuration.chart = selectedChart;
                 }
                 else {
-                    this._configuration.chart = null;
+                    this.configuration.chart = null;
                 }
                 this.configuration.executeQuery = true;
                 break;
 
             case 'Label':
-                this._configuration.label = event;
+                this.configuration.label = event;
                 this.configuration.executeQuery = false;
                 break;
 
@@ -77,7 +76,12 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
                 break;
 
             case 'Height':
-                this._configuration.height = event;
+                if(event == ""){
+                    this.configuration.height = 22;
+                }
+                else
+                    this.configuration.height = event;
+
                 this.configuration.executeQuery = true;
                 break;
         }

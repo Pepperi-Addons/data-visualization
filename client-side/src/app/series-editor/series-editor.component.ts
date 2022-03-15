@@ -77,9 +77,7 @@ export class SeriesEditorComponent implements OnInit {
     Filter: undefined,
     Scope: {
       User: 'AllUsers',
-      UserFilterField: '',
-      Account: 'AllAccounts',
-      AccountFilterField: ""
+      Account: 'AllAccounts'
     },
     DynamicFilterFields: [],
     GroupBy: [{
@@ -292,16 +290,7 @@ export class SeriesEditorComponent implements OnInit {
 
   onValueChanged(element, $event){}
 
-  onAuthorizationFilterChange(scope, $event) {
-    switch(scope){
-      case "account":
-
-        break;
-      case "user":
-
-        break;
-    }
-  }
+  onAuthorizationFilterChange(event) {}
 
   
 
@@ -352,6 +341,7 @@ export class SeriesEditorComponent implements OnInit {
       this.series.BreakBy.Format = '';
     }
       this.series.Filter = JSON.parse(JSON.stringify(this.filterRule));
+      debugger
       
 
   }
@@ -419,6 +409,7 @@ export class SeriesEditorComponent implements OnInit {
   onFilterRuleChanged(event) {
     if (event) {
       this.filterRule = event;
+      debugger
       //this.series.Filter = event
     } else {
       this.filterRule = null;

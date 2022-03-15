@@ -121,23 +121,18 @@
                     <h2>{{'Filter' | translate}}
                     </h2>
                     <hr>
-               <!-- <div *ngIf="series.Resource == 'all_activities' || series.Resource == 'transaction_lines'">
+                <div *ngIf="series.Resource == 'all_activities' || series.Resource == 'transaction_lines'">
                     <div class="flex-gap">
                         <pep-select class="flex" [emptyOption]="false" [(value)]="series.Scope.Account" [label]="'AccountFilter'  | translate" 
-                        [key]="'accountFilterSelect'" [xAlignment]="'left'" [options]='accountFilterOptions' (valueChange)="onAuthorizationFilterChange('account',$event)">
-                      </pep-select>
-                         <pep-select *ngIf="series.Scope && series.Scope.Account==='AccountsWithTheSameFieldValue'" class="flex" [emptyOption]="false" [label]="'AccountFilterField'  | translate" [key]="'accountFilterFieldSelect'" [xAlignment]="'left'" [options]='accountFilterFieldOptions' (valueChange)="onChartSelected($event)">
+                        [key]="'accountFilterSelect'" [xAlignment]="'left'" [options]='accountFilterOptions' (valueChange)="onAuthorizationFilterChange($event)">
                         </pep-select>
                     </div>
                     <div class="flex-gap">
                         <pep-select class="flex" [emptyOption]="false" [(value)]="series.Scope.User" [label]="'UserFilter'  | translate" [key]="'userFilterSelect'" 
-                        [xAlignment]="'left'" [options]='userFilterOptions' (valueChange)="onAuthorizationFilterChange('user',$event)">
+                        [xAlignment]="'left'" [options]='userFilterOptions' (valueChange)="onAuthorizationFilterChange($event)">
                         </pep-select>
-                       <pep-select *ngIf="series.Scope && series.Scope.User==='UsersWithTheSameFieldValue'" class="flex" [emptyOption]="false" [label]="'UserFilterField'  | translate" [key]="'userFilterFieldSelect'" [xAlignment]="'left'" [options]='userFilterFieldOptions' (valueChange)="onChartSelected($event)">
-                        </pep-select>
-
                     </div>
-                </div> -->
+                </div>
                <!--   <div class="flex-gap">
                         <pep-select class="flex" [emptyOption]="false" [label]="'PeriodFilter' | translate" [key]="'intervalSelect'" [xAlignment]="'left'" [options]='periodOptions' (valueChange)="onChartSelected($event)">
                         </pep-select>

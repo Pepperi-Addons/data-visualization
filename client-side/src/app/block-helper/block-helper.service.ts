@@ -20,7 +20,7 @@ export abstract class BlockHelperService implements OnInit {
   @Input()
   set hostObject(value) {
     if (value && value.configuration) {
-      this._configuration = value.configuration
+      this.configuration = value.configuration
     } else {
       if (this.blockLoaded) {
         this.loadDefaultConfiguration();
@@ -29,11 +29,8 @@ export abstract class BlockHelperService implements OnInit {
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
-  protected _configuration: any;
-  get configuration() {
-      return this._configuration;
-  }
-
+  protected configuration: any;
+  get getConfiguration() {return this.configuration};
   label = false;
   currentDataQuery: DataQuery;
   activeTabIndex = 0;
@@ -57,7 +54,7 @@ export abstract class BlockHelperService implements OnInit {
   }
 
   async ngOnInit()  {
-    if (!this.configuration) {
+    if (!this.configuration || Object.keys(this.configuration).length == 0) {
       this.loadDefaultConfiguration();
     };
 
@@ -93,7 +90,7 @@ export abstract class BlockHelperService implements OnInit {
   }
 
   protected loadDefaultConfiguration() {
-    this._configuration = this.getDefaultHostObject(); // not sure if the polymorphism works here
+    this.configuration = this.getDefaultHostObject();
     this.updateHostObject();
   }
 

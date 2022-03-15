@@ -31,9 +31,7 @@ export interface Serie {
     Filter: JSONFilter,
     Scope: {
         User: UserType,
-        UserFilterField: string,
-        Account: AccountType,
-        AccountFilterField: string,
+        Account: AccountType
     }
 }
 
@@ -55,10 +53,10 @@ export interface AggregatedParam {
     Aggregator: ScriptAggregator,
     Name: string,
 }
-export const UserTypes = ["AllUsers", "CurrentUser", "UsersWithTheSameFieldValue", "UnderCurrentUserRoleHierarchy"];
+export const UserTypes = ["AllUsers", "CurrentUser"];
 export declare type UserType = typeof UserTypes[number];
 
-export const AccountTypes = ["AllAccounts", "CurrentAccount", "AccountsAssignedToCurrentUser","AccountsWithTheSameFieldValue"];
+export const AccountTypes = ["AllAccounts", "AccountsAssignedToCurrentUser", "CurrentAccount"];
 export declare type AccountType = typeof AccountTypes[number];
 
 export const ResourceTypes = ["all_activities", "transaction_lines"];
