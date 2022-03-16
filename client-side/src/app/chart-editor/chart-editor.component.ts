@@ -43,7 +43,7 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
             if (!this.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = this.charts[0];
-                this.configuration.chart = firstChart;
+                this._configuration.chart = firstChart;
             }
             charts.forEach(chart => {
                 this.chartsOptions.push({ key: chart.Key, value: chart.Name });
@@ -56,33 +56,33 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
             case 'Chart':
                 if (event) {
                     const selectedChart = this.charts.filter(c => c.Key == event)[0];
-                    this.configuration.chart = selectedChart;
+                    this._configuration.chart = selectedChart;
                 }
                 else {
-                    this.configuration.chart = null;
+                    this._configuration.chart = null;
                 }
-                this.configuration.executeQuery = true;
+                this._configuration.executeQuery = true;
                 break;
 
             case 'Label':
-                this.configuration.label = event;
-                this.configuration.executeQuery = false;
+                this._configuration.label = event;
+                this._configuration.executeQuery = false;
                 break;
 
             case 'useLabel':
-                this.configuration.useLabel=event;
+                this._configuration.useLabel=event;
                 if(!event)
-                    this.configuration.label="";
+                    this._configuration.label="";
                 break;
 
             case 'Height':
                 if(event == ""){
-                    this.configuration.height = 22;
+                    this._configuration.height = 22; //default value
                 }
                 else
-                    this.configuration.height = event;
+                    this._configuration.height = event;
 
-                this.configuration.executeQuery = true;
+                this._configuration.executeQuery = true;
                 break;
         }
         this.updateHostObject();
