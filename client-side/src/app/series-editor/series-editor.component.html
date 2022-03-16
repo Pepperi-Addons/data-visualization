@@ -3,7 +3,7 @@
         <ng-container pep-dialog-content>
             <div>
                 <div class="flex-gap">
-                    <pep-textbox [disabled]="!isLoaded" class="flex" [(value)]="series.Name" [label]="'Name' | translate" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
+                    <pep-textbox [disabled]="!isLoaded" class="flex" [(value)]="series.Name" [label]="'Name' | translate" [type]="'text'"></pep-textbox>
                     <pep-select [disabled]="!isLoaded" class="flex" [mandatory]="true" [emptyOption]="false" [(value)]="series.Resource" [key]="'resourceSelect'" [label]="'Resource' | translate" [xAlignment]="'left'" [options]='resourceOptions' (valueChange)="onResourceChange($event)">
                     </pep-select>
                 </div>
@@ -12,7 +12,7 @@
                 </h4>
                 <pep-field-title [label]="'LabelFormatDescription' | translate" class="header" [inputLength]="900">
                 </pep-field-title>
-                <pep-textbox [disabled]="!isLoaded" class="half-width no-title" [(value)]="series.Label" [showTitle]="false" [type]="'text'" (valueChange)="onValueChanged('Label', $event)"></pep-textbox>
+                <pep-textbox [disabled]="!isLoaded" class="half-width no-title" [(value)]="series.Label" [showTitle]="false" [type]="'text'"></pep-textbox>
                 <div id="metric">
                     <h2>{{'Metric' | translate}}
                     </h2>
@@ -56,8 +56,8 @@
 
                             <div *ngFor="let aggregatedParam of series.AggregatedParams; let i = index">
                                 <div style="display: flex;">
-                                    <pep-textbox [disabled]="!isLoaded" class="flex margin3" [(value)]="aggregatedParam.Name" [label]="'Name' | translate" [showTitle]="i==0" [type]="'text'" (valueChange)="onValueChanged('Name', $event)"></pep-textbox>
-                                    <pep-select [disabled]="!isLoaded" class="flex22 margin3" [(value)]="aggregatedParam.Aggregator" [emptyOption]="false" [label]="'Aggregation' | translate" [showTitle]="i==0" 
+                                    <pep-textbox [disabled]="!isLoaded" class="flex margin3" [(value)]="aggregatedParam.Name" [label]="'Name' | translate" [showTitle]="i==0" [type]="'text'"></pep-textbox>
+                                    <pep-select [disabled]="!isLoaded" class="flex22 margin3" [(value)]="aggregatedParam.Aggregator" [emptyOption]="false" [label]="'Aggregation' | translate" [showTitle]="i==0"
                                      [options]="scriptAggregationsOptions"></pep-select>
                                     <pep-select [disabled]="!isLoaded" *ngIf="aggregatedParam.Aggregator=='Sum' || aggregatedParam.Aggregator=='CountDistinct'" class="flex22 margin3" [mandatory]="true" [(value)]="aggregatedParam.FieldID" [emptyOption]="false" [label]="'Field' | translate" [showTitle]="i==0"
                                      [options]="aggregatedParam.Aggregator=='Sum'  ? aggregationsFieldsOptions['Number'] : aggregationsFieldsOptions['All']"></pep-select>
@@ -123,13 +123,13 @@
                     <hr>
                 <div *ngIf="series.Resource == 'all_activities' || series.Resource == 'transaction_lines'">
                     <div class="flex-gap">
-                        <pep-select class="flex" [emptyOption]="false" [(value)]="series.Scope.Account" [label]="'AccountFilter'  | translate" 
-                        [key]="'accountFilterSelect'" [xAlignment]="'left'" [options]='accountFilterOptions' (valueChange)="onAuthorizationFilterChange($event)">
+                        <pep-select class="flex" [emptyOption]="false" [(value)]="series.Scope.Account" [label]="'AccountFilter' | translate" 
+                        [key]="'accountFilterSelect'" [xAlignment]="'left'" [options]='accountFilterOptions'>
                         </pep-select>
                     </div>
                     <div class="flex-gap">
-                        <pep-select class="flex" [emptyOption]="false" [(value)]="series.Scope.User" [label]="'UserFilter'  | translate" [key]="'userFilterSelect'" 
-                        [xAlignment]="'left'" [options]='userFilterOptions' (valueChange)="onAuthorizationFilterChange($event)">
+                        <pep-select class="flex" [emptyOption]="false" [(value)]="series.Scope.User" [label]="'UserFilter' | translate" [key]="'userFilterSelect'" 
+                        [xAlignment]="'left'" [options]='userFilterOptions'>
                         </pep-select>
                     </div>
                 </div>

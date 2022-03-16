@@ -94,41 +94,41 @@ class ElasticService {
         resourceFilter = esb.boolQuery().must([resourceFilter, serializedQuery]);
       }
 
-      // if there is scope add user/accounts filters to resourceFilter
-      if (series.Scope.User == "CurrentUser"){
-        const currUserId = (<any>jwtDecode(this.client.OAuthAccessToken))["pepperi.id"];
-        const fieldName = (series.Resource == 'all_activities') ? 'Agent.InternalID' : 'Transaction.Agent.InternalID';
-        var userFilter: JSONFilter = {
-          FieldType: 'String',
-          ApiName: fieldName,
-          Operation: 'IsEqual',
-          Values: [currUserId]
-        }
-        resourceFilter = esb.boolQuery().must([resourceFilter, toKibanaQuery(userFilter)]);
-      }
-
-      if(series.Scope.Account == "AccountsAssignedToCurrentUser"){
-        const currUserId = (<any>jwtDecode(this.client.OAuthAccessToken))["pepperi.id"];
-        const assignedAccounts = await this.papiClient.get(`/account_users?where=User.InternalID=${currUserId}&fields=Account.InternalID`);
-        var assignedAccountsArray: string[] = [];
-        for(var acc of assignedAccounts){
-          assignedAccountsArray.push(acc["Account.InternalID"])
-        }
-        const fieldName = (series.Resource == 'all_activities') ? 'Account.InternalID' : 'Transaction.Account.InternalID';
-        var accountsFilter: JSONFilter = {
-          FieldType: 'String',
-          ApiName: fieldName,
-          Operation: 'IsEqual',
-          Values: assignedAccountsArray
-        }
-        resourceFilter = esb.boolQuery().must([resourceFilter, toKibanaQuery(accountsFilter)]);
-      }
-
+      resourceFilter = await this.addScopeFilters(series, resourceFilter);
       const filterAggregation = esb.filterAggregation(seriesName, resourceFilter).agg(seriesAggregation);
       queryAggregation.push(filterAggregation);
     };
 
     return queryAggregation;
+  }
+
+  // if there is scope add user/accounts filters to resourceFilter
+  private async addScopeFilters(series, resourceFilter) {
+    if (series.Scope.User == "CurrentUser"){
+      const currUserId = (<any>jwtDecode(this.client.OAuthAccessToken))["pepperi.id"];
+      const fieldName = (series.Resource == 'all_activities') ? 'Agent.InternalID' : 'Transaction.Agent.InternalID';
+      var userFilter: JSONFilter = {
+        FieldType: 'String',
+        ApiName: fieldName,
+        Operation: 'IsEqual',
+        Values: [currUserId]
+      }
+      resourceFilter = esb.boolQuery().must([resourceFilter, toKibanaQuery(userFilter)]);
+    }
+
+    if(series.Scope.Account == "AccountsAssignedToCurrentUser"){
+      const currUserId = (<any>jwtDecode(this.client.OAuthAccessToken))["pepperi.id"];
+      const assignedAccounts = await this.papiClient.get(`/account_users?where=User.InternalID=${currUserId}&fields=Account.InternalID`);
+      const fieldName = (series.Resource == 'all_activities') ? 'Account.InternalID' : 'Transaction.Account.InternalID';
+      var accountsFilter: JSONFilter = {
+        FieldType: 'String',
+        ApiName: fieldName,
+        Operation: 'IsEqual',
+        Values: assignedAccounts.map(account => account["Account.InternalID"])
+      }
+      resourceFilter = esb.boolQuery().must([resourceFilter, toKibanaQuery(accountsFilter)]);
+    }
+    return resourceFilter;
   }
 
   private buildSeriesAggregationList(series) {

@@ -20,7 +20,7 @@ export abstract class BlockHelperService implements OnInit {
   @Input()
   set hostObject(value) {
     if (value && value.configuration) {
-      this.configuration = value.configuration
+      this._configuration = value.configuration
     } else {
       if (this.blockLoaded) {
         this.loadDefaultConfiguration();
@@ -29,8 +29,8 @@ export abstract class BlockHelperService implements OnInit {
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
-  protected configuration: any;
-  get getConfiguration() {return this.configuration};
+  protected _configuration: any;
+  get configuration() {return this._configuration};
   label = false;
   currentDataQuery: DataQuery;
   activeTabIndex = 0;
@@ -72,25 +72,25 @@ export abstract class BlockHelperService implements OnInit {
 
     const queryID = this.configuration?.query?.Key;
     if (queryID) {
-      this.configuration.query = { Key: queryID };
+      this._configuration.query = { Key: queryID };
       this.pluginService.getDataQueryByKey(queryID).then((res) => {
         this.currentDataQuery = res[0];
         this.blockLoaded = true;
         this.buildSeriesButtons();
-        this.configuration.executeQuery = true;
+        this._configuration.executeQuery = true;
         this.updateHostObject();
         this.hostEvents.emit({ action: 'block-editor-loaded' });
       })
     } else {
       const query = await this.pluginService.upsertDataQuery({Name: uuid()});
       this.currentDataQuery = query;
-      this.configuration.query = { Key: query.Key }
+      this._configuration.query = { Key: query.Key }
       this.blockLoaded = true;
     }
   }
 
   protected loadDefaultConfiguration() {
-    this.configuration = this.getDefaultHostObject();
+    this._configuration = this.getDefaultHostObject();
     this.updateHostObject();
   }
 
@@ -132,7 +132,7 @@ export abstract class BlockHelperService implements OnInit {
     this.pluginService.upsertDataQuery(this.currentDataQuery).then((res) => {
         this.currentDataQuery = res;
         this.buildSeriesButtons();
-        this.configuration.executeQuery = true;
+        this._configuration.executeQuery = true;
         this.updateHostObject();
     });
   }
@@ -157,12 +157,12 @@ export abstract class BlockHelperService implements OnInit {
 
     if (key.indexOf('.') > -1) {
         let keyObj = key.split('.');
-        this.configuration[keyObj[0]][keyObj[1]] = value;
+        this._configuration[keyObj[0]][keyObj[1]] = value;
     }
     else {
-        this.configuration[key] = value;
+        this._configuration[key] = value;
     }
-    this.configuration.executeQuery = false;
+    this._configuration.executeQuery = false;
     this.updateHostObject();
   }
 
@@ -176,7 +176,7 @@ export abstract class BlockHelperService implements OnInit {
             this.pluginService.upsertDataQuery(this.currentDataQuery).then((res) => {
                 this.currentDataQuery = res;
                 this.buildSeriesButtons();
-                this.configuration.executeQuery = true;
+                this._configuration.executeQuery = true;
                 this.updateHostObject();
             })
         }

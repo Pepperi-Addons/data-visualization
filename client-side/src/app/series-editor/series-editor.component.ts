@@ -86,7 +86,6 @@ export class SeriesEditorComponent implements OnInit {
       Format: 'yyyy MMM',
       Alias: ''
     }]
-
   }
 
   formatOptionsMap = {
@@ -106,7 +105,6 @@ export class SeriesEditorComponent implements OnInit {
   JSON: JSON;
   IsDateGroupBy: boolean;
   IsDateBreakBy: boolean;
-
 
   constructor(private addonService: PepAddonService,
     public routeParams: ActivatedRoute,
@@ -188,7 +186,6 @@ export class SeriesEditorComponent implements OnInit {
     })
 
   }
-
 
   private setAuthorizationFiltersFields() {
     this.userFilterOptions = [{ value: this.translate.instant("All_Users"), key: "AllUsers" }, { value: this.translate.instant("Current_User"), key: "CurrentUser" }],
@@ -288,12 +285,6 @@ export class SeriesEditorComponent implements OnInit {
     }
   }
 
-  onValueChanged(element, $event){}
-
-  onAuthorizationFilterChange(event) {}
-
-  
-
   getScript() {
     return this.series.AggregatedFields.filter(af => af.Script)[0]?.Script;
   }
@@ -341,9 +332,6 @@ export class SeriesEditorComponent implements OnInit {
       this.series.BreakBy.Format = '';
     }
       this.series.Filter = JSON.parse(JSON.stringify(this.filterRule));
-      debugger
-      
-
   }
 
   onTypeChange(e) {
@@ -409,7 +397,6 @@ export class SeriesEditorComponent implements OnInit {
   onFilterRuleChanged(event) {
     if (event) {
       this.filterRule = event;
-      debugger
       //this.series.Filter = event
     } else {
       this.filterRule = null;

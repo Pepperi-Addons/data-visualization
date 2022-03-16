@@ -3,14 +3,14 @@
         <mat-tab id="1" label="{{'General' | translate}}">
             <div>
                 <div id="border">
-                    <pep-checkbox [value]="getConfiguration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
-                    <pep-color [value]="getConfiguration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!getConfiguration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
+                    <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
+                    <pep-color [value]="configuration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
                     </pep-color>
-                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="getConfiguration?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!getConfiguration?.useBorder" [value]="getConfiguration?.border?.opacity" [background]="getSliderBackground(getConfiguration?.border?.color)" (valueChange)="onFieldChange('border.opacity',$event)">
+                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useBorder" [value]="configuration?.border?.opacity" [background]="getSliderBackground(configuration?.border?.color)" (valueChange)="onFieldChange('border.opacity',$event)">
                     </pep-slider>
                 </div>
                 <div>
-                    <pep-checkbox [value]="getConfiguration?.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
+                    <pep-checkbox [value]="configuration?.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
                     </pep-checkbox>
                     <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
                     <pep-group-buttons [buttons]="DropShadowStyle" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
