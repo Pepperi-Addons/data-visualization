@@ -26,7 +26,7 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     }
 
     async ngOnInit(): Promise<void> {
-        if (!this.configuration) {
+        if (!this.configuration || Object.keys(this.configuration).length == 0) {
             this.loadDefaultConfiguration();
         };
         await this.fillChartsOptions();
@@ -40,7 +40,7 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     private fillChartsOptions() {
         return this.pluginService.getCharts().then((charts) => {
             this.charts = charts.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
-            if (!this._configuration.chart) {
+            if (!this.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = this.charts[0];
                 this._configuration.chart = firstChart;
@@ -52,7 +52,6 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     }
 
     onValueChanged(type, event) {
-        let promise: Promise<any> = Promise.resolve();
         switch (type) {
             case 'Chart':
                 if (event) {
@@ -62,23 +61,28 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
                 else {
                     this._configuration.chart = null;
                 }
-                this.configuration.executeQuery = true;
+                this._configuration.executeQuery = true;
                 break;
 
             case 'Label':
                 this._configuration.label = event;
-                this.configuration.executeQuery = false;
+                this._configuration.executeQuery = false;
                 break;
 
             case 'useLabel':
-                this.configuration.useLabel=event;
+                this._configuration.useLabel=event;
                 if(!event)
-                    this.configuration.label="";
+                    this._configuration.label="";
                 break;
 
             case 'Height':
-                this._configuration.height = event;
-                this.configuration.executeQuery = true;
+                if(event == ""){
+                    this._configuration.height = 22; //default value
+                }
+                else
+                    this._configuration.height = event;
+
+                this._configuration.executeQuery = true;
                 break;
         }
         this.updateHostObject();

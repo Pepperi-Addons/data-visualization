@@ -10,7 +10,7 @@
                     </pep-slider>
                 </div>
                 <div>
-                    <pep-checkbox [value]="configuration.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
+                    <pep-checkbox [value]="configuration?.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
                     </pep-checkbox>
                     <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
                     <pep-group-buttons [buttons]="DropShadowStyle" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">

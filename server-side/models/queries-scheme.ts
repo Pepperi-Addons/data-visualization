@@ -143,17 +143,11 @@ export const QueriesScheme =
                         "properties": {
                             "Account": {
                                 "type": "string",
-                                "enum": ["CurrentAccount", "AllAccounts", "AccountsWithTheSameFieldValue"]
-                            },
-                            "AccountFilterField": {
-                                "type": "string",
+                                "enum": ["CurrentAccount", "AllAccounts", "AccountsAssignedToCurrentUser"]
                             },
                             "User": {
                                 "type": "string",
                                 "enum": ["CurrentUser", "AllUsers", "UsersWithTheSameFieldValue", "UnderCurrentUserRoleHierarchy"]
-                            },
-                            "UserFilterField": {
-                                "type": "string",
                             }
                         },
                         "additionalProperties": false,
