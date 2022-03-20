@@ -18,6 +18,10 @@ class MyService {
     upsertRelation(relation): Promise<any> {
         return this.papiClient.post('/addons/data/relations', relation);
     }
+
+    upsertChart(chart) {
+        return this.papiClient.post('/charts', chart);
+    }
 }
 
 export default MyService;

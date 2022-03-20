@@ -1,4 +1,9 @@
 node_modules/**
 build/**
-publish/**
+publish/*.js
+publish/*.txt
+publish/*.ico
+publish/*.html
+publish/assets/i18n
+publish/assets/ngx-lib
 var_sk

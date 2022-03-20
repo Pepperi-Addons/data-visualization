@@ -9,9 +9,11 @@ The error Message is importent! it will be written in the audit log and help the
 */
 
 import { Client, Request } from '@pepperi-addons/debug-server'
+import { charts } from './meta-data';
 import { PapiClient, Relation } from '@pepperi-addons/papi-sdk'
 import { DATA_QUREIES_TABLE_NAME } from './models';
 import MyService from './my.service';
+import { v4 as uuid } from 'uuid';
 
 export async function install(client: Client, request: Request): Promise<any> {
     const papiClient = new PapiClient({
@@ -26,23 +28,26 @@ export async function install(client: Client, request: Request): Promise<any> {
         Type: 'data',
         Fields: {
             Resource: { Type: 'String' },
-            Type:{Type: 'String'},
-            
+            Type:{Type: 'String'},    
         }
     });
-
 
     const res = await setPageBlockRelations(client);
 
     const res2 = await setUsageMonitorRelation(client);
 
+    const res3 = await upsertCharts(client,request, new MyService(client), charts);
+
     let resultObject = {
         pageBlockRelation:res,
-        usageMonitorRelation:res2
+        usageMonitorRelation:res2,
+        upsertCharts:res3
     };
 
-    let status = res.success && res2.success
-    return {success:status,resultObject:resultObject}}
+    let status = res.success && res2.success && res3.success
+
+    return {success:status,resultObject:resultObject}
+}
 
 export async function uninstall(client: Client, request: Request): Promise<any> {
     return {success:true,resultObject:{}}
@@ -81,7 +86,7 @@ async function setPageBlockRelations(client){
      
         const scorecardsComponentRelation: Relation = {
             RelationName: "PageBlock",
-            Name: blockName, 
+            Name: blockName,
             Description: `Scorecards`, 
             Type: "NgComponent",
             SubType: "NG11",
@@ -140,5 +145,26 @@ async function setUsageMonitorRelation(client){
         return { success:true, resultObject: null };
     } catch(err) {
         return { success: false, resultObject: err };
+    }
+}
+
+async function upsertCharts(client: Client, request: Request, service: MyService, charts) {
+    try {
+        for (let chart of charts) {
+            chart.Key = uuid();
+            chart.ScriptURI = `${client.AssetsBaseUrl}/assets/ChartsTemplates/${chart.Name.toLowerCase()}.js`
+            console.log(`chart ScriptURI: ${chart.ScriptURI}`)
+            await service.upsertChart(chart);
+            
+        }
+        return {
+            success: true,
+            errorMessage: ""
+        }
+    }
+    catch (err) {
+        console.log('Failed to upsert charts templates files',err)
+        throw new Error('Failed to upsert charts templates files');
+
     }
 }
