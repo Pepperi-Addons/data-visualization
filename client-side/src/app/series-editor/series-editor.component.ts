@@ -236,10 +236,10 @@ export class SeriesEditorComponent implements OnInit {
   setFilterRuleFieldsOptions(){
     if(this.resourcesFields[this.series.Resource]){
       this.filterRuleFieldsOptions = this.resourcesFields[this.series.Resource].map(f=> ({
-        FieldID:f.FieldID,
-        FieldType:this.getFilterBuilderFieldType(f.Type),
-        Title:f.FieldID,
-        OptionalValues: []
+        FieldID: f.FieldID,
+        FieldType: this.getFilterBuilderFieldType(f.Type),
+        Title: f.FieldID,
+        OptionalValues: f.OptionalValues? f.OptionalValues :[]
       }));
     }
   }
