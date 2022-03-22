@@ -31,14 +31,14 @@ export const charts: Chart[] = [
         ReadOnly: true
     },
     {
-        Name: "Stacked column",
+        Name: "Stacked_column",
         Description: "Default stacked column",
         ScriptURI: '',
         Hidden: false,
         ReadOnly: true
     },
     {
-        Name: "Stacked bar",
+        Name: "Stacked_bar",
         Description: "Default stacked bar",
         ScriptURI: '',
         Hidden: false,

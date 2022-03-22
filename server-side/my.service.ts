@@ -22,6 +22,17 @@ class MyService {
     upsertChart(chart) {
         return this.papiClient.post('/charts', chart);
     }
+
+    getCharts(chartsNames) {
+        var namesString = "("
+        for(var name of chartsNames){
+            namesString+= `"`+name+`",`;
+        }
+        namesString = namesString.substring(0,namesString.length-1)
+        namesString+= ")"
+        
+        return this.papiClient.get(`/charts?where=Name in ${namesString}`)
+    }
 }
 
 export default MyService;
