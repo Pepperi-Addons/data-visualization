@@ -50,7 +50,20 @@ export async function install(client: Client, request: Request): Promise<any> {
 }
 
 export async function uninstall(client: Client, request: Request): Promise<any> {
-    return {success:true,resultObject:{}}
+    try{
+        const service = new MyService(client)
+        var defCharts = await service.getCharts(charts.map(x => x.Name))
+        for(var dc of defCharts){
+            dc["Hidden"] = true;
+            await service.upsertChart(dc);
+        }
+        return { success: true, resultObject: {} }
+    }
+    catch(err){
+        console.log('Failed to uninstall DV addon', err);
+        return handleException(err);
+
+    }
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
@@ -167,4 +180,16 @@ async function upsertCharts(client: Client, request: Request, service: MyService
         throw new Error('Failed to upsert charts templates files');
 
     }
+}
+
+function handleException(err) {
+    let errorMessage = 'Unknown Error Occured';
+    if (err instanceof Error) {
+        errorMessage = err.message;
+    }
+    return {
+        success: false,
+        errorMessage: errorMessage,
+        resultObject: {}
+    };
 }
