@@ -165,7 +165,7 @@ async function upsertCharts(client: Client, request: Request, service: MyService
     try {
         for (let chart of charts) {
             chart.Key = uuid();
-            chart.ScriptURI = `${client.AssetsBaseUrl}/assets/ChartsTemplates/${chart.Name.toLowerCase()}.js`
+            chart.ScriptURI = `${client.AssetsBaseUrl}/ChartsTemplates/${chart.Name.toLowerCase()}.js`
             console.log(`chart ScriptURI: ${chart.ScriptURI}`)
             await service.upsertChart(chart);
             
