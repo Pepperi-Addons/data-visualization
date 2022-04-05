@@ -1,7 +1,7 @@
 import { TranslateService } from '@ngx-translate/core';
 import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IPepFieldValueChangeEvent, PepAddonService } from '@pepperi-addons/ngx-lib';
+import { IPepFieldValueChangeEvent, KeyValuePair, PepAddonService } from '@pepperi-addons/ngx-lib';
 import { IPepButtonClickEvent, PepButton } from '@pepperi-addons/ngx-lib/button';
 import { pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
 import { AddonService } from '../../services/addon.service';
@@ -239,7 +239,7 @@ export class SeriesEditorComponent implements OnInit {
         FieldID: f.FieldID,
         FieldType: this.getFilterBuilderFieldType(f.Type),
         Title: f.FieldID,
-        OptionalValues: f.OptionalValues? f.OptionalValues :[]
+        OptionalValues: f.optionalValues ? f.optionalValues.map(x => ({Key: x,Value: x}) as KeyValuePair<string>) : []
       }));
     }
   }
