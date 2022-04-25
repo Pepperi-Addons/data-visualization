@@ -87,4 +87,8 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
         }
         this.updateHostObject();
     }
+
+    async getQueryOptions(){
+        return await this.pluginService.getAllQueries();
+    }
 }

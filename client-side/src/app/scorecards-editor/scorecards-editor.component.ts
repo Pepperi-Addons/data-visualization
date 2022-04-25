@@ -28,4 +28,9 @@ export class ScorecardsEditorComponent extends BlockHelperService implements OnI
     return new ScorecardsConfiguration();
   }
 
+  async getQueryOptions(){
+    debugger
+    return (await this.pluginService.getAllQueries()).filter(query => (!query.BreakBy && !query.GroupBy));
+  }
+
 }

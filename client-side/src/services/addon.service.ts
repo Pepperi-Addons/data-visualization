@@ -41,11 +41,20 @@ export class AddonService {
     }
 
     async executeQuery(queryID) {
-        return this.papiClient.post(`/data_queries/${queryID}/execute`, null);
+        //return this.papiClient.post(`/data_queries/${queryID}/execute`, null);
+        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('elastic').func('execute').post({key: queryID},{})
+
     }
 
     async getDataQueryByKey(Key: string) {
-        return this.papiClient.get(`/data_queries?where=Key='${Key}'`);
+        //return this.papiClient.get(`/data_queries?where=Key='${Key}'`);
+        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('api').func('queries').get({where: `Key='${Key}'`})
+
+    }
+
+    async getAllQueries(){
+        //return this.papiClient.get(`/data_queries`);
+        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('api').func('queries').get()
     }
 
     async upsertDataQuery(body) {

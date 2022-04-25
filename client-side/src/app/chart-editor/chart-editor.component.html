@@ -33,15 +33,19 @@
             <!-- <addon-pepperi-list-exmaple [type]="'Data'" [ID]='0' [isActive]="activeTabIndex === 0" [data]="activeTabIndex === 0 ? currentData : null"></addon-pepperi-list-exmaple> -->
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
-            <h2>{{'DataQueries' | translate}}
+            <h2>{{'Data Query' | translate}}
             </h2>
-            <div class="queries-containter">
-                <div *ngFor="let qureiesButton of seriesButtons">
-                    <pep-group-buttons [buttons]="qureiesButton" [buttonsDisabled]="false" [viewType]="'split'">
-                    </pep-group-buttons>
-                </div>
-                <pep-button [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
-            </div>
+            <pep-select
+                [key]="'querySelect'"
+                [value]="this.currentDataQuery.Key"
+                [mandatory]="false"
+                [disabled]="false"
+                xAlignment="left"
+                [options]="queryOptions"
+                [showTitle]="false"
+                [emptyOption]="false"
+                (valueChange)="queryChanged($event)"
+            ></pep-select>
 
         </mat-tab>
         <!-- <mat-tab  id="3" label="{{'SetupTabHeader' | translate}}">
