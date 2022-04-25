@@ -43,7 +43,7 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
             if (!this.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = this.charts[0];
-                this._configuration.chart = firstChart;
+                this._configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
             }
             charts.forEach(chart => {
                 this.chartsOptions.push({ key: chart.Key, value: chart.Name });
@@ -56,7 +56,7 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
             case 'Chart':
                 if (event) {
                     const selectedChart = this.charts.filter(c => c.Key == event)[0];
-                    this._configuration.chart = selectedChart;
+                    this._configuration.chart = {Key: selectedChart.Key, ScriptURI: selectedChart.ScriptURI};
                 }
                 else {
                     this._configuration.chart = null;
