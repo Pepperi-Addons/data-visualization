@@ -29,8 +29,15 @@ export class ScorecardsEditorComponent extends BlockHelperService implements OnI
   }
 
   async getQueryOptions(){
-    debugger
-    return (await this.pluginService.getAllQueries()).filter(query => (!query.BreakBy && !query.GroupBy));
+    let queries = await this.pluginService.getAllQueries();
+    queries = queries.filter(query =>{
+      for(let s of query.Series)
+        if(s.BreakBy.FieldID!='' || s.GroupBy[0].FieldID!='') return false;
+      
+      return true;
+    })
+
+    return queries;
   }
 
 }
