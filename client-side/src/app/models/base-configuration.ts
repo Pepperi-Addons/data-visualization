@@ -1,4 +1,3 @@
-import { DataQuery } from "../../../../server-side/models/data-query";
 import { Color } from "./color";
 import { DropShadow } from "./dropshadow";
 

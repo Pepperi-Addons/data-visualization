@@ -7,7 +7,7 @@ import { PepDialogActionButton } from "@pepperi-addons/ngx-lib/dialog";
 import { pepIconSystemBin } from "@pepperi-addons/ngx-lib/icon";
 import { AddonService } from "src/services/addon.service";
 import { DataVisualizationService } from "src/services/data-visualization.service";
-import { DataQuery, Serie } from "../../../../server-side/models/data-query";
+import { Serie } from "../../../../server-side/models/data-query";
 import { BaseConfiguration } from "../models/base-configuration";
 import { Overlay } from "../models/overlay ";
 import { v4 as uuid } from 'uuid';
@@ -32,7 +32,6 @@ export abstract class BlockHelperService implements OnInit {
   protected _configuration: any;
   get configuration() {return this._configuration};
   label = false;
-  currentDataQuery: DataQuery;
   activeTabIndex = 0;
   charts: any;
   blockLoaded = false;
@@ -42,6 +41,7 @@ export abstract class BlockHelperService implements OnInit {
   DropShadowStyle: Array<PepButton> = [];
   PepSizes: Array<PepButton> = [];
   queryOptions = [];
+  selectedQuery: string = ''
   
 
   constructor(protected addonService: PepAddonService,
@@ -75,7 +75,7 @@ export abstract class BlockHelperService implements OnInit {
     const queryID = this.configuration?.query?.Key;
     if (queryID) {
       this._configuration.query = { Key: queryID };
-      this.currentDataQuery = (await this.pluginService.getDataQueryByKey(queryID))[0];
+      this.selectedQuery = queryID;
     }
     this.blockLoaded = true;
     this._configuration.executeQuery = true;
@@ -99,20 +99,6 @@ export abstract class BlockHelperService implements OnInit {
         action: 'set-configuration',
         configuration: this.configuration,
     });
-  }
-
-  protected updateQuerySeries(seriesToAddOrUpdate: any) {
-    const idx = this.currentDataQuery?.Series?.findIndex(item => item.Key === seriesToAddOrUpdate.Key);
-    if (idx > -1) {
-        this.currentDataQuery.Series[idx] = seriesToAddOrUpdate;
-    }
-    else {
-        if (!this.currentDataQuery?.Series) {
-            this.currentDataQuery.Series = [];
-        }
-        this.currentDataQuery.Series.push(seriesToAddOrUpdate);
-    }
-    return this.currentDataQuery;
   }
 
   tabClick(event) {
@@ -146,9 +132,9 @@ export abstract class BlockHelperService implements OnInit {
     return 'linear-gradient(to ' + alignTo + ', ' + gradStr + ')';
   }
 
-  async queryChanged(e){
-    this.currentDataQuery = (await this.pluginService.getDataQueryByKey(e))[0];
-    this._configuration.query = { Key: this.currentDataQuery.Key };
+  async queryChanged(e) {
+    this.selectedQuery = e;
+    this._configuration.query = { Key: e };
     this._configuration.executeQuery = true;
     this.updateHostObject();
   }

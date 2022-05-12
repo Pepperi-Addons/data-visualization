@@ -21,11 +21,9 @@
             </div>
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
-            <h2>{{'Data Query' | translate}}
-            </h2>
             <pep-select
-                [key]="'querySelect'"
-                [value]="this.currentDataQuery?.Name"
+                [label] = "'Data Query' | translate"
+                [value]="selectedQuery"
                 [mandatory]="false"
                 [disabled]="false"
                 xAlignment="left"

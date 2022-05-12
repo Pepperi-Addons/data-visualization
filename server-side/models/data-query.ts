@@ -1,13 +1,5 @@
-
-import { AddonData } from "@pepperi-addons/papi-sdk";
+import { AddonData, AddonDataScheme } from "@pepperi-addons/papi-sdk";
 import { JSONFilter } from "@pepperi-addons/pepperi-filters/build/json-filter";
-
-export interface DataQuery extends AddonData {
-    Type: DataType,
-    Name: string;
-    Description?: string;
-    Series: Serie[],
-}
 
 export interface GroupBy {
     FieldID: string;
