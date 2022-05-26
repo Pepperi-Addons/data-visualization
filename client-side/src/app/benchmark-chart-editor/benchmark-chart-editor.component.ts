@@ -8,12 +8,15 @@ import { ChartConfiguration } from '../models/chart-configuration';
 import { BlockHelperService } from '../block-helper/block-helper.service';
 
 @Component({
-    selector: 'chart-editor',
-    templateUrl: './chart-editor.component.html',
-    styleUrls: ['./chart-editor.component.scss']
+    selector: 'benchmark-chart-editor',
+    templateUrl: './benchmark-chart-editor.component.html',
+    styleUrls: ['./benchmark-chart-editor.component.scss']
 })
 
-export class ChartEditorComponent extends BlockHelperService implements OnInit {
+export class BenchmarkChartEditorComponent extends BlockHelperService implements OnInit {
+
+    benchmarkQueryOptions = [];
+    selectedBenchmarkQuery: string = ''
 
     constructor(protected addonService: PepAddonService,
         public routeParams: ActivatedRoute,
@@ -31,6 +34,11 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
         };
         await this.fillChartsOptions();
         super.ngOnInit();
+        (await this.getQueryOptions()).forEach(q => this.benchmarkQueryOptions.push({key: q.Key, value: q.Name}));
+        const secondQueryID = this.configuration?.secondQuery?.Key;
+        if (secondQueryID) {
+          this.selectedBenchmarkQuery = secondQueryID;
+        }
     }
 
     protected getDefaultHostObject(): ChartConfiguration {
@@ -38,7 +46,7 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     }
 
     private fillChartsOptions() {
-        return this.pluginService.getChartsByType('Chart').then((charts) => {
+        return this.pluginService.getChartsByType('Benchmark chart').then((charts) => {
             this.charts = charts.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
             if (!this.configuration.chart) {
                 // set the first chart to be default
@@ -91,4 +99,13 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     async getQueryOptions(){
         return await this.pluginService.getAllQueries();
     }
+
+    async secondQueryChanged(e) {
+        this.selectedBenchmarkQuery = e;
+        this._configuration.secondQuery = { Key: e };
+        this._configuration.executeQuery = true;
+        this.updateHostObject();
+    }
+
+
 }

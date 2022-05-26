@@ -3,6 +3,7 @@ import { AddonData } from "@pepperi-addons/papi-sdk";
 export interface Chart extends AddonData {
     Name: string;
     ScriptURI: string;
+    Type: string;
     ReadOnly?: Boolean;
     Description?: string;
     FileID?: number;

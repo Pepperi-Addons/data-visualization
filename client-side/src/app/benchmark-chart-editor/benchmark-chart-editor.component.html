@@ -34,7 +34,7 @@
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
             <pep-select
-                [label] = "'Data Query' | translate"
+                [label] = "'Data query' | translate"
                 [value]="selectedQuery"
                 [mandatory]="false"
                 [disabled]="false"
@@ -43,6 +43,17 @@
                 [showTitle]="true"
                 [emptyOption]="false"
                 (valueChange)="queryChanged($event)"
+            ></pep-select>
+            <pep-select
+                [label] = "'Benchmark query' | translate"
+                [value]="selectedBenchmarkQuery"
+                [mandatory]="false"
+                [disabled]="false"
+                xAlignment="left"
+                [options]="benchmarkQueryOptions"
+                [showTitle]="true"
+                [emptyOption]="false"
+                (valueChange)="secondQueryChanged($event)"
             ></pep-select>
 
         </mat-tab>

@@ -41,7 +41,8 @@ export class AddonService {
     }
 
     async executeQuery(queryID) {
-        //return this.papiClient.post(`/data_queries/${queryID}/execute`, null);
+        //return this.papiClient.post(`/data_queries/${queryID}/execute`, null)
+        if(!queryID) return undefined
         return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('elastic').func('execute').post({key: queryID},{})
 
     }
@@ -63,5 +64,9 @@ export class AddonService {
 
     async getCharts() {
         return this.papiClient.get(`/charts`);
+    }
+
+    async getChartsByType(chartType) {
+        return this.papiClient.get(`/charts?where=Type='${chartType}'`);
     }
 }

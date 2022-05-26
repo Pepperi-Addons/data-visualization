@@ -2,6 +2,7 @@ const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPl
 
 // TODO: Change block name (if it more then one word put '_' between).
 const blockName = 'chart';
+const blockNameBenchmark = 'benchmark_chart';
 const blockNameScorecars = 'scorecards';
 const blockNameTable = 'table';
 
@@ -21,6 +22,22 @@ module.exports = {
             exposes: {
                 './ChartModule': './src/app/chart/index',
                 './ChartEditorModule': './src/app/chart-editor/index'
+            },
+            shared: {
+                "@angular/core": { eager: true, singleton: true, strictVersion: false },
+                "@angular/common": { eager: true, singleton: true, strictVersion: false },
+                "@angular/common/http": { eager: true, singleton: true, strictVersion: false },
+                "rxjs": { eager: true, singleton: true, strictVersion: false },
+                "@ngx-translate/core": { eager: true, singleton: true, strictVersion: false },
+                "@angular/router": { eager: true, singleton: true,  strictVersion: false }
+            }
+        }),
+        new ModuleFederationPlugin({
+            name: blockNameBenchmark,
+            filename: `${blockNameBenchmark}.js`,
+            exposes: {
+                './BenchmarkChartModule': './src/app/benchmark-chart/index',
+                './BenchmarkChartEditorModule': './src/app/benchmark-chart-editor/index'
             },
             shared: {
                 "@angular/core": { eager: true, singleton: true, strictVersion: false },
