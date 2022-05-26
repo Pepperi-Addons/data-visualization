@@ -14,40 +14,69 @@ import { config } from '../addon.config';
 import { AddonService } from '../../services/addon.service';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
-import { PepIconRegistry, pepIconSystemBin } from '@pepperi-addons/ngx-lib/icon';
+import { pepIconTextAlignCenter, pepIconTextAlignLeft, pepIconTextAlignRight, pepIconArrowBackRight, pepIconArrowBackLeft, pepIconArrowBack, pepIconArrowLeftAlt,pepIconArrowDown, pepIconArrowUp, pepIconNumberPlus, PepIconRegistry, pepIconSystemBin, pepIconSystemBolt, pepIconSystemClose, pepIconSystemEdit, pepIconSystemMove } from '@pepperi-addons/ngx-lib/icon';
 import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
 import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
 import { ChartEditorModule } from '../chart-editor';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
+import { CardEditorModule } from '../card-editor/card-editor.module';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { PepColorSettingsModule } from '@pepperi-addons/ngx-composite-lib/color-settings';
+import { PepImageModule } from '@pepperi-addons/ngx-lib/image';
+import { PepShadowSettingsModule } from '@pepperi-addons/ngx-composite-lib/shadow-settings';
+import { PepNgxCompositeLibModule } from '@pepperi-addons/ngx-composite-lib/';
+import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
+import { PepPageLayoutModule } from '@pepperi-addons/ngx-lib/page-layout';
 
 
 const pepIcons = [
-  pepIconSystemBin,
+  pepIconTextAlignCenter, 
+    pepIconTextAlignLeft, 
+    pepIconTextAlignRight, 
+    pepIconArrowBackRight, 
+    pepIconArrowBackLeft,
+    pepIconArrowBack,
+    pepIconSystemClose,
+    pepIconNumberPlus,
+    pepIconSystemBolt,
+    pepIconSystemEdit,
+    pepIconSystemMove,
+    pepIconSystemBin,
+    pepIconArrowLeftAlt,
+    pepIconArrowDown,
+    pepIconArrowUp
 ];
 @NgModule({
   declarations: [ScorecardsEditorComponent],
   imports: [
-    PepSelectModule,
-    PepTextboxModule,
-    PepCheckboxModule,
     PepButtonModule,
-    PepTopBarModule,
-    CommonModule,
-    PepTextareaModule,
-    PepSliderModule,
-    PepColorModule,
-    PepGroupButtonsModule,
-    MatTabsModule,
-    ChartEditorModule,
-    TranslateModule.forChild({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) =>
-          PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
-        deps: [HttpClient, PepFileService, PepAddonService],
-      }, isolate: false
-    }),
+        PepSliderModule,
+        CardEditorModule,
+        PepTextboxModule,
+        PepSelectModule,
+        PepCheckboxModule,
+        PepPageLayoutModule,
+        PepGroupButtonsModule,
+        MatTabsModule,
+        PepColorModule,
+        PepImageModule,
+        PepTextareaModule,
+        CommonModule,
+        DragDropModule,
+        PepShadowSettingsModule,
+        PepColorSettingsModule,
+        PepGroupButtonsSettingsModule,
+        PepNgxCompositeLibModule,
+
+        TranslateModule.forChild({
+            loader: {
+                provide: TranslateLoader,
+                useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) => 
+                    PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
+                    deps: [HttpClient, PepFileService, PepAddonService],
+                  }, isolate: false
+        }),
   ],
   exports: [ScorecardsEditorComponent],
   providers: [

@@ -17,17 +17,17 @@ export class BenchmarkChartComponent implements OnInit {
 
     @Input('hostObject')
     set hostObject(value) {
-        this._configuration = value?.configuration;
         if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
-            if(value.configuration.executeQuery)
-                this.drawChart(this.configuration);
+            const drawRequired = this.configuration?.query?.Key!=value.configuration.query?.Key ||
+                                 this.configuration?.chart?.Key!=value.configuration.chart?.Key ||
+                                 this.configuration?.secondQuery?.Key!=value.configuration.secondQuery?.Key
+            if(drawRequired)
+                this.drawChart(value.configuration);
         }
         else {
             this.deleteChart();
         }
-
-        if(value.configuration)
-            value.configuration.executeQuery=true;
+        this._configuration = value?.configuration;
     }
 
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();

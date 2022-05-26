@@ -1,0 +1,56 @@
+<div class="card-editor-container">
+    <div>
+        <pep-button classNames="lock-events" sizeType="xs" iconName="system_move"></pep-button>
+    </div>
+    <div *ngIf="title !== ''" class="title-container">
+        <span class="body-sm ellipsis">{{id + 1}}.&nbsp;</span>
+        <span class="body-sm color-link bold ellipsis" title="{{configuration?.cards[id].title}}">{{configuration?.cards[id].title}}</span>
+    </div>
+    <div class="actions" *ngIf="showActions">
+        <pep-button classNames="caution" sizeType="xs" iconName="system_bin" (buttonClick)="onRemoveClick();"></pep-button>
+        <pep-button *ngIf="id != configuration?.scorecardsConfig?.editSlideIndex" sizeType="xs" iconName="arrow_down" (buttonClick)="onEditClick();"></pep-button>
+        <pep-button *ngIf="id == configuration?.scorecardsConfig?.editSlideIndex" sizeType="xs" iconName="arrow_up" (buttonClick)="onEditClick();"></pep-button>
+    </div>
+    <div class="editorCont" *ngIf="id == configuration?.scorecardsConfig?.editSlideIndex">
+        <pep-textbox 
+            [label]="'Name' | translate" 
+            type="string" 
+            [value]="configuration?.cards[id].title"
+            (valueChange)="onCardFieldChange('title',$event)"
+        ></pep-textbox>
+        <pep-select
+            [label] = "'Design' | translate"
+            [value]="selectedDesign"
+            [mandatory]="false"
+            [disabled]="false"
+            xAlignment="left"
+            [options]="chartsOptions"
+            [showTitle]="true"
+            [emptyOption]="false"
+            (valueChange)="designChanged($event)"
+        ></pep-select>
+        <pep-select
+            [label] = "'Data query' | translate"
+            [value]="selectedQuery"
+            [mandatory]="false"
+            [disabled]="false"
+            xAlignment="left"
+            [options]="queryOptions"
+            [showTitle]="true"
+            [emptyOption]="false"
+            (valueChange)="queryChanged($event)"
+        ></pep-select>
+        <pep-select
+            [label] = "'Benchmark query' | translate"
+            [value]="selectedBenchmarkQuery"
+            [mandatory]="false"
+            [disabled]="false"
+            xAlignment="left"
+            [options]="benchmarkQueryOptions"
+            [showTitle]="true"
+            [emptyOption]="false"
+            (valueChange)="secondQueryChanged($event)"
+        ></pep-select>
+    </div>
+    
+</div>
