@@ -31,10 +31,10 @@ import { PepPageLayoutModule } from '@pepperi-addons/ngx-lib/page-layout';
 
 
 const pepIcons = [
-  pepIconTextAlignCenter, 
-    pepIconTextAlignLeft, 
-    pepIconTextAlignRight, 
-    pepIconArrowBackRight, 
+  pepIconTextAlignCenter,
+    pepIconTextAlignLeft,
+    pepIconTextAlignRight,
+    pepIconArrowBackRight,
     pepIconArrowBackLeft,
     pepIconArrowBack,
     pepIconSystemClose,

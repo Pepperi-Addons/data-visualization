@@ -3,11 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
 import { AddonService } from 'src/services/addon.service';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
-import { config } from '../addon.config';
 import { IScorecards } from '../card.model';
-import { Color } from '../models/color';
-import { Overlay } from '../models/overlay ';
-import { ScorecardsConfiguration } from '../models/scorecards-configuration';
 
 @Component({
   selector: 'scorecards',
@@ -26,10 +22,7 @@ export class ScorecardsComponent implements OnInit {
           cardsDiv.innerHTML += this.getScorecardsHTML("card"+currCard);
           currDiv = this.divView.nativeElement.querySelector('#card'+currCard)
         }
-        const drawRequired = this.configuration?.cards[currCard]?.query?.Key!=value.configuration?.cards[currCard].query?.Key ||
-                             this.configuration?.cards[currCard]?.chart?.Key!=value.configuration?.cards[currCard].chart?.Key ||
-                             this.configuration?.cards[currCard]?.secondQuery?.Key!=value.configuration?.cards[currCard]?.secondQuery?.Key;
-        if(drawRequired) {
+        if(this.drawRequired(currCard,value)) {
           this.drawScorecard(value.configuration?.cards[currCard],currCard,currDiv);
         }
       }
@@ -142,6 +135,12 @@ export class ScorecardsComponent implements OnInit {
         }));
     });
     return Promise.all(promises);
+}
+
+drawRequired(currCard,value) {
+return this.configuration?.cards[currCard]?.query?.Key!=value.configuration?.cards[currCard].query?.Key ||
+       this.configuration?.cards[currCard]?.chart?.Key!=value.configuration?.cards[currCard].chart?.Key ||
+       this.configuration?.cards[currCard]?.secondQuery?.Key!=value.configuration?.cards[currCard]?.secondQuery?.Key;
 }
 
 }

@@ -105,6 +105,7 @@ export class ScorecardsEditorComponent implements OnInit {
             
         this.updateHostObject();
         this.blockLoaded = true;
+        this.hostEvents.emit({ action: 'block-editor-loaded' });
     }
 
     ngOnChanges(e: any): void {

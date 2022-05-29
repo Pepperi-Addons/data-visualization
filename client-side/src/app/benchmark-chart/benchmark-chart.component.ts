@@ -18,10 +18,7 @@ export class BenchmarkChartComponent implements OnInit {
     @Input('hostObject')
     set hostObject(value) {
         if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
-            const drawRequired = this.configuration?.query?.Key!=value.configuration.query?.Key ||
-                                 this.configuration?.chart?.Key!=value.configuration.chart?.Key ||
-                                 this.configuration?.secondQuery?.Key!=value.configuration.secondQuery?.Key
-            if(drawRequired)
+            if(this.drawRequired(value))
                 this.drawChart(value.configuration);
         }
         else {
@@ -139,5 +136,10 @@ export class BenchmarkChartComponent implements OnInit {
             this.divView.nativeElement.innerHTML = "";
     }
 
+    drawRequired(value) {
+    return this.configuration?.query?.Key!=value.configuration.query?.Key ||
+           this.configuration?.chart?.Key!=value.configuration.chart?.Key ||
+           this.configuration?.secondQuery?.Key!=value.configuration.secondQuery?.Key;
+    }
 }
 
