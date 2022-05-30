@@ -3,12 +3,14 @@ import { TranslateService } from '@ngx-translate/core';
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
 import { AddonService } from 'src/services/addon.service';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
-import { IScorecards } from '../card.model';
+import { ICardEditor, IScorecards } from '../card.model';
+import 'systemjs'
+import 'systemjs-babel'
 
 @Component({
   selector: 'scorecards',
   templateUrl: './scorecards.component.html',
-  styleUrls: ['./scorecards.component.css']
+  styleUrls: ['./scorecards.component.scss']
 })
 export class ScorecardsComponent implements OnInit {
 
@@ -59,7 +61,7 @@ export class ScorecardsComponent implements OnInit {
     this.hostEvents.emit({ action: 'block-loaded' });
   }
 
-  async drawScorecard(card, i, currDiv) {
+  async drawScorecard(card: ICardEditor, i, currDiv) {
     await this.pluginService.executeQuery(card.query.Key).then(async (data) => {
       await this.pluginService.executeQuery(card.secondQuery?.Key).then(async (benchmarkData) => {
         await System.import(card.chart.ScriptURI).then(async (res) => {
