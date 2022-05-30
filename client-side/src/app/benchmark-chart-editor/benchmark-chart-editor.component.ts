@@ -32,7 +32,7 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
         if (!this.configuration || Object.keys(this.configuration).length == 0) {
             this.loadDefaultConfiguration();
         };
-        await this.fillChartsOptions();
+        this.charts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Benchmark chart')
         super.ngOnInit();
         (await this.getQueryOptions()).forEach(q => this.benchmarkQueryOptions.push({key: q.Key, value: q.Name}));
         const secondQueryID = this.configuration?.secondQuery?.Key;
@@ -45,57 +45,6 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
       return new ChartConfiguration();
     }
 
-    private fillChartsOptions() {
-        return this.pluginService.getChartsByType('Benchmark chart').then((charts) => {
-            this.charts = charts.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
-            if (!this.configuration.chart) {
-                // set the first chart to be default
-                const firstChart = this.charts[0];
-                this._configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
-            }
-            charts.forEach(chart => {
-                this.chartsOptions.push({ key: chart.Key, value: chart.Name });
-            });
-        });
-    }
-
-    onValueChanged(type, event) {
-        switch (type) {
-            case 'Chart':
-                if (event) {
-                    const selectedChart = this.charts.filter(c => c.Key == event)[0];
-                    this._configuration.chart = {Key: selectedChart.Key, ScriptURI: selectedChart.ScriptURI};
-                }
-                else {
-                    this._configuration.chart = null;
-                }
-                this._configuration.executeQuery = true;
-                break;
-
-            case 'Label':
-                this._configuration.label = event;
-                this._configuration.executeQuery = false;
-                break;
-
-            case 'useLabel':
-                this._configuration.useLabel=event;
-                if(!event)
-                    this._configuration.label="";
-                break;
-
-            case 'Height':
-                if(event == ""){
-                    this._configuration.height = 22; //default value
-                }
-                else
-                    this._configuration.height = event;
-
-                this._configuration.executeQuery = true;
-                break;
-        }
-        this.updateHostObject();
-    }
-
     async getQueryOptions(){
         return await this.pluginService.getAllQueries();
     }
@@ -103,7 +52,6 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
     async secondQueryChanged(e) {
         this.selectedBenchmarkQuery = e;
         this._configuration.secondQuery = { Key: e };
-        this._configuration.executeQuery = true;
         this.updateHostObject();
     }
 

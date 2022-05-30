@@ -78,7 +78,6 @@ export abstract class BlockHelperService implements OnInit {
       this.selectedQuery = queryID;
     }
     this.blockLoaded = true;
-    this._configuration.executeQuery = true;
     this.updateHostObject();
     this.hostEvents.emit({ action: 'block-editor-loaded' });
   }
@@ -94,7 +93,7 @@ export abstract class BlockHelperService implements OnInit {
   onEditClick() {
   }
 
-  protected updateHostObject() {
+  updateHostObject() {
     this.hostEvents.emit({
         action: 'set-configuration',
         configuration: this.configuration,
@@ -114,7 +113,6 @@ export abstract class BlockHelperService implements OnInit {
     else {
         this._configuration[key] = value;
     }
-    this._configuration.executeQuery = false;
     this.updateHostObject();
   }
 
@@ -135,10 +133,42 @@ export abstract class BlockHelperService implements OnInit {
   async queryChanged(e) {
     this.selectedQuery = e;
     this._configuration.query = { Key: e };
-    this._configuration.executeQuery = true;
     this.updateHostObject();
   }
 
   abstract getQueryOptions();
 
+  onValueChanged(type, event) {
+    switch (type) {
+        case 'Chart':
+            if (event) {
+                const selectedChart = this.charts.filter(c => c.Key == event)[0];
+                this._configuration.chart = {Key: selectedChart.Key, ScriptURI: selectedChart.ScriptURI};
+            }
+            else {
+                this._configuration.chart = null;
+            }
+            break;
+
+        case 'Label':
+            this._configuration.label = event;
+            break;
+
+        case 'useLabel':
+            this._configuration.useLabel=event;
+            if(!event)
+                this._configuration.label="";
+            break;
+
+        case 'Height':
+            if(event == ""){
+                this._configuration.height = 22; //default value
+            }
+            else
+                this._configuration.height = event;
+
+            break;
+    }
+    this.updateHostObject();
+  }
 }

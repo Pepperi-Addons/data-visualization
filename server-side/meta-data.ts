@@ -73,6 +73,54 @@ export const charts: Chart[] = [
         Type: 'Benchmark chart',
         Hidden: false,
         ReadOnly: true
+    },
+    {
+        Name: "value_with_area",
+        Description: "value with area",
+        ScriptURI: '',
+        Type: 'Series scorecard',
+        Hidden: false,
+        ReadOnly: true
+    },
+    {
+        Name: "value_with_columns",
+        Description: "value with columns",
+        ScriptURI: '',
+        Type: 'Series scorecard',
+        Hidden: false,
+        ReadOnly: true
+    },
+    {
+        Name: "progress_bar",
+        Description: "progress bar",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        ReadOnly: true
+    },
+    {
+        Name: "gauge",
+        Description: "gauge",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        ReadOnly: true
+    },
+    {
+        Name: "value",
+        Description: "value",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        ReadOnly: true
+    },
+    {
+        Name: "value_and_change",
+        Description: "value and change",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        ReadOnly: true
     }
 
 

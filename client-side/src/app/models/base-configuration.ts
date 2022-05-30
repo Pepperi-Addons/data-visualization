@@ -7,7 +7,6 @@ export class BaseConfiguration {
     dropShadow: DropShadow = new DropShadow();
     useBorder: boolean = false;
     border: Color = new Color();
-    executeQuery: boolean = false;
 }
 export class Query {
     Key: string = '';

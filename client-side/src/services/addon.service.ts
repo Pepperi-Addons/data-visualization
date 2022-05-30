@@ -42,7 +42,7 @@ export class AddonService {
 
     async executeQuery(queryID) {
         //return this.papiClient.post(`/data_queries/${queryID}/execute`, null)
-        if(!queryID) return undefined
+        if(!queryID || queryID=='None') return undefined
         return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('elastic').func('execute').post({key: queryID},{})
 
     }
@@ -68,5 +68,20 @@ export class AddonService {
 
     async getChartsByType(chartType) {
         return this.papiClient.get(`/charts?where=Type='${chartType}'`);
+    }
+
+    async fillChartsOptions(configuration, chartsOptions, type) {
+        const charts = await this.getChartsByType(type)
+        const sortedCharts = charts.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
+        if (!configuration.chart) {
+            // set the first chart to be default
+            const firstChart = sortedCharts[0];
+            configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+        }
+        sortedCharts.forEach(chart => {
+            chartsOptions.push({ key: chart.Key, value: chart.Name });
+        });
+        return sortedCharts;
+        
     }
 }
