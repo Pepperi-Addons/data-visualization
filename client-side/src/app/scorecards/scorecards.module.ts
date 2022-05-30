@@ -31,12 +31,9 @@ import { MatDialog } from '@angular/material/dialog';
   providers: [
     TranslateStore,
     AddonService,
-    PepAddonService,
     PepCustomizationService,
     PepDialogService,
     TranslateService,
-    HttpClient,
-    PepFileService,
     DataVisualizationService,
     {
       provide: MatDialog,
