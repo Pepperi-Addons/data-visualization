@@ -145,7 +145,14 @@ export default class MyChart {
             this.chart.updateOptions({
                 labels: uniqueSeries
             });
-
+            // set the colors to be distributed
+            this.chart.updateOptions({
+                plotOptions: {
+                    bar: {
+            //            distributed: true
+                    }
+                }
+            });
             // hide the legend (since the series name is on the x axis)
             this.chart.updateOptions({
                 legend: {
@@ -164,6 +171,20 @@ export default class MyChart {
 		
         // update the chart data
         this.chart.updateSeries(ser);
+		
+		// calculate the optimal column width (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
+		// 20: minimum should be close to 20 (when only one item)
+		// 20+60: maximum should be close 80
+		// 10 and 2: the a and b from the function
+		const seriesLength = ser.reduce((sum, curr) => sum + (curr.data.length ||0),0);
+		const optimalPercent = 20 + (60 / (1 + 10*Math.exp(-seriesLength /2)));
+        this.chart.updateOptions({
+            plotOptions: {
+				bar: {
+					columnWidth: optimalPercent + "%"
+				}
+			}
+        });
 		
 		// update the initial message to be seen if there is no data
 		this.chart.updateOptions({
@@ -184,8 +205,8 @@ export default class MyChart {
      * This function returns a chart configuration object.
      */
     getConfiguration() {
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#33C5FF'];
-		const fontFamily = getComputedStyle(document.documentElement).getPropertyValue('--pep-font-family-body') + ', Helvetica, Arial, sans-serif';
+		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const fontFamily = $('.font-family-body').css("font-family") || '"Segoe UI", "Helvetica Neue", sans-serif';
         return {
             chart: {
                 type: 'line',
@@ -219,6 +240,9 @@ export default class MyChart {
                     useSeriesColors: true
                 }
             },
+			xaxis:{
+				hideOverlappingLabels:true
+			},
 			yaxis:{
 				labels: {
 					formatter: function (value) {
@@ -250,8 +274,10 @@ export default class MyChart {
 					return val;
 				},
                 style: {
-                    colors: ['#000000']
-                }
+            //        colors: ['#000000']
+                },
+                offsetY: -10,
+				enabledOnSeries: [0]
             },
 			tooltip: {
 				y: {

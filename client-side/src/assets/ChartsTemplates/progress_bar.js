@@ -60,6 +60,7 @@ export default class MyChart {
 			let total1 = this.data.DataSet[0][series1];
 			
 			let value = 0;
+			let valueMsg = '';
 			
 			if (this.data.BenchmarkSet && this.data.BenchmarkSet.length > 0) {
 				// calculate the totals of the second query
@@ -67,24 +68,30 @@ export default class MyChart {
 				let total2 = this.data.BenchmarkSet[0][series2];
 				if (total2>0) {
 					value = Math.trunc(100*total1/total2*10)/10;
+					let val = total1;
+					if (val >= 10 ** 3) {
+						val = Math.trunc(val);
+					} 
+					valueMsg = val.toLocaleString();
 				}
 			} else {
 				// no second query - use the 1st series as the percentage value
 				value = total1;
+				valueMsg = total1.toLocaleString() + '%';
 			}
 
-			// update the chart data
-			this.chart.updateSeries([{data:[value]}]);
-			
 			// update the title text with the value and name
 			this.chart.updateOptions({
 				title: {
-					text: title
+					text: valueMsg
 				},
 				subtitle: {
-					text: value.toString() + '%'
+					text: title
 				}
 			});
+			
+			// update the chart data
+			this.chart.updateSeries([{data:[value]}]);
 		}		
 		
 		// update the initial message to be seen if there is no data
@@ -99,52 +106,67 @@ export default class MyChart {
      * This function returns an html which will be created in the embedder.
      */
     getHTML() {
-        return `<div id="canvas" style="height: 100%;"></div>`;
+        return `<div id="canvas" style="height: 11rem; margin: 0px;"></div>`;
     }
 
     /**
      * This function returns a chart configuration object.
      */
     getConfiguration() {
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#33C5FF'];
-		const fontFamily = getComputedStyle(document.documentElement).getPropertyValue('--pep-font-family-body') + ', Helvetica, Arial, sans-serif';
+		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const fontFamilyBody = $('.font-family-body').css("font-family") || "Inter-Regular";
+		const fontFamilyTitle = $('.font-family-title').css("font-family") || "Inter-SemiBold";
         return {
             chart: {
 				type: 'bar',
-                height: '70',
-                width: 200,
+                height: '100%',
+                width: 300,
 				stacked: true,
 				sparkline: {
 					enabled: true
 				},
-				fontFamily: fontFamily
+				fontFamily: fontFamilyBody
             },
 			plotOptions: {
 				bar: {
 					horizontal: true,
-					barHeight: '20%',
+					barHeight: '100%',
+					distributed: true,
+					borderRadius: 4,
 					colors: {
-						backgroundBarColors: ["#40475D"]
+						backgroundBarColors: colors,
+						backgroundBarOpacity: 0.16,
+						backgroundBarRadius: 4
 					}
 				}
 			},
 			colors: colors,
 			title: {
 				floating: true,
-				offsetX: -10,
-				offsetY: 5,
 				text: '',
+				offsetX: 6,
+				offsetY: 36,
 				style: {
-					fontSize: '14px',
+					fontSize: '28px',
+					fontFamily: fontFamilyTitle
 				}
 			},
 			subtitle: {
-				text: '',
 				floating: true,
-				align: "right",
-				offsetY: 0,
+				text: '',
+				offsetX: 6,
+				offsetY: 10,
 				style: {
-					fontSize: '20px',
+					fontSize: '16px',
+					fontFamily: fontFamilyBody
+				}
+			},
+			grid: {
+				padding: {
+					top: 94,
+					bottom: 32,
+					left: 32,
+					right: 32
 				}
 			},
 			fill: {

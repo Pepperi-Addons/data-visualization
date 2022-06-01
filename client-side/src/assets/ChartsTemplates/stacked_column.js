@@ -54,11 +54,11 @@ export default class MyChart {
         const groups = this.data.DataQueries.map((data) => data.Groups).flat();
         const series = this.data.DataQueries.map((data) => data.Series).flat();
 
-        const uniqGroups = groups.filter(function (elem, index, self) {
+        const uniqueGroups = groups.filter(function (elem, index, self) {
             return index === self.indexOf(elem);
         });
 
-        const uniqSeries = series.filter(function (elem, index, self) {
+        const uniqueSeries = series.filter(function (elem, index, self) {
             return index === self.indexOf(elem);
         });
 
@@ -66,11 +66,11 @@ export default class MyChart {
 
         let ser = [];
         // the data has multiple group by DataSet -> show them in the y-axis
-        if (uniqGroups.length > 0) {
-            ser = uniqSeries.map(seriesName => {
+        if (uniqueGroups.length > 0) {
+            ser = uniqueSeries.map(seriesName => {
                 return {
                     "name": seriesName,
-                    "data": uniqGroups.map(groupName => {
+                    "data": uniqueGroups.map(groupName => {
                         return [
                             dataSet.map(ds => {
                                 return {
@@ -84,13 +84,13 @@ export default class MyChart {
             });
         } else {
             // the data has no group by -> show the Series in the y-axis
-            const flattened = uniqSeries.map(seriesName => dataSet[0][seriesName]);
+            const flattened = uniqueSeries.map(seriesName => dataSet[0][seriesName]);
             ser = [{
                     "data": flattened
                 }
             ];
             this.chart.updateOptions({
-                labels: uniqSeries
+                labels: uniqueSeries
             });
             // set the colors to be distributed
             this.chart.updateOptions({
@@ -109,7 +109,7 @@ export default class MyChart {
         }
 
 		// hide the data labels if there are too many labels
-		const showLabels = ser[0].data.length < 30
+		const showLabels = ser[0].data.length < 30;
 		this.chart.updateOptions({
 			dataLabels: {
 				enabled: showLabels
@@ -152,8 +152,8 @@ export default class MyChart {
      * This function returns a chart configuration object.
      */
     getConfiguration() {
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#33C5FF'];
-		const fontFamily = getComputedStyle(document.documentElement).getPropertyValue('--pep-font-family-body') + ', Helvetica, Arial, sans-serif';
+		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const fontFamily = $('.font-family-body').css("font-family") || '"Segoe UI", "Helvetica Neue", sans-serif';
         return {
             chart: {
                 type: 'bar',

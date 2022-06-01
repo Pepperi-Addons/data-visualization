@@ -117,25 +117,22 @@ export default class MyChart {
             });
         } else {
 			// the data has no group by -> show the Series in the y-axis
-			ser = uniqueSeries.map(seriesName => {
-				return {
-					"name": seriesName,
-					"data": dataSet.map(ds => {
-						let data = {
-							"x": seriesName,
-							"y": ds[seriesName] || null
-						};
-						// join the benchmark data to the actuals
-						// check that the benchmark is not per group. if there is only one benchmark series then use it always.
-						if ((uniqueBenchmarkGroups.length == 0) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
-							let goal = Object.assign({}, benchmarkObj);
-							goal.value = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
-							data["goals"] = [goal];
-						}
-						return data;
-					})
-				}
-			});
+			ser = [{
+				data: uniqueSeries.map(seriesName => {
+					let data = {
+						"x": seriesName,
+						"y": dataSet[0][seriesName] || null
+					};
+					// join the benchmark data to the actuals
+					// check that the benchmark is not per group. if there is only one benchmark series then use it always.
+					if ((uniqueBenchmarkGroups.length == 0) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
+						let goal = Object.assign({}, benchmarkObj);
+						goal.value = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
+						data["goals"] = [goal];
+					}
+					return data;
+				})
+			}];
 			
             this.chart.updateOptions({
                 labels: uniqueSeries
@@ -200,8 +197,8 @@ export default class MyChart {
      * This function returns a chart configuration object.
      */
     getConfiguration() {
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#33C5FF'];
-		const fontFamily = getComputedStyle(document.documentElement).getPropertyValue('--pep-font-family-body') + ', Helvetica, Arial, sans-serif';
+		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const fontFamily = $('.font-family-body').css("font-family") || '"Segoe UI", "Helvetica Neue", sans-serif';
         return {
             chart: {
                 type: 'bar',
