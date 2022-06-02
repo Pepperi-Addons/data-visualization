@@ -4,6 +4,11 @@
             <div *ngIf="blockLoaded">
                 <pep-checkbox [value]="configuration.useLabel" [label]="'Title' | translate" [renderTitle]="false" (valueChange)="onValueChanged('useLabel',$event)"></pep-checkbox>
                 <pep-textbox [label]="'TitleText' | translate" [type]="'text'" [disabled]="!configuration.useLabel" [(value)]="configuration.label" (valueChange)="onValueChanged('Label', $event)"></pep-textbox>
+                <pep-group-buttons-settings
+                [groupType]="'horizontal-align'" [subHeader]="'Alignment' | translate"
+                [disabled]="!configuration.useLabel" [btnKey]="configuration?.horizontalAlign"
+                (btnkeyChange)="onFieldChange('horizontalAlign',$event)">
+                </pep-group-buttons-settings>
                 <h2>{{'ChartDesign' | translate}}
                 </h2>
                 <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="configuration.chart?.Key" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">

@@ -20,6 +20,7 @@ import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { SeriesEditorModule } from '../series-editor';
+import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
 
 const pepIcons = [
     pepIconSystemBin,
@@ -37,6 +38,7 @@ const pepIcons = [
         PepTextareaModule,
         PepSliderModule,
         PepGroupButtonsModule,
+        PepGroupButtonsSettingsModule,
         MatTabsModule,
         PepColorModule,
         SeriesEditorModule,
