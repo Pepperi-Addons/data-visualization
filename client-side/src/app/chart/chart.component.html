@@ -1,7 +1,7 @@
 <div class="minHeight" [ngStyle]="{'border': dataVisualizationService.getChartBorder(this.configuration?.useBorder, this.configuration?.border),
                  'box-shadow': configuration?.useDropShadow === true ? dataVisualizationService.getCardShadow(this.configuration?.dropShadow?.intensity/100,configuration?.dropShadow?.type) : 'unset',
                  'overflow': 'hidden'}">
-<div class="pep-border-bottom">
+<div class="pep-border-bottom" [ngStyle]="{'text-align':configuration?.horizontalAlign}">
     <label class="body-xl bold ellipsis">{{configuration?.label}}</label>
 </div>
         <div #previewArea [ngStyle]="{'height.rem': this.configuration?.height}">

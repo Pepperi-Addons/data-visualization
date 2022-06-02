@@ -49,7 +49,7 @@ export class ScorecardsComponent implements OnInit {
 
   async ngOnInit() {
     this.divView.nativeElement.innerHTML = `<div style="display: flex;flex-direction: column;gap: 2rem;">
-                  <div id='cards' style="display: flex;gap: 2rem;"></div></div>`;
+                  <div id='cards' style="display: flex;gap: 2rem; flex-wrap: wrap"></div></div>`;
     for(const i in this.configuration?.cards) {
       if (this.configuration?.cards[i].query?.Key) {
         const cardsDiv = this.divView.nativeElement.querySelector('#cards')
@@ -93,8 +93,7 @@ export class ScorecardsComponent implements OnInit {
 
   private getScorecardsHTML(cardId) {
     const boxShadow = this.configuration?.scorecardsConfig.useDropShadow === true ? this.dataVisualizationService.getCardShadow(this.configuration?.scorecardsConfig.dropShadow?.intensity / 100, this.configuration?.scorecardsConfig.dropShadow?.type) : 'unset';
-    return `<div id=`+cardId+` style="padding: 1.5rem 2rem 1rem;
-          background: rgb(255, 255, 255);
+    return `<div id=`+cardId+` style="background: rgb(255, 255, 255);
           border: ${this.dataVisualizationService.getChartBorder(this.configuration?.scorecardsConfig.useBorder, this.configuration?.scorecardsConfig.border)};
           box-shadow: ${boxShadow};
           border-radius: 0.5rem;">

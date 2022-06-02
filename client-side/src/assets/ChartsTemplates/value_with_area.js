@@ -157,9 +157,6 @@ export default class MyChart {
             });
         }
 		
-        // update the chart data
-        this.chart.updateSeries(ser);
-		
 		if  (this.data.DataQueries.length>0) {
 			// update the title text with the total of the first group and first series
 			this.chart.updateOptions({
@@ -172,6 +169,9 @@ export default class MyChart {
 			});
 		}
 		
+        // update the chart data
+        this.chart.updateSeries(ser);
+	
 		// update the initial message to be seen if there is no data
 		this.chart.updateOptions({
             noData: {
@@ -184,21 +184,22 @@ export default class MyChart {
      * This function returns an html which will be created in the embedder.
      */
     getHTML() {
-        return `<div id="canvas" style="height: 100%;"></div>`;
+        return `<div id="canvas" style="height: 11rem;"></div>`;
     }
 
     /**
      * This function returns a chart configuration object.
      */
     getConfiguration() {
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#33C5FF'];
-		const fontFamily = getComputedStyle(document.documentElement).getPropertyValue('--pep-font-family-body') + ', Helvetica, Arial, sans-serif';
+		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const fontFamilyBody = $('.font-family-body').css("font-family") || "Inter-Regular";
+		const fontFamilyTitle = $('.font-family-title').css("font-family") || "Inter-SemiBold";
         return {
             chart: {
                 type: 'line',
                 height: '100%',
-                width: 200,
-				fontFamily: fontFamily,
+                width: 300,
+				fontFamily: fontFamilyBody,
 				sparkline: {
 					enabled: true
 				}
@@ -208,15 +209,28 @@ export default class MyChart {
 			},
 			colors: colors,
 			title: {
+				floating: true,
 				text: '',
+				offsetX: 6,
+				offsetY: 36,
 				style: {
-					fontSize: '24px',
+					fontSize: '28px',
+					fontFamily: fontFamilyTitle
 				}
 			},
 			subtitle: {
+				floating: true,
 				text: '',
+				offsetX: 6,
+				offsetY: 10,
 				style: {
-					fontSize: '14px',
+					fontSize: '16px',
+					fontFamily: fontFamilyBody
+				}
+			},
+			grid: {
+				padding: {
+					top: 70
 				}
 			},
 			tooltip: {

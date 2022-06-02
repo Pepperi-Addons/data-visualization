@@ -62,25 +62,25 @@ export default class MyChart {
 				valueMsg = change.toString() + '%';
 				if (change > 0) {
 					valueMsg = '+' + valueMsg;
-					color = '#00FF00';
+					color = '#83B30C';
 				} else if (change < 0) {
-					color = '#FF0000';
+					color = '#CC0000';
 				}
 			} else {
 				// single query - show the value
 				if (total1 >= 10 ** 3) {
-					valueMsg = Math.trunc(total1).toString();
+					valueMsg = Math.trunc(total1).toLocaleString();
 				} else {
-					valueMsg = total1.toString();
+					valueMsg = total1.toLocaleString();
 				}
 			}
 		}
 		
 		// update the card
 		this.canvas.innerHTML = 
-		    `<div style="height: 100%;">
-				<p style="text-align: center; margin: 10px 0px" class="color-dimmed title-sm ellipsis">` + title + `</p>
-				<p style="text-align: center; margin: 10px 0px; color: ` + color + `" class="bold title-xl ellipsis">` + valueMsg + `</p>
+		    `<div style="height: 11rem; padding: 40px 32px 20px 32px">
+				<p style="text-align: center; padding: 0px 0px 0px 0px; margin: 0px; height:20px; font-size: 14px;" class="color-dimmed font-family-body ellipsis">` + title + `</p>
+				<p style="text-align: center; padding: 0px 0px; color: ` + color + `; font-size: 40px; font-weight: 900; line-height: 48px;" class="font-family-title ellipsis">` + valueMsg + `</p>
 			</div>`;
     }
 }
