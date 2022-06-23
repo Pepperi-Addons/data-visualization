@@ -10,6 +10,7 @@ import { DataVisualizationService } from 'src/services/data-visualization.servic
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { AddonService } from 'src/services/addon.service';
 import { MatDialog } from '@angular/material/dialog';
+import { CardModule } from '../card/card.module';
 
 
 
@@ -17,6 +18,7 @@ import { MatDialog } from '@angular/material/dialog';
   declarations: [ScorecardsComponent],
   imports: [
     CommonModule,
+    CardModule,
     PepTopBarModule,
     TranslateModule.forChild({
       loader: {

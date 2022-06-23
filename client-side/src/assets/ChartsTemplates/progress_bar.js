@@ -39,7 +39,7 @@ export default class MyChart {
         const canvas = element.querySelector('#canvas');
 
         // retrieve the chart configuration
-        const conf = this.getConfiguration();
+        const conf = this.getConfiguration(configuration);
 
         // create a chart element on the canvas with the configuration
         this.chart = new ApexCharts(canvas, conf);
@@ -52,9 +52,6 @@ export default class MyChart {
      */
     update() {
 		if (this.data.DataSet && this.data.DataSet.length > 0) {
-			// set the card title
-			let title = this.data.DataQueries[0].Name;
-			
 			// calculate the totals of the first query
 			let series1 = this.data.DataQueries[0].Series[0];
 			let total1 = this.data.DataSet[0][series1];
@@ -80,13 +77,10 @@ export default class MyChart {
 				valueMsg = total1.toLocaleString() + '%';
 			}
 
-			// update the title text with the value and name
+			// update the subtitle text with the value
 			this.chart.updateOptions({
-				title: {
-					text: valueMsg
-				},
 				subtitle: {
-					text: title
+					text: valueMsg
 				}
 			});
 			
@@ -106,21 +100,21 @@ export default class MyChart {
      * This function returns an html which will be created in the embedder.
      */
     getHTML() {
-        return `<div id="canvas" style="height: 11rem; margin: 0px;"></div>`;
+        return `<div id="canvas" style="height: 11rem; margin: 0;"></div>`;
     }
 
     /**
      * This function returns a chart configuration object.
      */
-    getConfiguration() {
+    getConfiguration(configuration) {
 		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
 		const fontFamilyBody = $('.font-family-body').css("font-family") || "Inter-Regular";
-		const fontFamilyTitle = $('.font-family-title').css("font-family") || "Inter-SemiBold";
+		const title = configuration.Title || '';
         return {
             chart: {
 				type: 'bar',
                 height: '100%',
-                width: 300,
+                width: '100%',
 				stacked: true,
 				sparkline: {
 					enabled: true
@@ -141,23 +135,27 @@ export default class MyChart {
 				}
 			},
 			colors: colors,
-			title: {
-				floating: true,
-				text: '',
-				offsetX: 6,
-				offsetY: 36,
-				style: {
-					fontSize: '28px',
-					fontFamily: fontFamilyTitle
-				}
-			},
 			subtitle: {
 				floating: true,
 				text: '',
-				offsetX: 6,
-				offsetY: 10,
+				align: 'center',
+				//offsetX: 6,
+				offsetY: 38,
 				style: {
-					fontSize: '16px',
+					fontSize: '28px',
+					fontWeight: 'bold',
+					fontFamily: fontFamilyBody
+				}
+			},
+			title: {
+				floating: true,
+				text: title,
+				align: 'center',
+				//offsetX: 6,
+				offsetY: 16,
+				style: {
+					fontSize: '14px',
+					fontWeight: 'normal',
 					fontFamily: fontFamilyBody
 				}
 			},
@@ -167,17 +165,6 @@ export default class MyChart {
 					bottom: 32,
 					left: 32,
 					right: 32
-				}
-			},
-			fill: {
-				type: 'gradient',
-				gradient: {
-					shade: 'light',
-					shadeIntensity: 0.4,
-					inverseColors: false,
-					opacityFrom: 1,
-					opacityTo: 1,
-					stops: [0, 50, 53, 91]
 				}
 			},
 			tooltip: {
