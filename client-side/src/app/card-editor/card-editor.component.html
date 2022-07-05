@@ -13,7 +13,7 @@
     </div>
     <div class="editorCont" *ngIf="id == configuration?.scorecardsConfig?.editSlideIndex">
         <pep-textbox 
-            [label]="'Name' | translate" 
+            [label]="'Title' | translate" 
             type="string" 
             [value]="configuration?.cards[id].title"
             (valueChange)="onCardFieldChange('title',$event)"

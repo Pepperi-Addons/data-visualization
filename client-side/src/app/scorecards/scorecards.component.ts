@@ -16,18 +16,6 @@ export class ScorecardsComponent implements OnInit {
 
   @Input('hostObject')
   set hostObject(value) {
-      const currCard = value.configuration?.scorecardsConfig?.editSlideIndex;
-      const cardsDiv = this.divView.nativeElement.querySelector('#cards')
-      if (currCard >= 0 && cardsDiv && value?.configuration?.cards[currCard].query?.Key && value?.configuration?.cards[currCard].chart?.Key) {
-        let currDiv = this.divView.nativeElement.querySelector('#card'+currCard)
-        if(!currDiv) {
-          cardsDiv.innerHTML += this.getScorecardsHTML("card"+currCard);
-          currDiv = this.divView.nativeElement.querySelector('#card'+currCard)
-        }
-        if(this.drawRequired(currCard,value)) {
-          this.drawScorecard(value.configuration?.cards[currCard],currCard,currDiv);
-        }
-      }
       this._configuration = value?.configuration;
 }
 
@@ -48,16 +36,6 @@ export class ScorecardsComponent implements OnInit {
     private pluginService: AddonService) { }
 
   async ngOnInit() {
-    this.divView.nativeElement.innerHTML = `<div style="display: flex;flex-direction: column;gap: 2rem;">
-                  <div id='cards' style="display: flex;gap: 2rem; flex-wrap: wrap"></div></div>`;
-    for(const i in this.configuration?.cards) {
-      if (this.configuration?.cards[i].query?.Key) {
-        const cardsDiv = this.divView.nativeElement.querySelector('#cards')
-        cardsDiv.innerHTML += this.getScorecardsHTML("card"+i);
-        const currDiv = this.divView.nativeElement.querySelector('#card'+i)
-        await this.drawScorecard(this.configuration?.cards[i],i,currDiv);
-      }
-    }
     this.hostEvents.emit({ action: 'block-loaded' });
   }
 
@@ -66,7 +44,7 @@ export class ScorecardsComponent implements OnInit {
       await this.pluginService.executeQuery(card.secondQuery?.Key).then(async (benchmarkData) => {
         await System.import(card.chart.ScriptURI).then(async (res) => {
           const configuration = {
-              label: 'Sales'
+              Title: card.title
           }
           await this.loadSrcJSFiles(res.deps).then(() => {
               this.chartInstances[i] = new res.default(currDiv, configuration);
@@ -89,15 +67,6 @@ export class ScorecardsComponent implements OnInit {
         currDiv.innerHTML = `Failed to execute query: ${card.query.Key} , error: ${err}`;;
       })
     })
-  }
-
-  private getScorecardsHTML(cardId) {
-    const boxShadow = this.configuration?.scorecardsConfig.useDropShadow === true ? this.dataVisualizationService.getCardShadow(this.configuration?.scorecardsConfig.dropShadow?.intensity / 100, this.configuration?.scorecardsConfig.dropShadow?.type) : 'unset';
-    return `<div id=`+cardId+` style="background: rgb(255, 255, 255);
-          border: ${this.dataVisualizationService.getChartBorder(this.configuration?.scorecardsConfig.useBorder, this.configuration?.scorecardsConfig.border)};
-          box-shadow: ${boxShadow};
-          border-radius: 0.5rem;">
-      </div>`;
   }
 
   getRandomNumber() {

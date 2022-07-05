@@ -27,6 +27,7 @@ export default class MyChart {
     constructor(element, configuration) {
         this.data = {};
         this.canvas = element;
+		this.title = configuration.Title || '';
     }
 
     /**
@@ -34,14 +35,10 @@ export default class MyChart {
      * the embedder calls this function when there are changes to the chart data
      */
     update() {
-		let title = 'No data';
-		let valueMsg = '';
+		let valueMsg = 'No data';
 		let color = '#000000';
 		
 		if (this.data.DataSet && this.data.DataSet.length > 0) {
-			// set the card title
-			title = this.data.DataQueries[0].Name;
-			
 			// calculate the totals of the first query
 			let series1 = this.data.DataQueries[0].Series[0];
 			let total1 = this.data.DataSet[0][series1];
@@ -78,9 +75,9 @@ export default class MyChart {
 		
 		// update the card
 		this.canvas.innerHTML = 
-		    `<div style="height: 11rem; padding: 40px 32px 20px 32px">
-				<p style="text-align: center; padding: 0px 0px 0px 0px; margin: 0px; height:20px; font-size: 14px;" class="color-dimmed font-family-body ellipsis">` + title + `</p>
-				<p style="text-align: center; padding: 0px 0px; color: ` + color + `; font-size: 40px; font-weight: 900; line-height: 48px;" class="font-family-title ellipsis">` + valueMsg + `</p>
+		    `<div style="height: 11rem; padding: 2.5rem 2rem 1.25rem 2rem">
+				<p style="text-align: center; padding: 0; margin: 0 0 0.25rem 0; height:1.25rem;font-size: 0.875rem;" class="color-dimmed font-family-body ellipsis">` + this.title + `</p>
+				<p style="text-align: center; padding: 0; color: ` + color + `; font-size: 2.5rem; font-weight: 700; line-height: 1.2;" class="font-family-title ellipsis">` + valueMsg + `</p>				
 			</div>`;
     }
 }

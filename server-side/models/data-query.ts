@@ -8,6 +8,14 @@ export interface GroupBy {
     Alias?:string;
 }
 
+export interface DataQuery extends AddonData {
+    Key: string;
+    Name: string;
+    Description?: string;
+    Resource: string;
+    Series: Serie[];
+}
+
 export interface Serie {
     Key: string,
     Name: string,
