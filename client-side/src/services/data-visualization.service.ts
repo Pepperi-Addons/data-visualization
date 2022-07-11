@@ -1,13 +1,8 @@
-import { CdkDragDrop, copyArrayItem, moveItemInArray, transferArrayItem } from "@angular/cdk/drag-drop";
 import { Injectable } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
-import { TranslateService } from "@ngx-translate/core";
 import { PepColorService } from "@pepperi-addons/ngx-lib";
-import { PepDialogActionButton, PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
-import { AddonService } from "src/services/addon.service";
+import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { Color } from "src/app/models/color";
-import { SeriesEditorComponent } from "src/app/series-editor";
-import { DataQuery } from "../../../server-side/models/data-query";
 
 
 @Injectable({
@@ -81,7 +76,6 @@ export class DataVisualizationService {
             callbackFunc(res);
         });
     }
-
 
     getChartBorder(useBorder, border) {
         if (useBorder) {

@@ -1,28 +1,19 @@
 <div pep-main-area style="height: inherit">
-    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="100ms">
+    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" animationDuration="100ms">
         <mat-tab id="1" label="{{'General' | translate}}">
             <div *ngIf="blockLoaded">
-                <h2>{{'Text' | translate}}
-                </h2>
-                <label class="body-xs normal ellipsis">{{'TitleSize' | translate}}</label>
-                <pep-group-buttons [buttons]="PepSizes" [selectedButtonKey]="configuration?.titleSize" buttonsClass="md regular" (buttonClick)="onFieldChange('titleSize',$event)" viewType="toggle" stretch="true">
-                </pep-group-buttons>
-                <label class="body-xs normal ellipsis">{{'ValueSize' | translate}}</label>
-                <pep-group-buttons [buttons]="PepSizes" [selectedButtonKey]="configuration?.valueSize" buttonsClass="md regular" (buttonClick)="onFieldChange('valueSize',$event)" viewType="toggle" stretch="true">
-                </pep-group-buttons>
-
                 <div id="border">
-                    <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
-                    <pep-color [value]="configuration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
+                    <pep-checkbox [value]="configuration?.scorecardsConfig.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
+                    <pep-color [value]="configuration?.scorecardsConfig.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.scorecardsConfig.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
                     </pep-color>
-                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useBorder" [value]="configuration?.border?.opacity" [background]="getSliderBackground(configuration?.border?.color)" (valueChange)="onFieldChange('border.opacity',$event)">
+                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.scorecardsConfig.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.scorecardsConfig.useBorder" [value]="configuration?.scorecardsConfig.border?.opacity" [background]="getSliderBackground(configuration?.scorecardsConfig.border?.color)" (valueChange)="onFieldChange('border.opacity',$event)">
                     </pep-slider>
                 </div>
                 <div>
-                    <pep-checkbox [value]="configuration.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
+                    <pep-checkbox [value]="configuration?.scorecardsConfig.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
                     </pep-checkbox>
                     <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
-                    <pep-group-buttons [buttons]="SlideDropShadowStyle" [selectedButtonKey]=" this.configuration?.dropShadow?.type" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
+                    <pep-group-buttons [buttons]="SlideDropShadowStyle" [selectedButtonKey]=" this.configuration?.scorecardsConfig.dropShadow?.type" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
                     </pep-group-buttons>
                     <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useDropShadow" [value]="configuration?.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
                     </pep-slider>
@@ -30,15 +21,18 @@
             </div>
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
-            <h2>{{'DataQueries' | translate}}
+            <h2>{{'Cards' | translate}}
             </h2>
-            <div id="seriesButtons" class="queries-containter">
-                <div *ngFor="let qureiesButton of seriesButtons">
-                    <pep-group-buttons [buttons]="qureiesButton" [buttonsDisabled]="false" [viewType]="'split'">
-                    </pep-group-buttons>
-                </div>
-                <pep-button [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
+            <div (cdkDropListDropped)="drop($event)"  cdkDropList>
+                <card-editor *ngFor="let currentCard of configuration?.cards;" 
+                    [id]="currentCard?.id" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
+                    [isDraggable]="true" (editClick)='onCardEditClick($event);' (removeClick)='onCardRemoveClick($event);'
+                    [configuration]="configuration" [pageParameters]="pageParameters"
+                    cdkDrag [cdkDragDisabled]="currentCard?.id == configuration?.scorecardsConfig?.editSlideIndex" style="cursor: grab;" (cdkDragStarted)="onDragStart($event)" (cdkDragEnded)="onDragEnd($event)">
+                </card-editor>
             </div>
+            <pep-button class="add-content-button" value="{{ 'Add' | translate}}" styleType="regular" iconName="number_plus" iconPosition="end"
+                    (buttonClick)="addNewCardClick()"></pep-button>
         </mat-tab>
     </mat-tab-group>
 </div>

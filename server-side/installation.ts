@@ -116,11 +116,27 @@ async function setPageBlockRelations(client){
         const tableComponentRelation: Relation = {
             RelationName: "PageBlock",
             Name: blockName, 
-            Description: `Table`, 
+            Description: `Table`,
             Type: "NgComponent",
             SubType: "NG11",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'table', 
+            ComponentName: `${blockName}Component`, 
+            ModuleName: `${blockName}Module`, 
+            EditorComponentName: `${blockName}EditorComponent`, 
+            EditorModuleName: `${blockName}EditorModule`
+        };
+
+        blockName = 'BenchmarkChart';
+     
+        const benchmarkChartComponentRelation: Relation = {
+            RelationName: "PageBlock",
+            Name: blockName, 
+            Description: `BenchmarkChart`,
+            Type: "NgComponent",
+            SubType: "NG11",
+            AddonUUID: client.AddonUUID,
+            AddonRelativeURL: 'benchmark_chart', 
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
@@ -132,6 +148,7 @@ async function setPageBlockRelations(client){
         await service.upsertRelation(pageComponentRelation);
         await service.upsertRelation(scorecardsComponentRelation);
         await service.upsertRelation(tableComponentRelation);
+        await service.upsertRelation(benchmarkChartComponentRelation);
 
         return { success:true, resultObject: null };
     } catch(err) {

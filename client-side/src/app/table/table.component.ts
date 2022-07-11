@@ -1,18 +1,13 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ObjectsDataRow, PepAddonService, PepDataConvertorService, PepLoaderService, PepRowData } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepDataConvertorService, PepLoaderService, PepRowData } from '@pepperi-addons/ngx-lib';
 import { PepListComponent } from '@pepperi-addons/ngx-lib/list';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
-import { config } from '../addon.config';
 import { AddonService } from '../../services/addon.service';
-import { Color } from '../models/color';
-import { Overlay } from '../models/overlay ';
-import { ScorecardsConfiguration } from '../models/scorecards-configuration';
-import { DataView, GridDataViewField, DataViewFieldType, DataViewFieldTypes } from '@pepperi-addons/papi-sdk/dist/entities/data-view';
+import { DataView, GridDataViewField, DataViewFieldTypes } from '@pepperi-addons/papi-sdk/dist/entities/data-view';
 import { GenericListDataSource } from '../generic-list/generic-list.component';
-import { pageFiltersDataView } from 'src/services/list-data-source.service';
-import { CardsGridDataView, PageProduce } from '@pepperi-addons/papi-sdk';
-import { from, of } from 'rxjs';
+import { CardsGridDataView } from '@pepperi-addons/papi-sdk';
+import { of } from 'rxjs';
 import { BaseConfiguration } from '../models/base-configuration';
 
 @Component({
@@ -24,7 +19,6 @@ export class TableComponent implements OnInit {
 
   @ViewChild(PepListComponent) customList: PepListComponent;
   dataObjects: any[] = []
-  pageProduce: PageProduce;
   dataSet;
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
@@ -38,12 +32,12 @@ export class TableComponent implements OnInit {
 
   @Input('hostObject')
   set hostObject(value) {
-    this._configuration = value?.configuration;
-    if (value.configuration?.query?.Key && value.configuration.executeQuery) {
-      this.drawList(this.configuration);
+    if (value.configuration?.query?.Key) {
+      const drawRequired = this.configuration?.query?.Key!=value.configuration.query?.Key
+      if(drawRequired)
+        this.drawList(value.configuration);
     }
-    if (value.configuration)
-      value.configuration.executeQuery=true;
+    this._configuration = value?.configuration;
   }
 
   oldDefine: any;

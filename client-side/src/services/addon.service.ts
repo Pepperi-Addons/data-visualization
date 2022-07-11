@@ -41,11 +41,21 @@ export class AddonService {
     }
 
     async executeQuery(queryID) {
-        return this.papiClient.post(`/data_queries/${queryID}/execute`, null);
+        //return this.papiClient.post(`/data_queries/${queryID}/execute`, null)
+        if(!queryID || queryID=='None') return undefined
+        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('elastic').func('execute').post({key: queryID},{})
+
     }
 
     async getDataQueryByKey(Key: string) {
-        return this.papiClient.get(`/data_queries?where=Key='${Key}'`);
+        //return this.papiClient.get(`/data_queries?where=Key='${Key}'`);
+        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('api').func('queries').get({where: `Key='${Key}'`})
+
+    }
+
+    async getAllQueries(){
+        //return this.papiClient.get(`/data_queries`);
+        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('api').func('queries').get()
     }
 
     async upsertDataQuery(body) {
@@ -54,5 +64,24 @@ export class AddonService {
 
     async getCharts() {
         return this.papiClient.get(`/charts`);
+    }
+
+    async getChartsByType(chartType) {
+        return this.papiClient.get(`/charts?where=Type='${chartType}'`);
+    }
+
+    async fillChartsOptions(configuration, chartsOptions, type) {
+        const charts = await this.getChartsByType(type)
+        const sortedCharts = charts.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
+        if (!configuration.chart) {
+            // set the first chart to be default
+            const firstChart = sortedCharts[0];
+            configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+        }
+        sortedCharts.forEach(chart => {
+            chartsOptions.push({ key: chart.Key, value: chart.Name });
+        });
+        return sortedCharts;
+        
     }
 }

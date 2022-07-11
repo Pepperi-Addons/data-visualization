@@ -7,7 +7,7 @@ import { PepDialogActionButton } from "@pepperi-addons/ngx-lib/dialog";
 import { pepIconSystemBin } from "@pepperi-addons/ngx-lib/icon";
 import { AddonService } from "src/services/addon.service";
 import { DataVisualizationService } from "src/services/data-visualization.service";
-import { DataQuery, Serie } from "../../../../server-side/models/data-query";
+import { Serie } from "../../../../server-side/models/data-query";
 import { BaseConfiguration } from "../models/base-configuration";
 import { Overlay } from "../models/overlay ";
 import { v4 as uuid } from 'uuid';
@@ -32,7 +32,6 @@ export abstract class BlockHelperService implements OnInit {
   protected _configuration: any;
   get configuration() {return this._configuration};
   label = false;
-  currentDataQuery: DataQuery;
   activeTabIndex = 0;
   charts: any;
   blockLoaded = false;
@@ -41,7 +40,9 @@ export abstract class BlockHelperService implements OnInit {
   seriesButtons: Array<Array<PepButton>> = [];
   DropShadowStyle: Array<PepButton> = [];
   PepSizes: Array<PepButton> = [];
-
+  queryOptions = [];
+  selectedQuery: string = ''
+  
 
   constructor(protected addonService: PepAddonService,
     public routeParams: ActivatedRoute,
@@ -70,23 +71,15 @@ export abstract class BlockHelperService implements OnInit {
       { key: 'Regular', value: this.translate.instant('Regular') }
     ];
 
+    (await this.getQueryOptions()).forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
     const queryID = this.configuration?.query?.Key;
     if (queryID) {
       this._configuration.query = { Key: queryID };
-      this.pluginService.getDataQueryByKey(queryID).then((res) => {
-        this.currentDataQuery = res[0];
-        this.blockLoaded = true;
-        this.buildSeriesButtons();
-        this._configuration.executeQuery = true;
-        this.updateHostObject();
-        this.hostEvents.emit({ action: 'block-editor-loaded' });
-      })
-    } else {
-      const query = await this.pluginService.upsertDataQuery({Name: uuid()});
-      this.currentDataQuery = query;
-      this._configuration.query = { Key: query.Key }
-      this.blockLoaded = true;
+      this.selectedQuery = queryID;
     }
+    this.blockLoaded = true;
+    this.updateHostObject();
+    this.hostEvents.emit({ action: 'block-editor-loaded' });
   }
 
   protected loadDefaultConfiguration() {
@@ -100,53 +93,11 @@ export abstract class BlockHelperService implements OnInit {
   onEditClick() {
   }
 
-  protected updateHostObject() {
+  updateHostObject() {
     this.hostEvents.emit({
         action: 'set-configuration',
         configuration: this.configuration,
     });
-  }
-
-  protected updateQuerySeries(seriesToAddOrUpdate: any) {
-    const idx = this.currentDataQuery?.Series?.findIndex(item => item.Key === seriesToAddOrUpdate.Key);
-    if (idx > -1) {
-        this.currentDataQuery.Series[idx] = seriesToAddOrUpdate;
-    }
-    else {
-        if (!this.currentDataQuery?.Series) {
-            this.currentDataQuery.Series = [];
-        }
-        this.currentDataQuery.Series.push(seriesToAddOrUpdate);
-    }
-    return this.currentDataQuery;
-  }
-
-
-  deleteSeries(event) {
-    console.log(event);
-    const idx = this.currentDataQuery.Series.findIndex(item => item.Key === event.source.key);
-    if (idx > -1) {
-        this.currentDataQuery.Series.splice(idx, 1);
-    }
-
-    this.pluginService.upsertDataQuery(this.currentDataQuery).then((res) => {
-        this.currentDataQuery = res;
-        this.buildSeriesButtons();
-        this._configuration.executeQuery = true;
-        this.updateHostObject();
-    });
-  }
-
-  editSeries(event) {
-    if (event) {
-        let serie =  this.currentDataQuery.Series.filter(s => s.Key === event.source.key)[0];
-        this.currentSeries = this.dataVisualizationService.deepCloneObject(serie) as Serie; // deep clone because if not the object will change also if cancel will be pressed
-    }
-    this.showSeriesEditorDialog(this.currentSeries);
-  }
-
-  add() {
-    this.showSeriesEditorDialog(null);
   }
 
   tabClick(event) {
@@ -162,56 +113,7 @@ export abstract class BlockHelperService implements OnInit {
     else {
         this._configuration[key] = value;
     }
-    this._configuration.executeQuery = false;
     this.updateHostObject();
-  }
-
-
-  showSeriesEditorDialog(series) {
-    const seriesCount = this.currentDataQuery?.Series?.length ? this.currentDataQuery?.Series?.length : 0
-    
-    const callbackFunc = (seriesToAddOrUpdate) => {
-        if (seriesToAddOrUpdate) {
-            this.currentDataQuery = this.updateQuerySeries(seriesToAddOrUpdate);
-            this.pluginService.upsertDataQuery(this.currentDataQuery).then((res) => {
-                this.currentDataQuery = res;
-                this.buildSeriesButtons();
-                this._configuration.executeQuery = true;
-                this.updateHostObject();
-            })
-        }
-    }
-
-    const actionButton: PepDialogActionButton = {
-        title: "OK",
-        className: "",
-        callback: null,
-    };
-    const input = {
-      currentSeries: series,
-      parent: 'chart', // should be generic('scorecards' for scorecards-editor), but is it important?
-      seriesName: series?.Name ? series.Name : `Series ${seriesCount + 1}`
-    };
-    this.dataVisualizationService.openDialog(this.translate.instant('EditQuery'), SeriesEditorComponent, actionButton, input, callbackFunc);
-  }
-
-  buildSeriesButtons() {
-    this.seriesButtons = [];
-    this.currentDataQuery?.Series?.forEach(serise => {
-        this.seriesButtons.push([
-            {
-                key: serise.Key,
-                value: serise.Name,
-                callback: (event: IPepButtonClickEvent) => this.editSeries(event),
-            },
-            {
-                key: serise.Key,
-                classNames: 'caution',
-                callback: (event: IPepButtonClickEvent) => this.deleteSeries(event),
-                iconName: pepIconSystemBin.name,
-            },
-        ]);
-    });
   }
 
   getSliderBackground(color) {
@@ -228,4 +130,45 @@ export abstract class BlockHelperService implements OnInit {
     return 'linear-gradient(to ' + alignTo + ', ' + gradStr + ')';
   }
 
+  async queryChanged(e) {
+    this.selectedQuery = e;
+    this._configuration.query = { Key: e };
+    this.updateHostObject();
+  }
+
+  abstract getQueryOptions();
+
+  onValueChanged(type, event) {
+    switch (type) {
+        case 'Chart':
+            if (event) {
+                const selectedChart = this.charts.filter(c => c.Key == event)[0];
+                this._configuration.chart = {Key: selectedChart.Key, ScriptURI: selectedChart.ScriptURI};
+            }
+            else {
+                this._configuration.chart = null;
+            }
+            break;
+
+        case 'Label':
+            this._configuration.label = event;
+            break;
+
+        case 'useLabel':
+            this._configuration.useLabel=event;
+            if(!event)
+                this._configuration.label="";
+            break;
+
+        case 'Height':
+            if(event == ""){
+                this._configuration.height = 22; //default value
+            }
+            else
+                this._configuration.height = event;
+
+            break;
+    }
+    this.updateHostObject();
+  }
 }

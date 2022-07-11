@@ -21,15 +21,17 @@
             </div>
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
-            <h2>{{'DataQueries' | translate}}
-            </h2>
-            <div id="seriesButtons" class="queries-containter">
-                <div *ngFor="let qureiesButton of seriesButtons">
-                    <pep-group-buttons [buttons]="qureiesButton" [buttonsDisabled]="false" [viewType]="'split'">
-                    </pep-group-buttons>
-                </div>
-                <pep-button [value]="'Add' | translate" (buttonClick)="add()"></pep-button>
-            </div>
+            <pep-select
+                [label] = "'Data query' | translate"
+                [value]="selectedQuery"
+                [mandatory]="false"
+                [disabled]="false"
+                xAlignment="left"
+                [options]="queryOptions"
+                [showTitle]="true"
+                [emptyOption]="false"
+                (valueChange)="queryChanged($event)"
+            ></pep-select>
         </mat-tab>
     </mat-tab-group>
 </div>

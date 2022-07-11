@@ -1,0 +1,106 @@
+@use '~@pepperi-addons/ngx-lib/src/core/style/abstracts/variables' as ngx-variables;
+@use '~@pepperi-addons/ngx-lib/src/core/style/abstracts/functions' as ngx-functions;
+@use '~@pepperi-addons/ngx-lib/src/core/style/abstracts/mixins' as ngx-mixins;
+
+:host {
+     display: block;
+}
+.card-editor-container {
+    min-height: 2.5rem;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    padding-top: .4rem;
+    border-radius: ngx-variables.$border-radius-md;
+    padding-inline: ngx-variables.$spacing-sm;
+    margin-bottom: .5rem;
+    @include ngx-mixins.state-regular-default(true);
+
+    .editorCont{
+        padding-top: .75rem;
+        grid-column: 1 / 4;
+        grid-row: 2 / 4;
+
+        .script-button {
+            margin-bottom: ngx-variables.$form-spacing;
+        }
+    }
+
+    .title-container {
+        margin-top: .15rem;
+        overflow-x: hidden;
+        margin-inline: ngx-variables.$spacing-sm;
+    
+        .title {
+            display: block;
+        }
+    }
+
+
+}
+
+.actions {
+    display: inline-flex;
+    gap: ngx-variables.$spacing-xs;
+}
+
+pep-checkbox{
+  height: 2rem;
+  min-height: 2rem !important;
+  margin-bottom: .5rem !important;
+
+  ::ng-deep .pep-checkbox-container {
+      background: transparent !important;
+      padding-inline: 0;
+
+      label{
+          &.mat-checkbox-layout{
+              font-weight:  600;
+              font-size: 1.25rem;
+
+              .mat-checkbox-inner-container{
+                  margin-inline-start: 0 !important;
+                  margin-inline-end: .25rem !important;
+              }
+          }
+      }
+  }
+
+  &.body-sm{
+
+      height: 1.5rem;
+      min-height: 1.5rem;
+      margin-bottom: .25rem;
+
+      ::ng-deep .pep-checkbox-container{
+          height: 1.5rem;
+
+          label{
+          &.mat-checkbox-layout{
+              font-weight:  400;
+              font-size: 1rem;
+
+              .mat-checkbox-inner-container{
+                  height: 1rem;
+                  width: 1rem;
+              }
+          }
+      }
+  }
+  }
+}
+
+mat-slider{
+  width: 100%;
+}
+
+pep-group-buttons{
+    ::ng-deep pep-icon{
+        max-height: 1rem;
+    }
+}
+
+pep-slider{
+    margin-bottom: 1rem;
+}
+

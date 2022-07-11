@@ -28,4 +28,8 @@ export class TableEditorComponent extends BlockHelperService implements OnInit {
   protected getDefaultHostObject(): ScorecardsConfiguration {
     return new ScorecardsConfiguration();
   }
+
+  async getQueryOptions(){
+    return await this.pluginService.getAllQueries();
+  }
 }
