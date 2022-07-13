@@ -67,6 +67,7 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
+    const res = await setPageBlockRelations(client);
     const res2 = await setUsageMonitorRelation(client);
 
     // If there is any change run migration code here
@@ -87,7 +88,7 @@ async function setPageBlockRelations(client){
             Name: blockName, 
             Description: `Chart`, 
             Type: "NgComponent",
-            SubType: "NG11",
+            SubType: "NG14",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'chart', 
             ComponentName: `${blockName}Component`, 
@@ -102,7 +103,7 @@ async function setPageBlockRelations(client){
             Name: blockName,
             Description: `Scorecards`, 
             Type: "NgComponent",
-            SubType: "NG11",
+            SubType: "NG14",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'scorecards', 
             ComponentName: `${blockName}Component`, 
@@ -118,7 +119,7 @@ async function setPageBlockRelations(client){
             Name: blockName, 
             Description: `Table`,
             Type: "NgComponent",
-            SubType: "NG11",
+            SubType: "NG14",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'table', 
             ComponentName: `${blockName}Component`, 
@@ -134,7 +135,7 @@ async function setPageBlockRelations(client){
             Name: blockName, 
             Description: `BenchmarkChart`,
             Type: "NgComponent",
-            SubType: "NG11",
+            SubType: "NG14",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'benchmark_chart', 
             ComponentName: `${blockName}Component`, 

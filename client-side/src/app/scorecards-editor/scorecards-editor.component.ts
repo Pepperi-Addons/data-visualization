@@ -17,7 +17,7 @@ import { Overlay } from '../models/overlay ';
 })
 export class ScorecardsEditorComponent implements OnInit {
 
-  @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
+    @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
     currentCardindex: number;
 
     blockLoaded = false;

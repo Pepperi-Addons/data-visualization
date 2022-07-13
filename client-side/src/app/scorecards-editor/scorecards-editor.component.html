@@ -13,9 +13,9 @@
                     <pep-checkbox [value]="configuration?.scorecardsConfig.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
                     </pep-checkbox>
                     <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
-                    <pep-group-buttons [buttons]="SlideDropShadowStyle" [selectedButtonKey]=" this.configuration?.scorecardsConfig.dropShadow?.type" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
+                    <pep-group-buttons [buttons]="DropShadowStyle" [selectedButtonKey]=" this.configuration?.scorecardsConfig.dropShadow?.type" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
                     </pep-group-buttons>
-                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useDropShadow" [value]="configuration?.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
+                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.scorecardsConfig.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.scorecardsConfig.useDropShadow" [value]="configuration?.scorecardsConfig.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
                     </pep-slider>
                 </div>
             </div>

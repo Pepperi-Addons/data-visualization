@@ -25,7 +25,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { PepColorSettingsModule } from '@pepperi-addons/ngx-composite-lib/color-settings';
 import { PepImageModule } from '@pepperi-addons/ngx-lib/image';
 import { PepShadowSettingsModule } from '@pepperi-addons/ngx-composite-lib/shadow-settings';
-import { PepNgxCompositeLibModule } from '@pepperi-addons/ngx-composite-lib/';
+import { PepNgxCompositeLibModule } from '@pepperi-addons/ngx-composite-lib';
 import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
 import { PepPageLayoutModule } from '@pepperi-addons/ngx-lib/page-layout';
 
@@ -70,13 +70,13 @@ const pepIcons = [
         PepNgxCompositeLibModule,
 
         TranslateModule.forChild({
-            loader: {
-                provide: TranslateLoader,
-                useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) => 
-                    PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
-                    deps: [HttpClient, PepFileService, PepAddonService],
-                  }, isolate: false
-        }),
+          loader: {
+              provide: TranslateLoader,
+              useFactory: (addonService: PepAddonService) => 
+                  PepAddonService.createMultiTranslateLoader(config.AddonUUID, addonService, ['ngx-lib', 'ngx-composite-lib']),
+              deps: [PepAddonService]
+          }, isolate: false
+      }),
   ],
   exports: [ScorecardsEditorComponent],
   providers: [
