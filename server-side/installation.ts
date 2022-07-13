@@ -11,9 +11,8 @@ The error Message is importent! it will be written in the audit log and help the
 import { Client, Request } from '@pepperi-addons/debug-server'
 import { charts } from './meta-data';
 import { PapiClient, Relation } from '@pepperi-addons/papi-sdk'
-import { DATA_QUREIES_TABLE_NAME } from './models';
 import MyService from './my.service';
-import { v4 as uuid } from 'uuid';
+import semver from 'semver';
 
 export async function install(client: Client, request: Request): Promise<any> {
     const papiClient = new PapiClient({
@@ -21,15 +20,6 @@ export async function install(client: Client, request: Request): Promise<any> {
         token: client.OAuthAccessToken,
         addonUUID: client.AddonUUID,
         addonSecretKey: client.AddonSecretKey
-    });
-
-    await papiClient.addons.data.schemes.post({
-        Name: DATA_QUREIES_TABLE_NAME,
-        Type: 'data',
-        Fields: {
-            Resource: { Type: 'String' },
-            Type:{Type: 'String'},    
-        }
     });
 
     const res = await setPageBlockRelations(client);
@@ -67,10 +57,15 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
+    // why do we need this relation?
     const res2 = await setUsageMonitorRelation(client);
 
-    // If there is any change run migration code here
-    return res2;
+    if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.54') < 0) 
+	{
+		throw new Error('Upgarding from versions earlier than 0.6.54 is not supported. Please uninstall the addon and install it again.');
+	}
+
+	return { success: true, resultObject: {} }
     
 }
 
@@ -181,7 +176,6 @@ async function setUsageMonitorRelation(client){
 async function upsertCharts(client: Client, request: Request, service: MyService, charts) {
     try {
         for (let chart of charts) {
-            chart.Key = uuid();
             chart.ScriptURI = `${client.AssetsBaseUrl}/assets/ChartsTemplates/${chart.Name.toLowerCase()}.js`
             console.log(`chart ScriptURI: ${chart.ScriptURI}`)
             await service.upsertChart(chart);
