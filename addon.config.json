@@ -1,12 +1,11 @@
 {
   "AddonUUID": "00000000-0000-0000-0000-0da1a0de41e5",
-  "AddonVersion": "0.6.114",
+  "AddonVersion": "0.6.116",
   "DebugPort": 4500,
   "WebappBaseUrl": "https://app.sandbox.pepperi.com",
   "DefaultEditor": "main",
   "Endpoints": [
     "installation.ts",
-    "api.ts",
     "elastic.ts",
     "monitor.ts"
   ],
@@ -17,12 +16,10 @@
     "ClientStack": "ng14",
     "Editors": [],
     "Dependencies": {
-      "papi_data_index": "0.0.151",
-      "charts": "0.5.1",
-      "pages": "0.0.100",
-      "adal": "1.0.200",
-      "query_manager": "0.0.56",
-      "pfs": "0.5.5"
+      "papi_data_index": "1.0.1",
+      "charts": "1.0.0",
+      "pages": "0.7.120",
+      "query_manager": "0.0.56"
     },
     "CPISide": []
   }

@@ -21,6 +21,8 @@ export class ScorecardsEditorComponent implements OnInit {
     currentCardindex: number;
 
     blockLoaded = false;
+    chartsOptions: { key: string, value: string }[] = [];
+    charts;
 
     @Input()
     set hostObject(value: any) {
@@ -102,7 +104,10 @@ export class ScorecardsEditorComponent implements OnInit {
             { key: 'grouped', value: this.translate.instant('GALLERY_EDITOR.GROUP.GROUPED'), callback: (event: any) => this.onGalleryFieldChange('groupTitleAndDescription',event) },
             { key: 'ungrouped', value: this.translate.instant('GALLERY_EDITOR.GROUP.UNGROUPED'), callback: (event: any) => this.onGalleryFieldChange('groupTitleAndDescription',event) }
         ]
-            
+        
+        const valueCharts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Value scorecard');
+        const seriesCharts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Series scorecard');
+        this.charts = (Array.from(valueCharts)).concat(Array.from(seriesCharts));
         this.updateHostObject();
         this.blockLoaded = true;
         this.hostEvents.emit({ action: 'block-editor-loaded' });

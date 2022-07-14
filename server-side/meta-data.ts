@@ -8,7 +8,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "Column",
@@ -16,7 +16,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "Pie",
@@ -24,7 +24,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "Bar",
@@ -32,7 +32,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "Stacked_column",
@@ -40,7 +40,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "Stacked_bar",
@@ -48,7 +48,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "Benchmark_bar",
@@ -56,7 +56,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Benchmark chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "Benchmark_column",
@@ -64,7 +64,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Benchmark chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "Benchmark_column_line",
@@ -72,7 +72,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Benchmark chart',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "value_with_area",
@@ -80,7 +80,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Series scorecard',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "value_with_columns",
@@ -88,7 +88,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Series scorecard',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "progress_bar",
@@ -96,7 +96,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Value scorecard',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "gauge",
@@ -104,7 +104,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Value scorecard',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "value",
@@ -112,7 +112,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Value scorecard',
         Hidden: false,
-        ReadOnly: true
+        System: true
     },
     {
         Name: "value_and_change",
@@ -120,7 +120,7 @@ export const charts: Chart[] = [
         ScriptURI: '',
         Type: 'Value scorecard',
         Hidden: false,
-        ReadOnly: true
+        System: true
     }
 
 
