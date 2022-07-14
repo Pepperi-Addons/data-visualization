@@ -20,8 +20,8 @@
     "ClientStack": "ng10",
     "Editors": [],
     "Dependencies": {
-      "papi_data_index": "1.0.0",
-      "charts": "1.0.0",
+      "papi_data_index": "1.0.1",
+      "charts": "1.0.1",
       "pages": "0.0.100",
       "query_manager": "0.0.56"
     },
