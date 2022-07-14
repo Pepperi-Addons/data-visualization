@@ -14,6 +14,8 @@ export class CardEditorComponent implements OnInit {
 
     @Input() configuration: IScorecards;
     @Input() id: string;
+    @Input() charts: any;
+    @Input() chartsOptions: { key: string, value: string }[];
 
     private _pageParameters: any = {};
     @Input()
@@ -29,12 +31,10 @@ export class CardEditorComponent implements OnInit {
     @Output() editClick: EventEmitter<any> = new EventEmitter();
 
     dialogRef: MatDialogRef<any>;
-    charts: any;
     public title: string;
     selectedDesign = ''
     selectedQuery;
     selectedBenchmarkQuery = 'None';
-    chartsOptions: { key: string, value: string }[] = [];
     queryOptions = [];
     benchmarkQueryOptions = [];
     first = true
@@ -49,9 +49,6 @@ export class CardEditorComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         this.title = this.configuration?.cards[this.id].titleContent;
-        const valueCharts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Value scorecard');
-        const seriesCharts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Series scorecard');
-        this.charts = (Array.from(valueCharts)).concat(Array.from(seriesCharts));
         (await this.getQueryOptions()).forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
         (await this.getQueryOptions()).forEach(q => this.benchmarkQueryOptions.push({key: q.Key, value: q.Name}));
         const queryID = this.configuration?.cards[this.id].query?.Key;
