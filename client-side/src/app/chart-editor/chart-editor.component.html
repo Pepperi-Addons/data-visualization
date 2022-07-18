@@ -38,8 +38,9 @@
             <!-- <addon-pepperi-list-exmaple [type]="'Data'" [ID]='0' [isActive]="activeTabIndex === 0" [data]="activeTabIndex === 0 ? currentData : null"></addon-pepperi-list-exmaple> -->
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
+            <label class="body-md ellipsis pull-left flip">{{'Data query' | translate}}</label>
             <pep-select
-                [label] = "'Data query' | translate"
+                [label] = "'select a query from defined queries' | translate"
                 [value]="selectedQuery"
                 [mandatory]="false"
                 [disabled]="false"
@@ -49,6 +50,53 @@
                 [emptyOption]="false"
                 (valueChange)="queryChanged($event)"
             ></pep-select>
+
+            <div *ngIf="this.inputVars?.length > 0" class="name1">
+                <label class="body-md ellipsis pull-left flip">{{'Variable mapping' | translate}}</label>
+                <div *ngFor="let currentVariable of this.inputVars;" fxLayout="row" fxLayoutGap="0.5rem">
+
+                    <pep-select fxFlex="50%"
+                        [label] = "currentVariable.Name"
+                        [value]="configuration?.variablesData[currentVariable.Name].source"
+                        [mandatory]="false"
+                        [disabled]="false"
+                        xAlignment="left"
+                        [options]="valueSourceOptions"
+                        [showTitle]="true"
+                        [emptyOption]="false"
+                        (valueChange)="variablesDataChanged($event,currentVariable.Name,'source')"
+                    ></pep-select>
+
+                    <pep-textbox fxFlex="50%"
+                        *ngIf="configuration?.variablesData[currentVariable.Name].source == 'Default'"
+                        [disabled]="true"
+                        [value]="currentVariable.DefaultValue"
+                        [type]="'text'"
+                    ></pep-textbox>
+
+                    <pep-textbox fxFlex="50%"
+                        *ngIf="configuration?.variablesData[currentVariable.Name].source == 'Static'"
+                        [disabled]="false"
+                        [value]="configuration?.variablesData[currentVariable.Name].value"
+                        [type]="'text'"
+                        (valueChange)="variablesDataChanged($event,currentVariable.Name,'value')"
+                    ></pep-textbox>
+
+                    <pep-select fxFlex="50%"
+                        *ngIf="configuration?.variablesData[currentVariable.Name].source == 'Variable'"
+                        [label] = "currentVariable.Name"
+                        [value]="configuration?.variablesData[currentVariable.Name].value"
+                        [mandatory]="false"
+                        [disabled]="false"
+                        xAlignment="left"
+                        [options]="pageParametersOptions"
+                        [showTitle]="false"
+                        [emptyOption]="false"
+                        (valueChange)="variablesDataChanged($event,currentVariable.Name,'value')"
+                    ></pep-select>
+
+                </div>
+            </div>
 
         </mat-tab>
         <!-- <mat-tab  id="3" label="{{'SetupTabHeader' | translate}}">
