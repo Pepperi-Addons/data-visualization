@@ -2,16 +2,11 @@ import { EventEmitter, Injectable, Input, OnInit, Output } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { TranslateService } from "@ngx-translate/core";
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
-import { IPepButtonClickEvent, PepButton } from "@pepperi-addons/ngx-lib/button";
-import { PepDialogActionButton } from "@pepperi-addons/ngx-lib/dialog";
-import { pepIconSystemBin } from "@pepperi-addons/ngx-lib/icon";
+import { PepButton } from "@pepperi-addons/ngx-lib/button";
 import { AddonService } from "src/services/addon.service";
 import { DataVisualizationService } from "src/services/data-visualization.service";
 import { Serie } from "../../../../server-side/models/data-query";
-import { BaseConfiguration } from "../models/base-configuration";
 import { Overlay } from "../models/overlay ";
-import { v4 as uuid } from 'uuid';
-import { SeriesEditorComponent } from "../series-editor/series-editor.component";
 
 
 @Injectable()
@@ -19,6 +14,11 @@ export abstract class BlockHelperService implements OnInit {
 
   @Input()
   set hostObject(value) {
+    this.pageParameters = value.pageParameters?.devBlocks.map(v => {return {key: v[0], value: v[1]}});
+    this.pageParametersOptions = []
+    for(const pp of this.pageParameters) {
+      this.pageParametersOptions.push({key: pp.key, value: pp.key})
+    }
     if (value && value.configuration) {
       this._configuration = value.configuration
     } else {
@@ -30,6 +30,8 @@ export abstract class BlockHelperService implements OnInit {
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   protected _configuration: any;
+  protected pageParameters: any;
+  protected pageParametersOptions = [];
   get configuration() {return this._configuration};
   label = false;
   activeTabIndex = 0;
@@ -42,6 +44,12 @@ export abstract class BlockHelperService implements OnInit {
   PepSizes: Array<PepButton> = [];
   queryOptions = [];
   selectedQuery: string = ''
+  inputVars;
+  valueSourceOptions = [
+    {key: 'Default', value: 'Default'},
+    {key: 'Static', value: 'Static'},
+    {key: 'Variable', value: 'Variable'}
+  ]
   
 
   constructor(protected addonService: PepAddonService,
@@ -76,6 +84,7 @@ export abstract class BlockHelperService implements OnInit {
     if (queryID) {
       this._configuration.query = { Key: queryID };
       this.selectedQuery = queryID;
+      this.inputVars = (await this.pluginService.getDataQueryByKey(queryID))[0].Variables;
     }
     this.blockLoaded = true;
     this.updateHostObject();
@@ -133,6 +142,11 @@ export abstract class BlockHelperService implements OnInit {
   async queryChanged(e) {
     this.selectedQuery = e;
     this._configuration.query = { Key: e };
+    this.inputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
+    this._configuration.variablesData = {}
+    for(let v of this.inputVars) {
+      this._configuration.variablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
+    }
     this.updateHostObject();
   }
 
@@ -168,6 +182,16 @@ export abstract class BlockHelperService implements OnInit {
                 this._configuration.height = event;
 
             break;
+    }
+    this.updateHostObject();
+  }
+
+  variablesDataChanged(e, varName, field) {
+    if(field=='source') {
+      this.configuration.variablesData[varName].source = e
+      this.configuration.variablesData[varName].value = null
+    } else {
+      this.configuration.variablesData[varName].value = e
     }
     this.updateHostObject();
   }
