@@ -1,5 +1,6 @@
 import { Client, Request } from '@pepperi-addons/debug-server'
-import MyService from './my.service';
+import { callElasticSearchLambda } from '@pepperi-addons/system-addon-utils';
+import QueryService from './services/query.service';
 import jwtDecode from 'jwt-decode';
 
 
@@ -30,7 +31,7 @@ export async function usage_data(client: Client, request: Request) {
   async function count_aggregation(client: Client,indexType:string){
     const distributorUUID = (<any>jwtDecode(client.OAuthAccessToken))["pepperi.distributoruuid"];
 
-    const service = new MyService(client)
+    const service = new QueryService(client)
     let endpoint = `${distributorUUID}/_search`;
     const method = 'POST';
 

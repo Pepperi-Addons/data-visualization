@@ -48,9 +48,7 @@ export class ChartComponent implements OnInit {
     }
 
     drawChart(configuration: any) {
-        // sending variable names and values as body
-        const body = {"VariableValues" : configuration.variablesData} ?? {}
-        this.pluginService.executeQuery(configuration.query.Key, body).then((data) => {
+        this.pluginService.executeQuery(configuration.query.Key).then((data) => {
             System.import(configuration.chart.ScriptURI).then((res) => {
                 const configuration = {
                     label: 'Sales'
