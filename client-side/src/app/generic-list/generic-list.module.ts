@@ -6,8 +6,7 @@ import { PepMenuModule } from '@pepperi-addons/ngx-lib/menu';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { PepSearchModule } from '@pepperi-addons/ngx-lib/search';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
-import { PepAddonService, PepDataConvertorService, PepFileService, PepLayoutService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepDataConvertorService, PepLayoutService } from '@pepperi-addons/ngx-lib';
 import { config } from '../addon.config';
 
 
@@ -23,9 +22,9 @@ import { config } from '../addon.config';
     TranslateModule.forChild({
       loader: {
           provide: TranslateLoader,
-          useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) => 
-              PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
-          deps: [HttpClient, PepFileService, PepAddonService],
+          useFactory: (addonService: PepAddonService) =>
+              PepAddonService.createMultiTranslateLoader(addonService, ['ngx-lib','ngx-composite-lib'], config.AddonUUID),
+          deps: [PepAddonService],
       }, isolate: false
   }),
 

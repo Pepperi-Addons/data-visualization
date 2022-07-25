@@ -13,11 +13,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { config } from '../addon.config';
 import { AddonService } from '../../services/addon.service';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
-import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { pepIconTextAlignCenter, pepIconTextAlignLeft, pepIconTextAlignRight, pepIconArrowBackRight, pepIconArrowBackLeft, pepIconArrowBack, pepIconArrowLeftAlt,pepIconArrowDown, pepIconArrowUp, pepIconNumberPlus, PepIconRegistry, pepIconSystemBin, pepIconSystemBolt, pepIconSystemClose, pepIconSystemEdit, pepIconSystemMove } from '@pepperi-addons/ngx-lib/icon';
 import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
 import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
-import { ChartEditorModule } from '../chart-editor';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { CardEditorModule } from '../card-editor/card-editor.module';
@@ -70,13 +68,13 @@ const pepIcons = [
         PepNgxCompositeLibModule,
 
         TranslateModule.forChild({
-            loader: {
-                provide: TranslateLoader,
-                useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) => 
-                    PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
-                    deps: [HttpClient, PepFileService, PepAddonService],
-                  }, isolate: false
-        }),
+          loader: {
+              provide: TranslateLoader,
+              useFactory: (addonService: PepAddonService) =>
+                  PepAddonService.createMultiTranslateLoader(addonService, ['ngx-lib','ngx-composite-lib'], config.AddonUUID),
+              deps: [PepAddonService],
+          }, isolate: false
+      }),
   ],
   exports: [ScorecardsEditorComponent],
   providers: [

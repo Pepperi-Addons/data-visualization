@@ -45,12 +45,12 @@ import {PepQueryBuilderModule} from '@pepperi-addons/ngx-lib/query-builder'
     PepQueryBuilderModule,
     TranslateModule.forChild({
       loader: {
-        provide: TranslateLoader,
-        useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) =>
-          PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
-        deps: [HttpClient, PepFileService, PepAddonService],
+          provide: TranslateLoader,
+          useFactory: (addonService: PepAddonService) =>
+              PepAddonService.createMultiTranslateLoader(addonService, ['ngx-lib','ngx-composite-lib'], config.AddonUUID),
+          deps: [PepAddonService],
       }, isolate: false
-    }),
+  }),
   ],
   exports: [SeriesEditorComponent],
   providers: [

@@ -16,6 +16,7 @@ import { BlockHelperService } from '../block-helper/block-helper.service';
 export class ChartEditorComponent extends BlockHelperService implements OnInit {
 
     constructor(protected addonService: PepAddonService,
+        //public blockHelperService: BlockHelperService, 
         public routeParams: ActivatedRoute,
         public router: Router,
         public route: ActivatedRoute,
