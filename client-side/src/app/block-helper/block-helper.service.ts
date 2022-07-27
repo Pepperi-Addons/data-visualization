@@ -14,11 +14,6 @@ export abstract class BlockHelperService implements OnInit {
 
   @Input()
   set hostObject(value) {
-    this.pageParameters = value.pageParameters?.devBlocks.map(v => {return {key: v[0], value: v[1]}});
-    this.pageParametersOptions = []
-    for(const pp of this.pageParameters) {
-      this.pageParametersOptions.push({key: pp.key, value: pp.key})
-    }
     if (value && value.configuration) {
       this._configuration = value.configuration
     } else {
@@ -26,6 +21,11 @@ export abstract class BlockHelperService implements OnInit {
         this.loadDefaultConfiguration();
       }
     }
+    this.pageParameters = value?.pageParameters || {};
+    this.pageParametersOptions = []
+    Object.keys(this.pageParameters).forEach(paramKey => {
+      this.pageParametersOptions.push({key: paramKey, value: paramKey})
+    });
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
@@ -82,9 +82,12 @@ export abstract class BlockHelperService implements OnInit {
     (await this.getQueryOptions()).forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
     const queryID = this.configuration?.query?.Key;
     if (queryID) {
-      this._configuration.query = { Key: queryID };
-      this.selectedQuery = queryID;
-      this.inputVars = (await this.pluginService.getDataQueryByKey(queryID))[0].Variables;
+      const queryData = await this.pluginService.getDataQueryByKey(queryID);
+      if (queryData) {
+        this._configuration.query = { Key: queryID };
+        this.selectedQuery = queryID;
+        this.inputVars = queryData[0].Variables;
+      }
     }
     this.blockLoaded = true;
     this.updateHostObject();

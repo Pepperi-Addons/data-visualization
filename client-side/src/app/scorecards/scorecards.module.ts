@@ -2,8 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
-import { PepAddonService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepCustomizationService } from '@pepperi-addons/ngx-lib';
 import { config } from '../addon.config';
 import { ScorecardsComponent } from './scorecards.component';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
@@ -22,12 +21,12 @@ import { CardModule } from '../card/card.module';
     PepTopBarModule,
     TranslateModule.forChild({
       loader: {
-        provide: TranslateLoader,
-        useFactory: (http: HttpClient, fileService: PepFileService, addonService: PepAddonService) =>
-          PepAddonService.createDefaultMultiTranslateLoader(http, fileService, addonService, config.AddonUUID),
-        deps: [HttpClient, PepFileService, PepAddonService],
+          provide: TranslateLoader,
+          useFactory: (addonService: PepAddonService) =>
+              PepAddonService.createMultiTranslateLoader(addonService, ['ngx-lib','ngx-composite-lib'], config.AddonUUID),
+          deps: [PepAddonService],
       }, isolate: false
-    }),
+  }),
   ],
   exports: [ScorecardsComponent],
   providers: [

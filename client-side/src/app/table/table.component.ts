@@ -49,7 +49,6 @@ export class TableComponent implements OnInit {
     private pluginService: AddonService,
     private dataConvertorService: PepDataConvertorService,
     public loaderService: PepLoaderService,
-
     public dataVisualizationService: DataVisualizationService) {
   }
 
@@ -95,9 +94,14 @@ export class TableComponent implements OnInit {
 
   drawList(configuration) {
     this.loaderService.show();
-
     this.dataSet = [];
-    this.pluginService.executeQuery(configuration.query.Key).then((data) => {
+    // sending variable names and values as body
+    let values = {}
+    for(const varName in configuration.variablesData) {
+        values[varName] = configuration.variablesData[varName].value
+    }
+    const body = {"VariableValues" : values} ?? {}
+    this.pluginService.executeQuery(configuration.query.Key, body).then((data) => {
       try {
         // flat the series & groups
         const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
@@ -112,7 +116,6 @@ export class TableComponent implements OnInit {
         this.dataSet = this.dataSet.slice();
         this.listDataSource = this.getListDataSource([...distinctgroups,...distinctSeries ]);
         this.loaderService.hide();
-
       }
       catch (err) {
         console.log(err);
