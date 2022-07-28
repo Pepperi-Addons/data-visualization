@@ -40,6 +40,12 @@
             [emptyOption]="false"
             (valueChange)="queryChanged($event)"
         ></pep-select>
+        <addon-query-select
+            [inputVars]="inputVars"
+            [variablesData]="configuration?.cards[id].variablesData"
+            [pageParametersOptions]="pageParametersOptions"
+            (variablesDataChange)="onVariablesDataChanged($event)"
+        ></addon-query-select>
         <pep-select
             [label] = "'Benchmark query' | translate"
             [value]="selectedBenchmarkQuery"
@@ -51,6 +57,12 @@
             [emptyOption]="false"
             (valueChange)="secondQueryChanged($event)"
         ></pep-select>
+        <addon-query-select
+            [inputVars]="benchmarkInputVars"
+            [variablesData]="configuration?.cards[id].benchmarkVariablesData"
+            [pageParametersOptions]="pageParametersOptions"
+            (variablesDataChange)="onBenchmarkVariablesDataChanged($event)"
+        ></addon-query-select>
     </div>
     
 </div>

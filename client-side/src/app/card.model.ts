@@ -57,6 +57,8 @@ export class ICardEditor {
     description: string = "Description";
     chart;
     query;
+    variablesData;
+    benchmarkVariablesData;
     secondQuery;
     imageURL: string = "";
     // linkTo: string = "";

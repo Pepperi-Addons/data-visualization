@@ -7,6 +7,7 @@ export class ChartConfiguration extends BaseConfiguration {
     label: string = '';
     height: number = 22;
     secondQuery: Query = null;
+    benchmarkVariablesData: {[key : string] : {source: string, value: string}};
     horizontalAlign: PepHorizontalAlignment = 'left';
 }
 export class Chart {

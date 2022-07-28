@@ -13,10 +13,8 @@ import { BlockHelperService } from '../block-helper/block-helper.service';
     styleUrls: ['./chart-editor.component.scss']
 })
 
-export class ChartEditorComponent extends BlockHelperService implements OnInit {
-
+export class ChartEditorComponent extends BlockHelperService implements OnInit {    
     constructor(protected addonService: PepAddonService,
-        //public blockHelperService: BlockHelperService, 
         public routeParams: ActivatedRoute,
         public router: Router,
         public route: ActivatedRoute,
@@ -30,7 +28,9 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
         if (!this.configuration || Object.keys(this.configuration).length == 0) {
             this.loadDefaultConfiguration();
         };
-        this.charts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Chart')
+        this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Chart').then(res => {           
+           this.charts = res;
+        })
         super.ngOnInit();
     }
 
@@ -40,5 +40,9 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
 
     async getQueryOptions(){
         return await this.pluginService.getAllQueries();
+    }
+
+    onVariablesDataChanged(data: any) {
+        this.variablesDataChanged(data.event, data.name, data.field, false);
     }
 }

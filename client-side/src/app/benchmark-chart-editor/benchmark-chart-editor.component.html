@@ -38,8 +38,11 @@
             <!-- <addon-pepperi-list-exmaple [type]="'Data'" [ID]='0' [isActive]="activeTabIndex === 0" [data]="activeTabIndex === 0 ? currentData : null"></addon-pepperi-list-exmaple> -->
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
+            <label class="body-md ellipsis pull-left flip">{{
+                "Data queries" | translate
+            }}</label>
             <pep-select
-                [label] = "'Data query' | translate"
+                [label]="'select a query from defined queries'"
                 [value]="selectedQuery"
                 [mandatory]="false"
                 [disabled]="false"
@@ -49,8 +52,16 @@
                 [emptyOption]="false"
                 (valueChange)="queryChanged($event)"
             ></pep-select>
+
+            <addon-query-select
+                [inputVars]="inputVars"
+                [variablesData]="configuration?.variablesData"
+                [pageParametersOptions]="pageParametersOptions"
+                (variablesDataChange)="onVariablesDataChanged($event)"
+            ></addon-query-select>
+
             <pep-select
-                [label] = "'Benchmark query' | translate"
+                [label]="'select a query from defined queries'"
                 [value]="selectedBenchmarkQuery"
                 [mandatory]="false"
                 [disabled]="false"
@@ -60,6 +71,13 @@
                 [emptyOption]="false"
                 (valueChange)="secondQueryChanged($event)"
             ></pep-select>
+
+            <addon-query-select
+                [inputVars]="benchmarkInputVars"
+                [variablesData]="configuration?.benchmarkVariablesData"
+                [pageParametersOptions]="pageParametersOptions"
+                (variablesDataChange)="onBenchmarkVariablesDataChanged($event)"
+            ></addon-query-select>
 
         </mat-tab>
         <!-- <mat-tab  id="3" label="{{'SetupTabHeader' | translate}}">
