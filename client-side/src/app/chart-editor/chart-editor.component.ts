@@ -30,8 +30,8 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
         };
         this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Chart').then(res => {           
            this.charts = res;
+           super.ngOnInit();
         })
-        super.ngOnInit();
     }
 
     protected getDefaultHostObject(): ChartConfiguration {
