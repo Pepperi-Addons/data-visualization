@@ -51,7 +51,7 @@ export class ChartComponent implements OnInit {
     // sending variable names and values as body
     let values = {};
     for (const varName in configuration.variablesData) {
-      values[varName] = configuration.variablesData[varName].value;
+      values[varName] = (configuration.variablesData[varName].source == 'Variable') ? configuration.variablesData[varName].valueFromPage : configuration.variablesData[varName].value;
     }
     const body = { VariableValues: values } ?? {};
     this.pluginService
