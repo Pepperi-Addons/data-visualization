@@ -17,6 +17,7 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
 
     benchmarkQueryOptions = [];
     selectedBenchmarkQuery: string = ''
+    benchmarkInputVars;
 
     constructor(protected addonService: PepAddonService,
         public routeParams: ActivatedRoute,
@@ -31,13 +32,22 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
     async ngOnInit(): Promise<void> {
         if (!this.configuration || Object.keys(this.configuration).length == 0) {
             this.loadDefaultConfiguration();
-        };
-        this.charts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Benchmark chart')
+        }
+        this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Benchmark chart').then(res => {
+            this.charts = res;
+        })
         super.ngOnInit();
-        (await this.getQueryOptions()).forEach(q => this.benchmarkQueryOptions.push({key: q.Key, value: q.Name}));
+        this.getQueryOptions().then( benchmarkQueries => {
+            benchmarkQueries.forEach(q => this.benchmarkQueryOptions.push({key: q.Key, value: q.Name}));
+        })
         const secondQueryID = this.configuration?.secondQuery?.Key;
         if (secondQueryID) {
-          this.selectedBenchmarkQuery = secondQueryID;
+            this.pluginService.getDataQueryByKey(secondQueryID).then(secondQueryData => {
+                if(secondQueryData[0]) {
+                    this.selectedBenchmarkQuery = secondQueryID;
+                    this.benchmarkInputVars = secondQueryData[0].Variables;
+                }
+            })
         }
     }
 
@@ -46,14 +56,25 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
     }
 
     async getQueryOptions(){
-        return await this.pluginService.getAllQueries();
+        return this.pluginService.getAllQueries();
     }
 
     async secondQueryChanged(e) {
         this.selectedBenchmarkQuery = e;
         this._configuration.secondQuery = { Key: e };
+        this.benchmarkInputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
+        this._configuration.benchmarkVariablesData = {}
+        for(let v of this.benchmarkInputVars) {
+            this._configuration.benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
+        }
         this.updateHostObject();
     }
 
+    onVariablesDataChanged(data: any) {
+        this.variablesDataChanged(data.event, data.name, data.field, false);
+    }
 
+    onBenchmarkVariablesDataChanged(data: any) {
+        this.variablesDataChanged(data.event, data.name, data.field, true);
+    }
 }

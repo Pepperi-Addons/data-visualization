@@ -25,7 +25,7 @@
             </h2>
             <div (cdkDropListDropped)="drop($event)"  cdkDropList>
                 <card-editor *ngFor="let currentCard of configuration?.cards;"
-                    [id]="currentCard?.id" [charts]="charts" [chartsOptions]="chartsOptions" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
+                    [id]="currentCard?.id" [charts]="charts" [chartsOptions]="chartsOptions" [pageParametersOptions]="pageParametersOptions" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
                     [isDraggable]="true" (editClick)='onCardEditClick($event);' (removeClick)='onCardRemoveClick($event);'
                     [configuration]="configuration" [pageParameters]="pageParameters"
                     cdkDrag [cdkDragDisabled]="currentCard?.id == configuration?.scorecardsConfig?.editSlideIndex" style="cursor: grab;" (cdkDragStarted)="onDragStart($event)" (cdkDragEnded)="onDragEnd($event)">

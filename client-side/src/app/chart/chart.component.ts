@@ -16,7 +16,8 @@ export class ChartComponent implements OnInit {
   @Input("hostObject")
   set hostObject(value) {
     if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
-      if (this.drawRequired(value)) this.drawChart(value.configuration);
+      if (this.drawRequired(value)) 
+        this.drawChart(value.configuration);
     } else {
       this.deleteChart();
     }
@@ -85,10 +86,6 @@ export class ChartComponent implements OnInit {
       });
   }
 
-  getRandomNumber() {
-    return Math.floor(Math.random() * 100);
-  }
-
   loadSrcJSFiles(imports) {
     let promises = [];
 
@@ -139,22 +136,12 @@ export class ChartComponent implements OnInit {
     return (
       this.configuration?.query?.Key != value.configuration.query?.Key ||
       this.configuration?.chart?.Key != value.configuration.chart?.Key ||
-      !this.variableDatasEqual(
+      !this.pluginService.variableDatasEqual(
         this.configuration?.variablesData,
         value.configuration.variablesData
       )
     );
   }
 
-  variableDatasEqual(varDatas1, varDatas2) {
-    for (const varName in varDatas1) {
-      if (
-        varDatas2[varName] &&
-        varDatas1[varName].value == varDatas2[varName].value
-      )
-        continue;
-      return false;
-    }
-    return true;
-  }
+  
 }

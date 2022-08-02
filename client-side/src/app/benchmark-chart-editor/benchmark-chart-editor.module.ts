@@ -21,6 +21,7 @@ import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { SeriesEditorModule } from '../series-editor';
 import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
+import { QuerySelectModule } from '../common/query-select/query-select.module';
 
 const pepIcons = [
     pepIconSystemBin,
@@ -42,6 +43,7 @@ const pepIcons = [
         MatTabsModule,
         PepColorModule,
         SeriesEditorModule,
+        QuerySelectModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,

@@ -20,6 +20,7 @@ import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
 import { ChartEditorModule } from '../chart-editor';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
+import { QuerySelectModule } from '../common/query-select/query-select.module';
 
 
 const pepIcons = [
@@ -40,6 +41,7 @@ const pepIcons = [
     PepGroupButtonsModule,
     MatTabsModule,
     ChartEditorModule,
+    QuerySelectModule,
     TranslateModule.forChild({
       loader: {
           provide: TranslateLoader,

@@ -26,12 +26,13 @@ export abstract class BlockHelperService implements OnInit {
     Object.keys(this.pageParameters).forEach(paramKey => {
       this.pageParametersOptions.push({key: paramKey, value: paramKey})
     });
+    this.pageParametersOptions.push({key: "Account", value: "Account"})
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   protected _configuration: any;
   protected pageParameters: any;
-  protected pageParametersOptions = [];
+  pageParametersOptions = [];
   get configuration() {return this._configuration};
   label = false;
   activeTabIndex = 0;
@@ -45,12 +46,6 @@ export abstract class BlockHelperService implements OnInit {
   queryOptions = [];
   selectedQuery: string = ''
   inputVars;
-  valueSourceOptions = [
-    {key: 'Default', value: 'Default'},
-    {key: 'Static', value: 'Static'},
-    {key: 'Variable', value: 'Variable'}
-  ]
-  
 
   constructor(protected addonService: PepAddonService,
     public routeParams: ActivatedRoute,
@@ -79,15 +74,18 @@ export abstract class BlockHelperService implements OnInit {
       { key: 'Regular', value: this.translate.instant('Regular') }
     ];
 
-    (await this.getQueryOptions()).forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
+    this.getQueryOptions().then(queries => {
+      queries.forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
+    })
     const queryID = this.configuration?.query?.Key;
     if (queryID) {
-      const queryData = await this.pluginService.getDataQueryByKey(queryID);
-      if (queryData) {
-        this._configuration.query = { Key: queryID };
-        this.selectedQuery = queryID;
-        this.inputVars = queryData[0].Variables;
-      }
+      this.pluginService.getDataQueryByKey(queryID).then(queryData => {
+        if (queryData[0]) {
+          this._configuration.query = { Key: queryID };
+          this.selectedQuery = queryID;
+          this.inputVars = queryData[0].Variables;
+        }
+      })
     }
     this.blockLoaded = true;
     this.updateHostObject();
@@ -189,12 +187,22 @@ export abstract class BlockHelperService implements OnInit {
     this.updateHostObject();
   }
 
-  variablesDataChanged(e, varName, field) {
-    if(field=='source') {
-      this.configuration.variablesData[varName].source = e
-      this.configuration.variablesData[varName].value = null
-    } else {
-      this.configuration.variablesData[varName].value = e
+  variablesDataChanged(e, varName, field, isBenchmark) {
+    if(!isBenchmark) {
+      if(field=='source') {
+        this.configuration.variablesData[varName].source = e
+        this.configuration.variablesData[varName].value = null
+      } else {
+        this.configuration.variablesData[varName].value = e
+      }
+    }
+    else {
+      if(field=='source') {
+        this.configuration.benchmarkVariablesData[varName].source = e
+        this.configuration.benchmarkVariablesData[varName].value = null
+      } else {
+        this.configuration.benchmarkVariablesData[varName].value = e
+      }
     }
     this.updateHostObject();
   }

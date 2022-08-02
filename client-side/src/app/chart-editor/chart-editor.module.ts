@@ -22,6 +22,7 @@ import { DataVisualizationService } from 'src/services/data-visualization.servic
 import { SeriesEditorModule } from '../series-editor';
 import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { QuerySelectModule } from '../common/query-select/query-select.module';
 
 const pepIcons = [
     pepIconSystemBin,
@@ -44,6 +45,7 @@ const pepIcons = [
         PepColorModule,
         SeriesEditorModule,
         FlexLayoutModule,
+        QuerySelectModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,

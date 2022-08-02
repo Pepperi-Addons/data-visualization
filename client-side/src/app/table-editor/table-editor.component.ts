@@ -32,4 +32,8 @@ export class TableEditorComponent extends BlockHelperService implements OnInit {
   async getQueryOptions(){
     return await this.pluginService.getAllQueries();
   }
+
+  onVariablesDataChanged(data: any) {
+    this.variablesDataChanged(data.event, data.name, data.field, false);
+  }
 }
