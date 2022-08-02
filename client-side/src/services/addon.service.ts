@@ -85,10 +85,10 @@ export class AddonService {
 
     variableDatasEqual(varDatas1, varDatas2) {
         for (const varName in varDatas1) {
-          if (varDatas2[varName] && varDatas1[varName].value == varDatas2[varName].value) 
-            continue;
-          return false;
+            if(!varDatas2[varName].value) return true
+            if (varDatas1[varName].value == varDatas2[varName].value) continue;
+            return false;
         }
         return true;
-      }
+    }
 }
