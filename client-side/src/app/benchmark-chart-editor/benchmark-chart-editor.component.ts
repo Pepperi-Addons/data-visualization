@@ -35,7 +35,6 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
         }
         this.pluginService.fillChartsOptions(this.chartsOptions,'Benchmark chart').then(res => {
             this.charts = res;
-            debugger
             if (!this.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = res[0];

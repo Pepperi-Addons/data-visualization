@@ -75,7 +75,6 @@ export class CardEditorComponent implements OnInit {
                 }
             })
         }
-        debugger
         const chartID = this.configuration?.cards[this.id].chart?.Key;
         if (chartID) {
             this.selectedDesign = chartID;
