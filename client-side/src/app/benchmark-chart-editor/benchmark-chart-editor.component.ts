@@ -33,10 +33,16 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
         if (!this.configuration || Object.keys(this.configuration).length == 0) {
             this.loadDefaultConfiguration();
         }
-        this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Benchmark chart').then(res => {
+        this.pluginService.fillChartsOptions(this.chartsOptions,'Benchmark chart').then(res => {
             this.charts = res;
+            debugger
+            if (!this.configuration.chart) {
+                // set the first chart to be default
+                const firstChart = res[0];
+                this.configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+            }
+            super.ngOnInit();
         })
-        super.ngOnInit();
         this.getQueryOptions().then( benchmarkQueries => {
             benchmarkQueries.forEach(q => this.benchmarkQueryOptions.push({key: q.Key, value: q.Name}));
         })

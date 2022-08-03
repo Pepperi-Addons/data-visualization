@@ -75,9 +75,15 @@ export class CardEditorComponent implements OnInit {
                 }
             })
         }
+        debugger
         const chartID = this.configuration?.cards[this.id].chart?.Key;
         if (chartID) {
             this.selectedDesign = chartID;
+        } else {
+            // set the first chart to be default
+            const firstChart = this.charts[0];
+            this.configuration.cards[this.id].chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+            this.selectedDesign = firstChart.Key;
         }
         this.updateHostObject();
     }
