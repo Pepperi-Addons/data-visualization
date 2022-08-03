@@ -115,8 +115,8 @@ export class ScorecardsEditorComponent implements OnInit {
         ]
         
         Promise.all([
-            this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Value scorecard'),
-            this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Series scorecard')
+            this.pluginService.fillChartsOptions(this.chartsOptions,'Value scorecard'),
+            this.pluginService.fillChartsOptions(this.chartsOptions,'Series scorecard')
         ]).then(res => {
             this.charts = (Array.from(res[0])).concat(Array.from(res[1]));
             this.updateHostObject();
