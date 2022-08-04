@@ -1,6 +1,7 @@
 <div id='cards' style="display: grid;gap: 2rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
     <gallery-card #cardContainer *ngFor="let currentCard of configuration?.cards"
                 [card]="currentCard"
-                [scorecardsConfig]="configuration?.scorecardsConfig">
+                [scorecardsConfig]="configuration?.scorecardsConfig"
+                [parameters]="parameters">
     </gallery-card>
 </div>

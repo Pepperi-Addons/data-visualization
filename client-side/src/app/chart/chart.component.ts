@@ -15,8 +15,10 @@ import { PepLoaderService } from '@pepperi-addons/ngx-lib';
 export class ChartComponent implements OnInit {
   @Input("hostObject")
   set hostObject(value) {
+    this.parameters = value.parameters;
+    console.log("AccountUUID from page = " + this.parameters?.AccountUUID)
     if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
-      if (this.drawRequired(value)) 
+      if (this.drawRequired(value))
         this.drawChart(value.configuration);
     } else {
       this.deleteChart();
@@ -33,6 +35,7 @@ export class ChartComponent implements OnInit {
   chartInstance: any;
   isLibraryAlreadyLoaded = {};
   oldDefine: any;
+  parameters;
 
   constructor(
     private pluginService: AddonService,
@@ -51,7 +54,12 @@ export class ChartComponent implements OnInit {
     // sending variable names and values as body
     let values = {};
     for (const varName in configuration.variablesData) {
-      values[varName] = (configuration.variablesData[varName].source == 'Variable') ? configuration.variablesData[varName].valueFromPage : configuration.variablesData[varName].value;
+      const varData = configuration.variablesData[varName];
+      if(varData.source == 'Variable') {
+        values[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
+      } else {
+        values[varName] = varData.value;
+      }
     }
     const body = { VariableValues: values } ?? {};
     this.pluginService

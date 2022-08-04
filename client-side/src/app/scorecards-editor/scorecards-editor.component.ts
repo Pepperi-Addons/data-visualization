@@ -19,7 +19,8 @@ export class ScorecardsEditorComponent implements OnInit {
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
     currentCardindex: number;
-
+    private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
+    private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
     blockLoaded = false;
     chartsOptions: { key: string, value: string }[] = [];
     charts;
@@ -59,15 +60,6 @@ export class ScorecardsEditorComponent implements OnInit {
         return this._configuration;
     }
 
-    // All the page parameters to set in page configuration when needed (for ScriptPicker addon usage).
-    // private _pageParameters: any;
-    // get pageParameters(): any {
-    //     return this._pageParameters;
-    // }
-
-    private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
-    private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
-    
     public textColor: Array<PepButton> = [];
     public TextPositionStyling: Array<PepButton> = [];
     public GroupTitleAndDescription: Array<PepButton> = [];
@@ -119,6 +111,7 @@ export class ScorecardsEditorComponent implements OnInit {
             this.pluginService.fillChartsOptions(this.chartsOptions,'Series scorecard')
         ]).then(res => {
             this.charts = (Array.from(res[0])).concat(Array.from(res[1]));
+            this.updatePageConfigurationObject();
             this.updateHostObject();
             this.blockLoaded = true;
             this.hostEvents.emit({ action: 'block-editor-loaded' });
@@ -208,21 +201,13 @@ export class ScorecardsEditorComponent implements OnInit {
     }
 
     private updatePageConfigurationObject() {
-        const params = this.getPageConfigurationParametersNames();
         this._pageConfiguration = this.defaultPageConfiguration;
-
-        // Add the parameter to page configuration.
-        for (let paramIndex = 0; paramIndex < params.length; paramIndex++) {
-            const param = params[paramIndex];
-            
-            this._pageConfiguration.Parameters.push({
-                Key: param,
-                Type: 'String',
-                Consume: true,
-                Produce: false
-            });
-        }
-
+        this._pageConfiguration.Parameters.push({
+            Key: 'AccountUUID',
+            Type: 'String',
+            Consume: true,
+            Produce: false
+        });
         this.hostEvents.emit({
             action: 'set-page-configuration',
             pageConfiguration: this._pageConfiguration

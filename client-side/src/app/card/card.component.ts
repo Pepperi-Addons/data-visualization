@@ -19,6 +19,7 @@ export class CardComponent implements OnInit {
 
     @Input() scorecardsConfig: IScorecardsEditor;
     @Input() card : ICardEditor;
+    @Input() parameters;
 
     chartInstance: any;
     isLibraryAlreadyLoaded = {};
@@ -44,11 +45,21 @@ export class CardComponent implements OnInit {
       let values = {};
       let benchmarkValues = {};
       for (const varName in card.variablesData) {
-          values[varName] = card.variablesData[varName].value;
-      }
-      for (const varName in card.benchmarkVariablesData) {
-          benchmarkValues[varName] = card.benchmarkVariablesData[varName].value;
-      }
+        const varData = card.variablesData[varName];
+        if(varData.source == 'Variable') {
+            values[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
+        } else {
+            values[varName] = varData.value;
+        }
+    }
+    for (const varName in card.benchmarkVariablesData) {
+        const varData = card.benchmarkVariablesData[varName];
+        if(varData.source == 'Variable') {
+            benchmarkValues[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
+        } else {
+            benchmarkValues[varName] = varData.value;
+        }
+    }
       const body = { VariableValues: values } ?? {};
       const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
         await this.pluginService.executeQuery(card.query.Key, body).then(async (data) => {

@@ -21,6 +21,7 @@ export class TableComponent implements OnInit {
   dataObjects: any[] = []
   dataSet;
   listDataSource: GenericListDataSource;
+  parameters;
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   private _configuration: BaseConfiguration;
@@ -30,6 +31,8 @@ export class TableComponent implements OnInit {
 
   @Input('hostObject')
   set hostObject(value) {
+    this.parameters = value.parameters;
+    console.log("AccountUUID from page = " + this.parameters?.AccountUUID)
     if (value.configuration?.query?.Key) {
       if(this.drawRequired(value))
         this.drawList(value.configuration);
@@ -91,7 +94,12 @@ export class TableComponent implements OnInit {
     // sending variable names and values as body
     let values = {}
     for(const varName in configuration.variablesData) {
-        values[varName] = configuration.variablesData[varName].value
+      const varData = configuration.variablesData[varName];
+      if(varData.source == 'Variable') {
+          values[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
+      } else {
+          values[varName] = varData.value;
+      }
     }
     const body = {"VariableValues" : values} ?? {}
     this.pluginService.executeQuery(configuration.query.Key, body).then((data) => {

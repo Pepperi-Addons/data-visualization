@@ -17,6 +17,8 @@ export class BenchmarkChartComponent implements OnInit {
 
     @Input('hostObject')
     set hostObject(value) {
+        this.parameters = value.parameters;
+        console.log("AccountUUID from page = " + this.parameters?.AccountUUID)
         if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
             if(this.drawRequired(value))
                 this.drawChart(value.configuration);
@@ -36,6 +38,7 @@ export class BenchmarkChartComponent implements OnInit {
     chartInstance: any;
     isLibraryAlreadyLoaded = {};
     oldDefine: any;
+    parameters;
 
     constructor(private translate: TranslateService,
         private pluginService: AddonService,
@@ -57,10 +60,20 @@ export class BenchmarkChartComponent implements OnInit {
         let values = {};
         let benchmarkValues = {};
         for (const varName in configuration.variablesData) {
-            values[varName] = configuration.variablesData[varName].value;
+            const varData = configuration.variablesData[varName];
+            if(varData.source == 'Variable') {
+                values[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
+            } else {
+                values[varName] = varData.value;
+            }
         }
         for (const varName in configuration.benchmarkVariablesData) {
-            benchmarkValues[varName] = configuration.benchmarkVariablesData[varName].value;
+            const varData = configuration.benchmarkVariablesData[varName];
+            if(varData.source == 'Variable') {
+                benchmarkValues[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
+            } else {
+                benchmarkValues[varName] = varData.value;
+            }
         }
         const body = { VariableValues: values } ?? {};
         const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
