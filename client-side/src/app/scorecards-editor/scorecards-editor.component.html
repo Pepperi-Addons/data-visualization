@@ -23,7 +23,7 @@
         <mat-tab id="2" label="{{'Content' | translate}}">
             <h2>{{'Cards' | translate}}
             </h2>
-            <div (cdkDropListDropped)="drop($event)"  cdkDropList>
+            <div *ngIf="charts" (cdkDropListDropped)="drop($event)"  cdkDropList>
                 <card-editor *ngFor="let currentCard of configuration?.cards;"
                     [id]="currentCard?.id" [charts]="charts" [chartsOptions]="chartsOptions" [pageParametersOptions]="pageParametersOptions" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
                     [isDraggable]="true" (editClick)='onCardEditClick($event);' (removeClick)='onCardRemoveClick($event);'
