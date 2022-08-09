@@ -57,24 +57,8 @@ export class BenchmarkChartComponent implements OnInit {
     drawChart(configuration: any) {
         this.loaderService.show();
         // sending variable names and values as body
-        let values = {};
-        let benchmarkValues = {};
-        for (const varName in configuration.variablesData) {
-            const varData = configuration.variablesData[varName];
-            if(varData.source == 'Variable') {
-                values[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
-            } else {
-                values[varName] = varData.value;
-            }
-        }
-        for (const varName in configuration.benchmarkVariablesData) {
-            const varData = configuration.benchmarkVariablesData[varName];
-            if(varData.source == 'Variable') {
-                benchmarkValues[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
-            } else {
-                benchmarkValues[varName] = varData.value;
-            }
-        }
+        let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
+        let benchmarkValues = this.dataVisualizationService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
         const body = { VariableValues: values } ?? {};
         const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
         this.pluginService.executeQuery(configuration.query.Key, body).then((firstQueryData) => {
@@ -83,7 +67,7 @@ export class BenchmarkChartComponent implements OnInit {
                     const configuration = {
                         label: 'Sales'
                     }
-                    this.loadSrcJSFiles(res.deps).then(() => {
+                    this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
                         this.chartInstance = new res.default(this.divView.nativeElement, configuration);
                         this.chartInstance.data = firstQueryData;
                         this.chartInstance.data["BenchmarkQueries"] = []
@@ -110,39 +94,37 @@ export class BenchmarkChartComponent implements OnInit {
 
     }
 
-    loadSrcJSFiles(imports) {
+    // loadSrcJSFiles(imports) {
+    //     let promises = [];
+    //     imports.forEach(src => {
+    //         promises.push(new Promise<void>((resolve) => {
+    //             this.isLibraryAlreadyLoaded[src] = false;
+    //             if (!this.isLibraryAlreadyLoaded[src]) {
+    //                 let _oldDefine = window['define'];
+    //                 this.oldDefine = _oldDefine;
+    //                 //this.lockObject = true;
+    //                 window['define'] = null;
 
-        let promises = [];
-
-        imports.forEach(src => {
-            promises.push(new Promise<void>((resolve) => {
-                this.isLibraryAlreadyLoaded[src] = false;
-                if (!this.isLibraryAlreadyLoaded[src]) {
-                    let _oldDefine = window['define'];
-                    this.oldDefine = _oldDefine;
-                    //this.lockObject = true;
-                    window['define'] = null;
-
-                    const node = document.createElement('script');
-                    node.src = src;
-                    node.id = src;
-                    node.onload = (script) => {
-                        window['define'] = _oldDefine;
-                        this.isLibraryAlreadyLoaded[src] = true;
-                        console.log(`${src} loaded`)
-                        resolve()
-                    };
-                    node.onerror = (script) => {
-                    };
-                    document.getElementsByTagName('head')[0].appendChild(node);
-                }
-                else {
-                    resolve();
-                }
-            }));
-        });
-        return Promise.all(promises);
-    }
+    //                 const node = document.createElement('script');
+    //                 node.src = src;
+    //                 node.id = src;
+    //                 node.onload = (script) => {
+    //                     window['define'] = _oldDefine;
+    //                     this.isLibraryAlreadyLoaded[src] = true;
+    //                     console.log(`${src} loaded`)
+    //                     resolve()
+    //                 };
+    //                 node.onerror = (script) => {
+    //                 };
+    //                 document.getElementsByTagName('head')[0].appendChild(node);
+    //             }
+    //             else {
+    //                 resolve();
+    //             }
+    //         }));
+    //     });
+    //     return Promise.all(promises);
+    // }
 
     getGalleryBorder() {
         if (this.configuration?.useBorder) {

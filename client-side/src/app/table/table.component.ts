@@ -41,9 +41,7 @@ export class TableComponent implements OnInit {
   }
 
   constructor(private translate: TranslateService,
-    private addonService: PepAddonService,
     private pluginService: AddonService,
-    private dataConvertorService: PepDataConvertorService,
     public loaderService: PepLoaderService,
     public dataVisualizationService: DataVisualizationService) {
   }
@@ -92,15 +90,7 @@ export class TableComponent implements OnInit {
     this.loaderService.show();
     this.dataSet = [];
     // sending variable names and values as body
-    let values = {}
-    for(const varName in configuration.variablesData) {
-      const varData = configuration.variablesData[varName];
-      if(varData.source == 'Variable') {
-          values[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
-      } else {
-          values[varName] = varData.value;
-      }
-    }
+    let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = {"VariableValues" : values} ?? {}
     this.pluginService.executeQuery(configuration.query.Key, body).then((data) => {
       try {

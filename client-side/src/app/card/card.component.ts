@@ -1,8 +1,7 @@
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
-import { PepColorService, PepLayoutService, PepLoaderService, PepScreenSizeType, PepSizeType, PepStyleType } from '@pepperi-addons/ngx-lib';
-import { ICardEditor, IScorecards, IScorecardsEditor } from '../card.model';
-import { PepColorSettings } from '@pepperi-addons/ngx-composite-lib/color-settings';
+import { PepLoaderService } from '@pepperi-addons/ngx-lib';
+import { ICardEditor, IScorecardsEditor } from '../card.model';
 import { AddonService } from 'src/services/addon.service';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 
@@ -42,24 +41,8 @@ export class CardComponent implements OnInit {
     async drawScorecard(card: ICardEditor) {
       this.loaderService.show();
       // sending variable names and values as body
-      let values = {};
-      let benchmarkValues = {};
-      for (const varName in card.variablesData) {
-        const varData = card.variablesData[varName];
-        if(varData.source == 'Variable') {
-            values[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
-        } else {
-            values[varName] = varData.value;
-        }
-    }
-    for (const varName in card.benchmarkVariablesData) {
-        const varData = card.benchmarkVariablesData[varName];
-        if(varData.source == 'Variable') {
-            benchmarkValues[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
-        } else {
-            benchmarkValues[varName] = varData.value;
-        }
-    }
+      let values = this.dataVisualizationService.buildVariableValues(card.variablesData, this.parameters);
+      let benchmarkValues = this.dataVisualizationService.buildVariableValues(card.benchmarkVariablesData, this.parameters);
       const body = { VariableValues: values } ?? {};
       const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
         await this.pluginService.executeQuery(card.query.Key, body).then(async (data) => {
@@ -68,7 +51,7 @@ export class CardComponent implements OnInit {
               const configuration = {
                   Title: card.title
               }
-              await this.loadSrcJSFiles(res.deps).then(() => {
+              await this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
                   this.chartInstance = new res.default(this.divView.nativeElement, configuration);
                   this.chartInstance.data = data;
                   this.chartInstance.data["BenchmarkQueries"] = []
@@ -91,39 +74,5 @@ export class CardComponent implements OnInit {
           })
         })
       }
-    
-      loadSrcJSFiles(imports) {
-        
-        let promises = [];
-    
-        imports.forEach(src => {
-            promises.push(new Promise<void>((resolve) => {
-                this.isLibraryAlreadyLoaded[src] = false;
-                if (!this.isLibraryAlreadyLoaded[src]) {
-                    let _oldDefine = window['define'];
-                    this.oldDefine = _oldDefine;
-                    //this.lockObject = true;
-                    window['define'] = null;
-    
-                    const node = document.createElement('script');
-                    node.src = src;
-                    node.id = src;
-                    node.onload = (script) => {
-                        window['define'] = _oldDefine;
-                        this.isLibraryAlreadyLoaded[src] = true;
-                        console.log(`${src} loaded`)
-                        resolve()
-                    };
-                    node.onerror = (script) => {
-                    };
-                    document.getElementsByTagName('head')[0].appendChild(node);
-                }
-                else {
-                    resolve();
-                }
-            }));
-        });
-        return Promise.all(promises);
-    }
 
 }

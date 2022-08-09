@@ -213,6 +213,8 @@ export abstract class BlockHelperService implements OnInit {
 
   private updatePageConfigurationObject() {
     this._pageConfiguration = this.defaultPageConfiguration;
+    //defining the page parameters we want to consume
+    //currently the only page parameter consumed is AccountUUID
     this._pageConfiguration.Parameters.push({
         Key: 'AccountUUID',
         Type: 'String',
