@@ -15,14 +15,16 @@ import { PepLoaderService } from '@pepperi-addons/ngx-lib';
 export class ChartComponent implements OnInit {
   @Input("hostObject")
   set hostObject(value) {
-    this.parameters = value.parameters;
-    console.log("AccountUUID from page = " + this.parameters?.AccountUUID)
+    console.log("AccountUUID from page = " + value.parameters?.AccountUUID)
     if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
-      if (this.drawRequired(value))
+      if (this.drawRequired(value) || this.parameters?.AccountUUID!=value.parameters?.AccountUUID) {
+        this.parameters = value.parameters;
         this.drawChart(value.configuration);
+      }
     } else {
       this.deleteChart();
     }
+    this.parameters = value.parameters;
     this._configuration = value?.configuration;
   }
 
@@ -52,15 +54,7 @@ export class ChartComponent implements OnInit {
   drawChart(configuration: any) {
     this.loaderService.show();
     // sending variable names and values as body
-    let values = {};
-    for (const varName in configuration.variablesData) {
-      const varData = configuration.variablesData[varName];
-      if(varData.source == 'Variable') {
-        values[varName] = (this.parameters && this.parameters[varData.value]) ? this.parameters[varData.value] : '0';
-      } else {
-        values[varName] = varData.value;
-      }
-    }
+    let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
     this.pluginService
       .executeQuery(configuration.query.Key, body)
@@ -70,7 +64,7 @@ export class ChartComponent implements OnInit {
             const configuration = {
               label: "Sales",
             };
-            this.loadSrcJSFiles(res.deps)
+            this.dataVisualizationService.loadSrcJSFiles(res.deps)
               .then(() => {
                 this.chartInstance = new res.default(
                   this.divView.nativeElement,
@@ -94,38 +88,38 @@ export class ChartComponent implements OnInit {
       });
   }
 
-  loadSrcJSFiles(imports) {
-    let promises = [];
+  // loadSrcJSFiles(imports) {
+  //   let promises = [];
 
-    imports.forEach((src) => {
-      promises.push(
-        new Promise<void>((resolve) => {
-          this.isLibraryAlreadyLoaded[src] = false;
-          if (!this.isLibraryAlreadyLoaded[src]) {
-            let _oldDefine = window["define"];
-            this.oldDefine = _oldDefine;
-            //this.lockObject = true;
-            window["define"] = null;
+  //   imports.forEach((src) => {
+  //     promises.push(
+  //       new Promise<void>((resolve) => {
+  //         this.isLibraryAlreadyLoaded[src] = false;
+  //         if (!this.isLibraryAlreadyLoaded[src]) {
+  //           let _oldDefine = window["define"];
+  //           this.oldDefine = _oldDefine;
+  //           //this.lockObject = true;
+  //           window["define"] = null;
 
-            const node = document.createElement("script");
-            node.src = src;
-            node.id = src;
-            node.onload = (script) => {
-              window["define"] = _oldDefine;
-              this.isLibraryAlreadyLoaded[src] = true;
-              console.log(`${src} loaded`);
-              resolve();
-            };
-            node.onerror = (script) => {};
-            document.getElementsByTagName("head")[0].appendChild(node);
-          } else {
-            resolve();
-          }
-        })
-      );
-    });
-    return Promise.all(promises);
-  }
+  //           const node = document.createElement("script");
+  //           node.src = src;
+  //           node.id = src;
+  //           node.onload = (script) => {
+  //             window["define"] = _oldDefine;
+  //             this.isLibraryAlreadyLoaded[src] = true;
+  //             console.log(`${src} loaded`);
+  //             resolve();
+  //           };
+  //           node.onerror = (script) => {};
+  //           document.getElementsByTagName("head")[0].appendChild(node);
+  //         } else {
+  //           resolve();
+  //         }
+  //       })
+  //     );
+  //   });
+  //   return Promise.all(promises);
+  // }
 
   getGalleryBorder() {
     if (this.configuration?.useBorder) {
