@@ -16,8 +16,10 @@ export class ScorecardsComponent implements OnInit {
 
   @Input('hostObject')
   set hostObject(value) {
+      this.parameters = value.parameters;
+      console.log("AccountUUID from page = " + this.parameters?.AccountUUID);
       this._configuration = value?.configuration;
-}
+  }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   @ViewChild('scorecardsPreviewArea', { static: true }) divView: ElementRef;
@@ -29,11 +31,7 @@ export class ScorecardsComponent implements OnInit {
   chartInstances = [];
   isLibraryAlreadyLoaded = {};
   oldDefine: any;
-
-  constructor(private translate: TranslateService,
-    private addonService: PepAddonService,
-    private dataVisualizationService: DataVisualizationService,
-    private pluginService: AddonService) { }
+  parameters;
 
   async ngOnInit() {
     this.hostEvents.emit({ action: 'block-loaded' });

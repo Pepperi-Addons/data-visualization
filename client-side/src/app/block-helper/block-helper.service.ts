@@ -22,17 +22,12 @@ export abstract class BlockHelperService implements OnInit {
         this.loadDefaultConfiguration();
       }
     }
-    this.pageParameters = value?.pageParameters || {};
     this.pageParametersOptions = []
-    Object.keys(this.pageParameters).forEach(paramKey => {
-      this.pageParametersOptions.push({key: paramKey, value: paramKey})
-    });
     this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   protected _configuration: any;
-  protected pageParameters: any;
   private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
   private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
   pageParametersOptions = [];
@@ -91,6 +86,7 @@ export abstract class BlockHelperService implements OnInit {
         })
       }
       this.blockLoaded = true;
+      this.updatePageConfigurationObject();
       this.updateHostObject();
       this.hostEvents.emit({ action: 'block-editor-loaded' });
     })
@@ -153,7 +149,6 @@ export abstract class BlockHelperService implements OnInit {
       this._configuration.variablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
     }
     this.updateHostObject();
-    this.updatePageConfigurationObject();
   }
 
   abstract getQueryOptions();
@@ -197,13 +192,10 @@ export abstract class BlockHelperService implements OnInit {
       if(field=='source') {
         this.configuration.variablesData[varName].source = e
         this.configuration.variablesData[varName].value = null
-        if(e == 'Default') 
+        if(e == 'Default')
           this.configuration.variablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
       } else {
         this.configuration.variablesData[varName].value = e
-        if(this.configuration.variablesData[varName].source == 'Variable') {
-          this.configuration.variablesData[varName].valueFromPage = this.pageParameters[e] ?? 'noParameter'
-        }
       }
     }
     else {
@@ -211,7 +203,7 @@ export abstract class BlockHelperService implements OnInit {
         this.configuration.benchmarkVariablesData[varName].source = e
         this.configuration.benchmarkVariablesData[varName].value = null
         if(e == 'Default') 
-          this.configuration.variablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
+          this.configuration.benchmarkVariablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
       } else {
         this.configuration.benchmarkVariablesData[varName].value = e
       }
@@ -220,19 +212,18 @@ export abstract class BlockHelperService implements OnInit {
   }
 
   private updatePageConfigurationObject() {
-    //const params = this.getPageConfigurationParametersNames();
     this._pageConfiguration = this.defaultPageConfiguration;
-
+    //defining the page parameters we want to consume
+    //currently the only page parameter consumed is AccountUUID
     this._pageConfiguration.Parameters.push({
         Key: 'AccountUUID',
         Type: 'String',
         Consume: true,
         Produce: false
     });
-
     this.hostEvents.emit({
         action: 'set-page-configuration',
         pageConfiguration: this._pageConfiguration
     });
-}
+  }
 }
