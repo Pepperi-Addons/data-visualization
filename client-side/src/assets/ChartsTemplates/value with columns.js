@@ -14,7 +14,7 @@
 
 /**
  * This is the class the embedder will use to render the chart
- * In this file we will use a chart from apexcharts
+ * In this file, a chart from apexcharts is used
  */
 export default class MyChart {
 
@@ -39,8 +39,8 @@ export default class MyChart {
         const canvas = element.querySelector('#canvas');
 
         // retrieve the chart configuration
-        const conf = this.getConfiguration(configuration);
-
+        const conf = this.getConfiguration(canvas, configuration);
+		
         // create a chart element on the canvas with the configuration
         this.chart = new ApexCharts(canvas, conf);
         this.chart.render();
@@ -157,15 +157,22 @@ export default class MyChart {
             });
         }
 		
-		if (total >= 10 ** 3) {
-			total = Math.trunc(total);
-		} 
-					
+		// round the value 
+		let valueMsg = '';
+		if (total >= 10 ** 9) {
+			valueMsg = (Math.trunc(total / 100000)/10).toLocaleString() + ' M';
+		} else if (total >= 10 ** 6) {
+			valueMsg = (Math.trunc(total / 100)/10).toLocaleString() + ' K';
+		} else if (total >= 10 ** 3) {
+			valueMsg = Math.trunc(total).toLocaleString();
+		} else {
+			valueMsg = total.toLocaleString();
+		}
 		
 		// update the subtitle text with the total
 		this.chart.updateOptions({
 			subtitle: {
-				text: total.toLocaleString()
+				text: valueMsg
 			}
 		});
 
@@ -184,22 +191,25 @@ export default class MyChart {
      * This function returns an html which will be created in the embedder.
      */
     getHTML() {
-        return `<div id="canvas" style="height: 11rem;"></div>`;
+        return `<div id="canvas" style="height: 11rem"></div>`;
     }
 
     /**
      * This function returns a chart configuration object.
      */
-    getConfiguration(configuration) {
+    getConfiguration(canvas, configuration) {
 		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
-		const fontFamilyBody = $('.font-family-body').css("font-family") || "Inter-Regular";
+		const fontFamily = getComputedStyle(canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
 		const title = configuration.Title || '';
+		// set the height to the canvas height (or to min value for hidden canvas) (setting the chart height to 100% throws errors in the console log)
+		const height = canvas.clientHeight>0 ?  canvas.clientHeight : '172';
+		
         return {
             chart: {
                 type: 'line',
-                height: '100%',
+                height: height,
                 width: '100%',
-				fontFamily: fontFamilyBody,
+				fontFamily: fontFamily,
 				sparkline: {
 					enabled: true
 				}
@@ -225,7 +235,7 @@ export default class MyChart {
 				style: {
 					fontSize: '28px',
 					fontWeight: 'bold',
-					fontFamily: fontFamilyBody
+					fontFamily: fontFamily
 				}
 			},
 			title: {
@@ -237,7 +247,7 @@ export default class MyChart {
 				style: {
 					fontSize: '14px',
 					fontWeight: 'normal',
-					fontFamily: fontFamilyBody
+					fontFamily: fontFamily
 				}
 			},
 			grid: {

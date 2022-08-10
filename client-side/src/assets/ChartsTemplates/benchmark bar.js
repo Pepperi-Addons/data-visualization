@@ -14,7 +14,7 @@
 
 /**
  * This is the class the embedder will use to render the chart
- * In this file we will use a chart from apexcharts
+ * In this file, a chart from apexcharts is used
  */
 export default class MyChart {
 
@@ -29,7 +29,6 @@ export default class MyChart {
          * The embedder of this chart will insert the chart data to this property
          * @type {ChartData}
          */
-
         this.data = {};
 
         // first we create a div on the HTML element
@@ -39,7 +38,7 @@ export default class MyChart {
         const canvas = element.querySelector('#canvas');
 
         // retrieve the chart configuration
-        const conf = this.getConfiguration();
+        const conf = this.getConfiguration(canvas);
 
         // create a chart element on the canvas with the configuration
         this.chart = new ApexCharts(canvas, conf);
@@ -52,14 +51,15 @@ export default class MyChart {
      */
     update() {
 		// if there is no benchmark data, then create empty object
-		if (this.data.BenchmarkQueries.length==0) {
+		if (!this.data.BenchmarkQueries || this.data.BenchmarkQueries.length==0) {
 			this.data.BenchmarkQueries = [{
 				Name: '',
 				Groups: [],
 				Series: []
-			}]
+			}];
+			this.data.BenchmarkSet = [];
 		}
-		
+
         const groups = this.data.DataQueries.map((data) => data.Groups).flat();
         const series = this.data.DataQueries.map((data) => data.Series).flat();
 		const benchmarkGroups = this.data.BenchmarkQueries.map((data) => data.Groups).flat();
@@ -190,19 +190,22 @@ export default class MyChart {
      * This function returns an html which will be created in the embedder.
      */
     getHTML() {
-        return `<div id="canvas" style="height: 100%;"></div>`;
+        return `<div id="canvas" style="height: 100%"></div>`;
     }
 
     /**
      * This function returns a chart configuration object.
      */
-    getConfiguration() {
+    getConfiguration(canvas) {
 		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
-		const fontFamily = $('.font-family-body').css("font-family") || '"Segoe UI", "Helvetica Neue", sans-serif';
+		const fontFamily = getComputedStyle(canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
+		// set the height to the canvas height (or to min value for hidden canvas) (setting the chart height to 100% throws errors in the console log)
+		const height = canvas.clientHeight>0 ?  canvas.clientHeight : '352';
+		
         return {
             chart: {
                 type: 'bar',
-                height: "100%",
+                height: height,
                 width: "100%",
                 toolbar: {
                     show: true

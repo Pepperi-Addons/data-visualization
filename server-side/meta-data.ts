@@ -12,7 +12,7 @@ export const charts: Chart[] = [
     },
     {
         Name: "Column",
-        Description: "Default Column",
+        Description: "Default column",
         ScriptURI: '',
         Type: 'Chart',
         Hidden: false,
@@ -35,7 +35,7 @@ export const charts: Chart[] = [
         System: true
     },
     {
-        Name: "Stacked_column",
+        Name: "Stacked column",
         Description: "Default stacked column",
         ScriptURI: '',
         Type: 'Chart',
@@ -43,7 +43,7 @@ export const charts: Chart[] = [
         System: true
     },
     {
-        Name: "Stacked_bar",
+        Name: "Stacked bar",
         Description: "Default stacked bar",
         ScriptURI: '',
         Type: 'Chart',
@@ -51,78 +51,76 @@ export const charts: Chart[] = [
         System: true
     },
     {
-        Name: "Benchmark_bar",
-        Description: "Benchmark bar with markers",
+        Name: "Benchmark bar",
+        Description: "Default benchmark bar with markers",
         ScriptURI: '',
         Type: 'Benchmark chart',
         Hidden: false,
         System: true
     },
     {
-        Name: "Benchmark_column",
-        Description: "Benchmark column with markers",
+        Name: "Benchmark column",
+        Description: "Default benchmark column with markers",
         ScriptURI: '',
         Type: 'Benchmark chart',
         Hidden: false,
         System: true
     },
     {
-        Name: "Benchmark_column_line",
-        Description: "Benchmark column and line",
+        Name: "Benchmark column line",
+        Description: "Default benchmark column and line",
         ScriptURI: '',
         Type: 'Benchmark chart',
         Hidden: false,
         System: true
     },
     {
-        Name: "value_with_area",
-        Description: "value with area",
+        Name: "Value with area",
+        Description: "Default value with area",
         ScriptURI: '',
         Type: 'Series scorecard',
         Hidden: false,
         System: true
     },
     {
-        Name: "value_with_columns",
-        Description: "value with columns",
+        Name: "Value with columns",
+        Description: "Default value with columns",
         ScriptURI: '',
         Type: 'Series scorecard',
         Hidden: false,
         System: true
     },
     {
-        Name: "progress_bar",
-        Description: "progress bar",
+        Name: "Progress bar",
+        Description: "Default progress bar",
         ScriptURI: '',
         Type: 'Value scorecard',
         Hidden: false,
         System: true
     },
     {
-        Name: "gauge",
-        Description: "gauge",
+        Name: "Gauge",
+        Description: "Default gauge",
         ScriptURI: '',
         Type: 'Value scorecard',
         Hidden: false,
         System: true
     },
     {
-        Name: "value",
-        Description: "value",
+        Name: "Value",
+        Description: "Default value",
         ScriptURI: '',
         Type: 'Value scorecard',
         Hidden: false,
         System: true
     },
     {
-        Name: "value_and_change",
-        Description: "value and change",
+        Name: "Value and change",
+        Description: "Default value and change",
         ScriptURI: '',
         Type: 'Value scorecard',
         Hidden: false,
         System: true
     }
-
-
 ]
 
