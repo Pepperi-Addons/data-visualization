@@ -20,11 +20,9 @@ export class TableComponent implements OnInit {
   @ViewChild(PepListComponent) customList: PepListComponent;
   dataObjects: any[] = []
   dataSet;
+  listDataSource: GenericListDataSource;
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
-  existing: any;
-  chartID;
-  isLibraryAlreadyLoaded = {};
   private _configuration: BaseConfiguration;
   get configuration(): BaseConfiguration {
     return this._configuration;
@@ -33,28 +31,21 @@ export class TableComponent implements OnInit {
   @Input('hostObject')
   set hostObject(value) {
     if (value.configuration?.query?.Key) {
-      const drawRequired = this.configuration?.query?.Key!=value.configuration.query?.Key
-      if(drawRequired)
+      if(this.drawRequired(value))
         this.drawList(value.configuration);
     }
     this._configuration = value?.configuration;
   }
-
-  oldDefine: any;
-  listDataSource: GenericListDataSource;
-
 
   constructor(private translate: TranslateService,
     private addonService: PepAddonService,
     private pluginService: AddonService,
     private dataConvertorService: PepDataConvertorService,
     public loaderService: PepLoaderService,
-
     public dataVisualizationService: DataVisualizationService) {
   }
 
   ngOnInit(): void {
-    this.hostEvents.emit({ action: 'block-loaded' });
   }
 
   private getListDataSource(fields): GenericListDataSource {
@@ -95,9 +86,14 @@ export class TableComponent implements OnInit {
 
   drawList(configuration) {
     this.loaderService.show();
-
     this.dataSet = [];
-    this.pluginService.executeQuery(configuration.query.Key).then((data) => {
+    // sending variable names and values as body
+    let values = {}
+    for(const varName in configuration.variablesData) {
+        values[varName] = configuration.variablesData[varName].value
+    }
+    const body = {"VariableValues" : values} ?? {}
+    this.pluginService.executeQuery(configuration.query.Key, body).then((data) => {
       try {
         // flat the series & groups
         const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
@@ -112,7 +108,6 @@ export class TableComponent implements OnInit {
         this.dataSet = this.dataSet.slice();
         this.listDataSource = this.getListDataSource([...distinctgroups,...distinctSeries ]);
         this.loaderService.hide();
-
       }
       catch (err) {
         console.log(err);
@@ -152,14 +147,20 @@ export class TableComponent implements OnInit {
     return row;
   }
 
-  getRandomNumber() {
-    return Math.floor(Math.random() * 100);
-  }
-
   deleteList() {
     // if (this.divView) {
     //   this.divView.nativeElement.innerHTML = "";
     // }
+  }
+
+  drawRequired(value) {
+    return (
+      this.configuration?.query?.Key != value.configuration.query?.Key ||
+      !this.pluginService.variableDatasEqual(
+        this.configuration?.variablesData,
+        value.configuration.variablesData
+      )
+    );
   }
 
 }

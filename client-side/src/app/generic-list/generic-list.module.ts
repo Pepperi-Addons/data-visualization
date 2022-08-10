@@ -6,8 +6,7 @@ import { PepMenuModule } from '@pepperi-addons/ngx-lib/menu';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { PepSearchModule } from '@pepperi-addons/ngx-lib/search';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
-import { PepAddonService, PepDataConvertorService, PepFileService, PepLayoutService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepDataConvertorService, PepLayoutService } from '@pepperi-addons/ngx-lib';
 import { config } from '../addon.config';
 
 

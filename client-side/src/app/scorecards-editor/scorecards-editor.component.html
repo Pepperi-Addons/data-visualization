@@ -1,5 +1,5 @@
 <div pep-main-area style="height: inherit">
-    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" animationDuration="100ms">
+    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" animationDuration="0ms">
         <mat-tab id="1" label="{{'General' | translate}}">
             <div *ngIf="blockLoaded">
                 <div id="border">
@@ -23,12 +23,13 @@
         <mat-tab id="2" label="{{'Content' | translate}}">
             <h2>{{'Cards' | translate}}
             </h2>
-            <div (cdkDropListDropped)="drop($event)"  cdkDropList>
+            <div *ngIf="charts" (cdkDropListDropped)="drop($event)"  cdkDropList>
                 <card-editor *ngFor="let currentCard of configuration?.cards;"
-                    [id]="currentCard?.id" [charts]="charts" [chartsOptions]="chartsOptions" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
+                    [id]="currentCard?.id" [charts]="charts" [chartsOptions]="chartsOptions" [pageParametersOptions]="pageParametersOptions" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
                     [isDraggable]="true" (editClick)='onCardEditClick($event);' (removeClick)='onCardRemoveClick($event);'
-                    [configuration]="configuration" [pageParameters]="pageParameters"
+                    [configuration]="configuration"
                     cdkDrag [cdkDragDisabled]="currentCard?.id == configuration?.scorecardsConfig?.editSlideIndex" style="cursor: grab;" (cdkDragStarted)="onDragStart($event)" (cdkDragEnded)="onDragEnd($event)">
+                    <!-- NOT IN USE [pageParameters]="pageParameters" -->
                 </card-editor>
             </div>
             <pep-button class="add-content-button" value="{{ 'Add' | translate}}" styleType="regular" iconName="number_plus" iconPosition="end"

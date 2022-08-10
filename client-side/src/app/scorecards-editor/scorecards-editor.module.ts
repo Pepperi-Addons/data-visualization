@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ScorecardsEditorComponent } from '.';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { PepAddonService, PepCustomizationService, PepFileService, PepHttpService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepCustomizationService, PepFileService, PepHttpService, PepNgxLibModule } from '@pepperi-addons/ngx-lib';
 import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 import { PepSelectModule } from '@pepperi-addons/ngx-lib/select';
 import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
@@ -13,11 +13,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { config } from '../addon.config';
 import { AddonService } from '../../services/addon.service';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
-import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { pepIconTextAlignCenter, pepIconTextAlignLeft, pepIconTextAlignRight, pepIconArrowBackRight, pepIconArrowBackLeft, pepIconArrowBack, pepIconArrowLeftAlt,pepIconArrowDown, pepIconArrowUp, pepIconNumberPlus, PepIconRegistry, pepIconSystemBin, pepIconSystemBolt, pepIconSystemClose, pepIconSystemEdit, pepIconSystemMove } from '@pepperi-addons/ngx-lib/icon';
 import { PepCheckboxModule } from '@pepperi-addons/ngx-lib/checkbox';
 import { PepSliderModule } from '@pepperi-addons/ngx-lib/slider';
-import { ChartEditorModule } from '../chart-editor';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { CardEditorModule } from '../card-editor/card-editor.module';
@@ -50,7 +48,10 @@ const pepIcons = [
 @NgModule({
   declarations: [ScorecardsEditorComponent],
   imports: [
-    PepButtonModule,
+        CommonModule,
+        HttpClientModule,
+        PepNgxLibModule,
+        PepButtonModule,
         PepSliderModule,
         CardEditorModule,
         PepTextboxModule,
@@ -62,13 +63,11 @@ const pepIcons = [
         PepColorModule,
         PepImageModule,
         PepTextareaModule,
-        CommonModule,
         DragDropModule,
         PepShadowSettingsModule,
         PepColorSettingsModule,
         PepGroupButtonsSettingsModule,
         PepNgxCompositeLibModule,
-
         TranslateModule.forChild({
           loader: {
               provide: TranslateLoader,

@@ -1,6 +1,6 @@
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
-import { PepColorService, PepLayoutService, PepScreenSizeType, PepSizeType, PepStyleType } from '@pepperi-addons/ngx-lib';
+import { PepColorService, PepLayoutService, PepLoaderService, PepScreenSizeType, PepSizeType, PepStyleType } from '@pepperi-addons/ngx-lib';
 import { ICardEditor, IScorecards, IScorecardsEditor } from '../card.model';
 import { PepColorSettings } from '@pepperi-addons/ngx-composite-lib/color-settings';
 import { AddonService } from 'src/services/addon.service';
@@ -25,10 +25,11 @@ export class CardComponent implements OnInit {
     oldDefine: any;
     boxShadow: any;
 
-    constructor(private translate: TranslateService,
+    constructor (private translate: TranslateService,
         private pluginService: AddonService,
-        public dataVisualizationService: DataVisualizationService) {
-        }
+        public dataVisualizationService: DataVisualizationService,
+        public loaderService: PepLoaderService
+    ) { }
          
 
     ngOnInit(): void {
@@ -38,8 +39,20 @@ export class CardComponent implements OnInit {
     }
 
     async drawScorecard(card: ICardEditor) {
-        await this.pluginService.executeQuery(card.query.Key).then(async (data) => {
-          await this.pluginService.executeQuery(card.secondQuery?.Key).then(async (benchmarkData) => {
+      this.loaderService.show();
+      // sending variable names and values as body
+      let values = {};
+      let benchmarkValues = {};
+      for (const varName in card.variablesData) {
+          values[varName] = card.variablesData[varName].value;
+      }
+      for (const varName in card.benchmarkVariablesData) {
+          benchmarkValues[varName] = card.benchmarkVariablesData[varName].value;
+      }
+      const body = { VariableValues: values } ?? {};
+      const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
+        await this.pluginService.executeQuery(card.query.Key, body).then(async (data) => {
+          await this.pluginService.executeQuery(card.secondQuery?.Key, benchmarkBody).then(async (benchmarkData) => {
             await System.import(card.chart.ScriptURI).then(async (res) => {
               const configuration = {
                   Title: card.title
@@ -55,6 +68,7 @@ export class CardComponent implements OnInit {
                   }
                   this.chartInstance.update();
                   window.dispatchEvent(new Event('resize'));
+                  this.loaderService.hide();
               }).catch(err => {
                 this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
               })
@@ -65,10 +79,6 @@ export class CardComponent implements OnInit {
             this.divView.nativeElement.innerHTML = `Failed to execute query: ${card.query?.Key} , error: ${err}`;;
           })
         })
-      }
-    
-      getRandomNumber() {
-        return Math.floor(Math.random() * 100);
       }
     
       loadSrcJSFiles(imports) {

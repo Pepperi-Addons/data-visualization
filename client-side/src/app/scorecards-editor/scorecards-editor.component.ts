@@ -23,6 +23,8 @@ export class ScorecardsEditorComponent implements OnInit {
     blockLoaded = false;
     chartsOptions: { key: string, value: string }[] = [];
     charts;
+    protected pageParameters: any;
+    pageParametersOptions = [];
 
     @Input()
     set hostObject(value: any) {
@@ -39,8 +41,15 @@ export class ScorecardsEditorComponent implements OnInit {
             }
         }
 
-        this._pageParameters = value?.pageParameters || {};
-        this._pageConfiguration = value?.pageConfiguration || this.defaultPageConfiguration;
+        this.pageParameters = value?.pageParameters || {};
+        this.pageParametersOptions = []
+        Object.keys(this.pageParameters).forEach(paramKey => {
+        this.pageParametersOptions.push({key: paramKey, value: paramKey})
+        });
+        this.pageParametersOptions.push({key: "Account", value: "Account"})
+
+        // this._pageParameters = value?.pageParameters || {};
+        // this._pageConfiguration = value?.pageConfiguration || this.defaultPageConfiguration;
     }
 
     activeTabIndex = 0;
@@ -51,10 +60,10 @@ export class ScorecardsEditorComponent implements OnInit {
     }
 
     // All the page parameters to set in page configuration when needed (for ScriptPicker addon usage).
-    private _pageParameters: any;
-    get pageParameters(): any {
-        return this._pageParameters;
-    }
+    // private _pageParameters: any;
+    // get pageParameters(): any {
+    //     return this._pageParameters;
+    // }
 
     private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
     private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
@@ -105,12 +114,15 @@ export class ScorecardsEditorComponent implements OnInit {
             { key: 'ungrouped', value: this.translate.instant('GALLERY_EDITOR.GROUP.UNGROUPED'), callback: (event: any) => this.onGalleryFieldChange('groupTitleAndDescription',event) }
         ]
         
-        const valueCharts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Value scorecard');
-        const seriesCharts = await this.pluginService.fillChartsOptions(this.configuration,this.chartsOptions,'Series scorecard');
-        this.charts = (Array.from(valueCharts)).concat(Array.from(seriesCharts));
-        this.updateHostObject();
-        this.blockLoaded = true;
-        this.hostEvents.emit({ action: 'block-editor-loaded' });
+        Promise.all([
+            this.pluginService.fillChartsOptions(this.chartsOptions,'Value scorecard'),
+            this.pluginService.fillChartsOptions(this.chartsOptions,'Series scorecard')
+        ]).then(res => {
+            this.charts = (Array.from(res[0])).concat(Array.from(res[1]));
+            this.updateHostObject();
+            this.blockLoaded = true;
+            this.hostEvents.emit({ action: 'block-editor-loaded' });
+        })
     }
 
     ngOnChanges(e: any): void {

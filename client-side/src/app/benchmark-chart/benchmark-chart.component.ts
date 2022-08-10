@@ -2,7 +2,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import 'systemjs'
 import 'systemjs-babel'
-import { PepAddonService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepLoaderService } from '@pepperi-addons/ngx-lib';
 import { Color } from '../models/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { ChartConfiguration } from '../models/chart-configuration';
@@ -40,18 +40,31 @@ export class BenchmarkChartComponent implements OnInit {
     constructor(private translate: TranslateService,
         private pluginService: AddonService,
         private addonService: PepAddonService,
-        public dataVisualizationService: DataVisualizationService) { }
+        public dataVisualizationService: DataVisualizationService,
+        public loaderService: PepLoaderService
+        ) { }
 
     ngOnInit(): void {
-        this.hostEvents.emit({ action: 'block-loaded' });
     }
 
     ngOnChanges(e: any): void {
     }
 
     drawChart(configuration: any) {
-        this.pluginService.executeQuery(configuration.query.Key).then((firstQueryData) => {
-            this.pluginService.executeQuery(configuration.secondQuery?.Key).then((secondQueryData) => {
+        this.loaderService.show();
+        // sending variable names and values as body
+        let values = {};
+        let benchmarkValues = {};
+        for (const varName in configuration.variablesData) {
+            values[varName] = configuration.variablesData[varName].value;
+        }
+        for (const varName in configuration.benchmarkVariablesData) {
+            benchmarkValues[varName] = configuration.benchmarkVariablesData[varName].value;
+        }
+        const body = { VariableValues: values } ?? {};
+        const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
+        this.pluginService.executeQuery(configuration.query.Key, body).then((firstQueryData) => {
+            this.pluginService.executeQuery(configuration.secondQuery?.Key, benchmarkBody).then((secondQueryData) => {
                 System.import(configuration.chart.ScriptURI).then((res) => {
                     const configuration = {
                         label: 'Sales'
@@ -61,13 +74,13 @@ export class BenchmarkChartComponent implements OnInit {
                         this.chartInstance.data = firstQueryData;
                         this.chartInstance.data["BenchmarkQueries"] = []
                         this.chartInstance.data["BenchmarkSet"] = []
-                        if(secondQueryData){
+                        if(secondQueryData) {
                             this.chartInstance.data["BenchmarkQueries"] = secondQueryData["DataQueries"]
                             this.chartInstance.data["BenchmarkSet"] = secondQueryData["DataSet"]
                         }
                         this.chartInstance.update();
                         window.dispatchEvent(new Event('resize'));
-
+                        this.loaderService.hide();
                     }).catch(err => {
                         this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
                     })
@@ -81,10 +94,6 @@ export class BenchmarkChartComponent implements OnInit {
             this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query.Key} , error: ${err}`;;
         })
 
-    }
-
-    getRandomNumber() {
-        return Math.floor(Math.random() * 100);
     }
 
     loadSrcJSFiles(imports) {
@@ -137,9 +146,13 @@ export class BenchmarkChartComponent implements OnInit {
     }
 
     drawRequired(value) {
-    return this.configuration?.query?.Key!=value.configuration.query?.Key ||
-           this.configuration?.chart?.Key!=value.configuration.chart?.Key ||
-           this.configuration?.secondQuery?.Key!=value.configuration.secondQuery?.Key;
+    return (
+      this.configuration?.query?.Key != value.configuration.query?.Key ||
+      this.configuration?.chart?.Key != value.configuration.chart?.Key ||
+      this.configuration?.secondQuery?.Key != value.configuration.secondQuery?.Key ||
+      !this.pluginService.variableDatasEqual(this.configuration?.variablesData, value.configuration.variablesData) ||
+      !this.pluginService.variableDatasEqual(this.configuration?.benchmarkVariablesData, value.configuration.benchmarkVariablesData)
+    );
     }
 }
 

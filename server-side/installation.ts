@@ -89,7 +89,10 @@ async function setPageBlockRelations(client){
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`
+            EditorModuleName: `${blockName}EditorModule`,
+            ElementsModule: 'WebComponents',
+            ElementName: `chart-element-${client.AddonUUID}`,
+            EditorElementName: `chart-editor-element-${client.AddonUUID}`,
         };
         blockName = 'Scorecards';
      
@@ -104,7 +107,10 @@ async function setPageBlockRelations(client){
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`
+            EditorModuleName: `${blockName}EditorModule`,
+            ElementsModule: 'WebComponents',
+            ElementName: `scorecards-element-${client.AddonUUID}`,
+            EditorElementName: `scorecards-editor-element-${client.AddonUUID}`,
         };
 
         blockName = 'Table';
@@ -120,7 +126,10 @@ async function setPageBlockRelations(client){
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`
+            EditorModuleName: `${blockName}EditorModule`,
+            ElementsModule: 'WebComponents',
+            ElementName: `table-element-${client.AddonUUID}`,
+            EditorElementName: `table-editor-element-${client.AddonUUID}`,
         };
 
         blockName = 'BenchmarkChart';
@@ -136,7 +145,10 @@ async function setPageBlockRelations(client){
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`
+            EditorModuleName: `${blockName}EditorModule`,
+            ElementsModule: 'WebComponents',
+            ElementName: `benchmark-chart-element-${client.AddonUUID}`,
+            EditorElementName: `benchmark-chart-editor-element-${client.AddonUUID}`,
         };
 
 

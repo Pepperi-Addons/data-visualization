@@ -1,111 +1,149 @@
 <div pep-main-area>
-    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="100ms">
-        <mat-tab id="1" label="{{'General' | translate}}">
-            <div *ngIf="blockLoaded">
-                <pep-checkbox [value]="configuration.useLabel" [label]="'Title' | translate" [renderTitle]="false" (valueChange)="onValueChanged('useLabel',$event)"></pep-checkbox>
-                <pep-textbox [label]="'TitleText' | translate" [type]="'text'" [disabled]="!configuration.useLabel" [(value)]="configuration.label" (valueChange)="onValueChanged('Label', $event)"></pep-textbox>
-                <pep-group-buttons-settings
-                [groupType]="'horizontal-align'" [subHeader]="'Alignment' | translate"
-                [disabled]="!configuration.useLabel" [btnKey]="configuration?.horizontalAlign"
-                (btnkeyChange)="onFieldChange('horizontalAlign',$event)">
-                </pep-group-buttons-settings>
-                <h2>{{'ChartDesign' | translate}}
-                </h2>
-                <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="configuration.chart?.Key" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">
-                </pep-select>
-                <pep-textbox [label]="'ChartHeight' | translate" [type]="'decimal'" [(value)]="configuration.height" (valueChange)="onValueChanged('Height', $event)"></pep-textbox>
-                <div id="border">
-                    <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
-                    <pep-color [value]="configuration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
-                    </pep-color>
-                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useBorder" [value]="configuration?.border?.opacity" [background]="getSliderBackground(configuration?.border?.color)" (valueChange)="onFieldChange('border.opacity',$event)">
-                    </pep-slider>
-                </div>
-                <div id="dropShadow">
-                    <pep-checkbox [value]="configuration?.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
-                    </pep-checkbox>
-                    <label class="body-xs normal ellipsis">{{'ShadowIntensity' | translate}}</label>
-                    <pep-group-buttons [buttons]="DropShadowStyle" [selectedButtonKey]="configuration?.dropShadow?.type" buttonsClass="md regular" [buttonsDisabled]="!configuration?.useDropShadow" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
-                    </pep-group-buttons>
-                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useDropShadow" [value]="configuration?.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
-                    </pep-slider>
-                </div>
-                <!-- <pep-select  [key]="'querySelect'" [label]="'Select a data query'" [value]="this._configuration.query?.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onValueChanged('Query',$event)">
+  <mat-tab-group
+    #tabGroup
+    class="editor-tabs"
+    [selectedIndex]="activeTabIndex"
+    (selectedTabChange)="tabClick($event)"
+    animationDuration="0ms"
+  >
+    <mat-tab id="1" label="{{ 'General' | translate }}">
+      <div *ngIf="blockLoaded">
+        <pep-checkbox
+          [value]="configuration.useLabel"
+          [label]="'Title' | translate"
+          [renderTitle]="false"
+          (valueChange)="onValueChanged('useLabel', $event)"
+        ></pep-checkbox>
+        <pep-textbox
+          [label]="'TitleText' | translate"
+          [type]="'text'"
+          [disabled]="!configuration.useLabel"
+          [(value)]="configuration.label"
+          (valueChange)="onValueChanged('Label', $event)"
+        ></pep-textbox>
+        <pep-group-buttons-settings
+          [groupType]="'horizontal-align'"
+          [subHeader]="'Alignment' | translate"
+          [disabled]="!configuration.useLabel"
+          [btnKey]="configuration?.horizontalAlign"
+          (btnkeyChange)="onFieldChange('horizontalAlign', $event)"
+        >
+        </pep-group-buttons-settings>
+        <h2>{{ "ChartDesign" | translate }}</h2>
+        <pep-select
+          [key]="'chartSelect'"
+          [label]="'ChartDesign' | translate"
+          [emptyOption]="false"
+          [value]="configuration.chart?.Key"
+          [xAlignment]="'left'"
+          [options]="chartsOptions"
+          (valueChange)="onValueChanged('Chart', $event)"
+        >
+        </pep-select>
+        <pep-textbox
+          [label]="'ChartHeight' | translate"
+          [type]="'decimal'"
+          [(value)]="configuration.height"
+          (valueChange)="onValueChanged('Height', $event)"
+        ></pep-textbox>
+        <div id="border">
+          <pep-checkbox
+            [value]="configuration?.useBorder"
+            [label]="'Border' | translate"
+            [renderTitle]="false"
+            (valueChange)="onFieldChange('useBorder', $event)"
+          ></pep-checkbox>
+          <pep-color
+            [value]="configuration?.border?.color"
+            [label]="'BorderColor' | translate"
+            [disabled]="!configuration?.useBorder"
+            xAlignment="left"
+            type="any"
+            [showTitle]="true"
+            [showAAComplient]="true"
+            (valueChange)="onFieldChange('border.color', $event)"
+          >
+          </pep-color>
+          <pep-slider
+            [label]="'BorderOpacity' | translate"
+            [hint]="configuration?.border?.opacity?.toString()"
+            [minValue]="0"
+            [maxValue]="100"
+            [disabled]="!configuration?.useBorder"
+            [value]="configuration?.border?.opacity"
+            [background]="getSliderBackground(configuration?.border?.color)"
+            (valueChange)="onFieldChange('border.opacity', $event)"
+          >
+          </pep-slider>
+        </div>
+        <div id="dropShadow">
+          <pep-checkbox
+            [value]="configuration?.useDropShadow"
+            [label]="'DropShadow' | translate"
+            [renderTitle]="false"
+            (valueChange)="onFieldChange('useDropShadow', $event)"
+          >
+          </pep-checkbox>
+          <label class="body-xs normal ellipsis">{{
+            "ShadowIntensity" | translate
+          }}</label>
+          <pep-group-buttons
+            [buttons]="DropShadowStyle"
+            [selectedButtonKey]="configuration?.dropShadow?.type"
+            buttonsClass="md regular"
+            [buttonsDisabled]="!configuration?.useDropShadow"
+            (buttonClick)="onFieldChange('dropShadow.type', $event)"
+            viewType="toggle"
+            stretch="true"
+          >
+          </pep-group-buttons>
+          <pep-slider
+            [label]="'ShadowIntensity' | translate"
+            [hint]="configuration?.dropShadow?.intensity?.toString()"
+            [background]="'RGBA(0,0,0,50%)'"
+            [minValue]="0"
+            [maxValue]="100"
+            [disabled]="!configuration?.useDropShadow"
+            [value]="configuration?.dropShadow?.intensity"
+            (valueChange)="onFieldChange('dropShadow.intensity', $event)"
+          >
+          </pep-slider>
+        </div>
+        <!-- <pep-select  [key]="'querySelect'" [label]="'Select a data query'" [value]="this._configuration.query?.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onValueChanged('Query',$event)">
         </pep-select> -->
+      </div>
 
-            </div>
+      <!-- <addon-pepperi-list-exmaple [type]="'Data'" [ID]='0' [isActive]="activeTabIndex === 0" [data]="activeTabIndex === 0 ? currentData : null"></addon-pepperi-list-exmaple> -->
+    </mat-tab>
+    <mat-tab id="2" label="{{ 'Content' | translate }}">
+      <label class="body-md ellipsis pull-left flip">{{
+        "Data query" | translate
+      }}</label>
+      <pep-select
+        [label]="'select a query from defined queries'"
+        [value]="selectedQuery"
+        [mandatory]="false"
+        [disabled]="false"
+        xAlignment="left"
+        [options]="queryOptions"
+        [showTitle]="true"
+        [emptyOption]="false"
+        (valueChange)="queryChanged($event)"
+      ></pep-select>
 
-            <!-- <addon-pepperi-list-exmaple [type]="'Data'" [ID]='0' [isActive]="activeTabIndex === 0" [data]="activeTabIndex === 0 ? currentData : null"></addon-pepperi-list-exmaple> -->
-        </mat-tab>
-        <mat-tab id="2" label="{{'Content' | translate}}">
-            <label class="body-md ellipsis pull-left flip">{{'Data query' | translate}}</label>
-            <pep-select
-                [label] = "'select a query from defined queries' | translate"
-                [value]="selectedQuery"
-                [mandatory]="false"
-                [disabled]="false"
-                xAlignment="left"
-                [options]="queryOptions"
-                [showTitle]="true"
-                [emptyOption]="false"
-                (valueChange)="queryChanged($event)"
-            ></pep-select>
-
-            <div *ngIf="this.inputVars?.length > 0" class="name1">
-                <label class="body-md ellipsis pull-left flip">{{'Variable mapping' | translate}}</label>
-                <div *ngFor="let currentVariable of this.inputVars;" fxLayout="row" fxLayoutGap="0.5rem">
-
-                    <pep-select fxFlex="50%"
-                        [label] = "currentVariable.Name"
-                        [value]="configuration?.variablesData[currentVariable.Name].source"
-                        [mandatory]="false"
-                        [disabled]="false"
-                        xAlignment="left"
-                        [options]="valueSourceOptions"
-                        [showTitle]="true"
-                        [emptyOption]="false"
-                        (valueChange)="variablesDataChanged($event,currentVariable.Name,'source')"
-                    ></pep-select>
-
-                    <pep-textbox fxFlex="50%"
-                        *ngIf="configuration?.variablesData[currentVariable.Name].source == 'Default'"
-                        [disabled]="true"
-                        [value]="currentVariable.DefaultValue"
-                        [type]="'text'"
-                    ></pep-textbox>
-
-                    <pep-textbox fxFlex="50%"
-                        *ngIf="configuration?.variablesData[currentVariable.Name].source == 'Static'"
-                        [disabled]="false"
-                        [value]="configuration?.variablesData[currentVariable.Name].value"
-                        [type]="'text'"
-                        (valueChange)="variablesDataChanged($event,currentVariable.Name,'value')"
-                    ></pep-textbox>
-
-                    <pep-select fxFlex="50%"
-                        *ngIf="configuration?.variablesData[currentVariable.Name].source == 'Variable'"
-                        [label] = "currentVariable.Name"
-                        [value]="configuration?.variablesData[currentVariable.Name].value"
-                        [mandatory]="false"
-                        [disabled]="false"
-                        xAlignment="left"
-                        [options]="pageParametersOptions"
-                        [showTitle]="false"
-                        [emptyOption]="false"
-                        (valueChange)="variablesDataChanged($event,currentVariable.Name,'value')"
-                    ></pep-select>
-
-                </div>
-            </div>
-
-        </mat-tab>
-        <!-- <mat-tab  id="3" label="{{'SetupTabHeader' | translate}}">
+      <addon-query-select
+        [inputVars]="inputVars"
+        [variablesData]="configuration?.variablesData"
+        [pageParametersOptions]="pageParametersOptions"
+        (variablesDataChange)="onVariablesDataChanged($event)"
+      ></addon-query-select>
+    </mat-tab>
+    <!-- <mat-tab  id="3" label="{{'SetupTabHeader' | translate}}">
             <addon-pepperi-list-exmaple [type]="'Setup'" [ID]='2' [isActive]="activeTabIndex === 2" [data]="activeTabIndex === 2 ? currentData : null"></addon-pepperi-list-exmaple>
         </mat-tab> -->
 
-        <!-- <mat-tab *ngFor="let tab of relationsData; let index = index" [label]="getRelationDataTabLabel(tab)">
+    <!-- <mat-tab *ngFor="let tab of relationsData; let index = index" [label]="getRelationDataTabLabel(tab)">
             <addon-pepperi-list-exmaple [type]="'Relation'" [ID]=index+3 [isActive]="activeTabIndex === index+3" [relationsData]="activeTabIndex === index+3 ? tab : null"></addon-pepperi-list-exmaple>
           </mat-tab> -->
-
-    </mat-tab-group>
+  </mat-tab-group>
 </div>

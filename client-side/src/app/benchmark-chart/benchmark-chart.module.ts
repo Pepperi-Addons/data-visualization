@@ -1,11 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
-import { PepAddonService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepCustomizationService } from '@pepperi-addons/ngx-lib';
 import { BenchmarkChartComponent } from './benchmark-chart.component';
-
 import { config } from '../addon.config';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { DataVisualizationService } from 'src/services/data-visualization.service';

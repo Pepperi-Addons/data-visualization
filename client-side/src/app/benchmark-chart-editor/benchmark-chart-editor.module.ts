@@ -2,7 +2,7 @@ import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } fr
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { PepAddonService, PepColorService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepColorService, PepCustomizationService, PepFileService, PepNgxLibModule } from '@pepperi-addons/ngx-lib';
 import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 import { PepSelectModule } from '@pepperi-addons/ngx-lib/select';
 import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
@@ -21,6 +21,7 @@ import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { SeriesEditorModule } from '../series-editor';
 import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
+import { QuerySelectModule } from '../common/query-select/query-select.module';
 
 const pepIcons = [
     pepIconSystemBin,
@@ -29,12 +30,14 @@ const pepIcons = [
 @NgModule({
     declarations: [BenchmarkChartEditorComponent],
     imports: [
+        CommonModule,
+        HttpClientModule,
+        PepNgxLibModule,
         PepSelectModule,
         PepTextboxModule,
         PepCheckboxModule,
         PepButtonModule,
         PepTopBarModule,
-        CommonModule,
         PepTextareaModule,
         PepSliderModule,
         PepGroupButtonsModule,
@@ -42,6 +45,7 @@ const pepIcons = [
         MatTabsModule,
         PepColorModule,
         SeriesEditorModule,
+        QuerySelectModule,
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,

@@ -1,6 +1,6 @@
 {
   "AddonUUID": "00000000-0000-0000-0000-0da1a0de41e5",
-  "AddonVersion": "0.6.118",
+  "AddonVersion": "0.6.125",
   "DebugPort": 4500,
   "WebappBaseUrl": "https://app.sandbox.pepperi.com",
   "DefaultEditor": "main",
@@ -16,7 +16,6 @@
     "ClientStack": "ng14",
     "Editors": [],
     "Dependencies": {
-      "papi_data_index": "1.0.1",
       "charts": "1.0.1",
       "pages": "0.7.120",
       "query_manager": "0.0.56"

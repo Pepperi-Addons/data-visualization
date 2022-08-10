@@ -1,5 +1,5 @@
 <div pep-main-area style="height: inherit">
-    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="100ms">
+    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="0ms">
         <mat-tab id="1" label="{{'General' | translate}}">
             <div>
                 <div id="border">
@@ -21,8 +21,11 @@
             </div>
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
+            <label class="body-md ellipsis pull-left flip">{{
+                "Data query" | translate
+            }}</label>
             <pep-select
-                [label] = "'Data query' | translate"
+                [label]="'select a query from defined queries'"
                 [value]="selectedQuery"
                 [mandatory]="false"
                 [disabled]="false"
@@ -32,6 +35,14 @@
                 [emptyOption]="false"
                 (valueChange)="queryChanged($event)"
             ></pep-select>
+
+            <addon-query-select
+                [inputVars]="inputVars"
+                [variablesData]="configuration?.variablesData"
+                [pageParametersOptions]="pageParametersOptions"
+                (variablesDataChange)="onVariablesDataChanged($event)"
+            ></addon-query-select>
+
         </mat-tab>
     </mat-tab-group>
 </div>

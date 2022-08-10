@@ -1,0 +1,46 @@
+
+            <div *ngIf="this.inputVars?.length > 0" class="name1">
+                <label class="body-md ellipsis pull-left flip">{{'Variable mapping' | translate}}</label>
+                <div *ngFor="let currentVariable of this.inputVars;" fxLayout="row" fxLayoutGap="0.5rem">
+                    <pep-select fxFlex="50%"
+                        [label] = "currentVariable.Name"
+                        [value]="variablesData[currentVariable.Name].source"
+                        [mandatory]="false"
+                        [disabled]="false"
+                        xAlignment="left"
+                        [options]="querySelectService.sourceOptions"
+                        [showTitle]="true"
+                        [emptyOption]="false"
+                        (valueChange)="onVariablesDataChanged($event,currentVariable.Name,'source')"
+                    ></pep-select>
+
+                    <pep-textbox fxFlex="50%"
+                        *ngIf="variablesData[currentVariable.Name].source == 'Default'"
+                        [disabled]="true"
+                        [value]="currentVariable.DefaultValue"
+                        [type]="'text'"
+                    ></pep-textbox>
+
+                    <pep-textbox fxFlex="50%"
+                        *ngIf="variablesData[currentVariable.Name].source == 'Static'"
+                        [disabled]="false"
+                        [value]="variablesData[currentVariable.Name].value"
+                        [type]="'text'"
+                        (valueChange)="onVariablesDataChanged($event,currentVariable.Name,'value')"
+                    ></pep-textbox>
+
+                    <pep-select fxFlex="50%"
+                        *ngIf="variablesData[currentVariable.Name].source == 'Variable'"
+                        [label] = "currentVariable.Name"
+                        [value]="variablesData[currentVariable.Name].value"
+                        [mandatory]="false"
+                        [disabled]="false"
+                        xAlignment="left"
+                        [options]="pageParametersOptions"
+                        [showTitle]="false"
+                        [emptyOption]="false"
+                        (valueChange)="onVariablesDataChanged($event,currentVariable.Name,'value')"
+                    ></pep-select>
+
+                </div>
+            </div>            

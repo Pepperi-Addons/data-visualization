@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { TranslateService } from "@ngx-translate/core";
 import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { PepButton } from "@pepperi-addons/ngx-lib/button";
+import { PageConfiguration } from "@pepperi-addons/papi-sdk";
 import { AddonService } from "src/services/addon.service";
 import { DataVisualizationService } from "src/services/data-visualization.service";
 import { Serie } from "../../../../server-side/models/data-query";
@@ -14,11 +15,6 @@ export abstract class BlockHelperService implements OnInit {
 
   @Input()
   set hostObject(value) {
-    this.pageParameters = value.pageParameters?.devBlocks.map(v => {return {key: v[0], value: v[1]}});
-    this.pageParametersOptions = []
-    for(const pp of this.pageParameters) {
-      this.pageParametersOptions.push({key: pp.key, value: pp.key})
-    }
     if (value && value.configuration) {
       this._configuration = value.configuration
     } else {
@@ -26,12 +22,20 @@ export abstract class BlockHelperService implements OnInit {
         this.loadDefaultConfiguration();
       }
     }
+    this.pageParameters = value?.pageParameters || {};
+    this.pageParametersOptions = []
+    Object.keys(this.pageParameters).forEach(paramKey => {
+      this.pageParametersOptions.push({key: paramKey, value: paramKey})
+    });
+    this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   protected _configuration: any;
   protected pageParameters: any;
-  protected pageParametersOptions = [];
+  private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
+  private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
+  pageParametersOptions = [];
   get configuration() {return this._configuration};
   label = false;
   activeTabIndex = 0;
@@ -45,12 +49,7 @@ export abstract class BlockHelperService implements OnInit {
   queryOptions = [];
   selectedQuery: string = ''
   inputVars;
-  valueSourceOptions = [
-    {key: 'Default', value: 'Default'},
-    {key: 'Static', value: 'Static'},
-    {key: 'Variable', value: 'Variable'}
-  ]
-  
+
 
   constructor(protected addonService: PepAddonService,
     public routeParams: ActivatedRoute,
@@ -79,16 +78,22 @@ export abstract class BlockHelperService implements OnInit {
       { key: 'Regular', value: this.translate.instant('Regular') }
     ];
 
-    (await this.getQueryOptions()).forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
-    const queryID = this.configuration?.query?.Key;
-    if (queryID) {
-      this._configuration.query = { Key: queryID };
-      this.selectedQuery = queryID;
-      this.inputVars = (await this.pluginService.getDataQueryByKey(queryID))[0].Variables;
-    }
-    this.blockLoaded = true;
-    this.updateHostObject();
-    this.hostEvents.emit({ action: 'block-editor-loaded' });
+    this.getQueryOptions().then(queries => {
+      queries.forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
+      const queryID = this.configuration?.query?.Key;
+      if (queryID) {
+        this.pluginService.getDataQueryByKey(queryID).then(queryData => {
+          if (queryData[0]) {
+            this._configuration.query = { Key: queryID };
+            this.selectedQuery = queryID;
+            this.inputVars = queryData[0].Variables;
+          }
+        })
+      }
+      this.blockLoaded = true;
+      this.updateHostObject();
+      this.hostEvents.emit({ action: 'block-editor-loaded' });
+    })
   }
 
   protected loadDefaultConfiguration() {
@@ -148,6 +153,7 @@ export abstract class BlockHelperService implements OnInit {
       this._configuration.variablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
     }
     this.updateHostObject();
+    this.updatePageConfigurationObject();
   }
 
   abstract getQueryOptions();
@@ -186,13 +192,47 @@ export abstract class BlockHelperService implements OnInit {
     this.updateHostObject();
   }
 
-  variablesDataChanged(e, varName, field) {
-    if(field=='source') {
-      this.configuration.variablesData[varName].source = e
-      this.configuration.variablesData[varName].value = null
-    } else {
-      this.configuration.variablesData[varName].value = e
+  variablesDataChanged(e, varName, field, isBenchmark) {
+    if(!isBenchmark) {
+      if(field=='source') {
+        this.configuration.variablesData[varName].source = e
+        this.configuration.variablesData[varName].value = null
+        if(e == 'Default') 
+          this.configuration.variablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
+      } else {
+        this.configuration.variablesData[varName].value = e
+        if(this.configuration.variablesData[varName].source == 'Variable') {
+          this.configuration.variablesData[varName].valueFromPage = this.pageParameters[e] ?? 'noParameter'
+        }
+      }
+    }
+    else {
+      if(field=='source') {
+        this.configuration.benchmarkVariablesData[varName].source = e
+        this.configuration.benchmarkVariablesData[varName].value = null
+        if(e == 'Default') 
+          this.configuration.variablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
+      } else {
+        this.configuration.benchmarkVariablesData[varName].value = e
+      }
     }
     this.updateHostObject();
   }
+
+  private updatePageConfigurationObject() {
+    //const params = this.getPageConfigurationParametersNames();
+    this._pageConfiguration = this.defaultPageConfiguration;
+
+    this._pageConfiguration.Parameters.push({
+        Key: 'AccountUUID',
+        Type: 'String',
+        Consume: true,
+        Produce: false
+    });
+
+    this.hostEvents.emit({
+        action: 'set-page-configuration',
+        pageConfiguration: this._pageConfiguration
+    });
+}
 }

@@ -69,18 +69,21 @@ export class AddonService {
         return this.papiClient.get(`/charts?where=Type='${chartType}'`);
     }
 
-    async fillChartsOptions(configuration, chartsOptions, type) {
+    async fillChartsOptions(chartsOptions, type) {
         const charts = await this.getChartsByType(type)
         const sortedCharts = charts.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
-        if (!configuration.chart) {
-            // set the first chart to be default
-            const firstChart = sortedCharts[0];
-            configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
-        }
         sortedCharts.forEach(chart => {
             chartsOptions.push({ key: chart.Key, value: chart.Name });
         });
         return sortedCharts;
-        
+    }
+
+    variableDatasEqual(varDatas1, varDatas2) {
+        for (const varName in varDatas1) {
+            if(!varDatas2[varName].value) return true
+            if (varDatas1[varName].value == varDatas2[varName].value) continue;
+            return false;
+        }
+        return true;
     }
 }
