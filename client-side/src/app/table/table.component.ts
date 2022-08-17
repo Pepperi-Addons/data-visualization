@@ -21,6 +21,7 @@ export class TableComponent implements OnInit {
   dataObjects: any[] = []
   dataSet;
   listDataSource: GenericListDataSource;
+  parameters;
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   private _configuration: BaseConfiguration;
@@ -30,6 +31,8 @@ export class TableComponent implements OnInit {
 
   @Input('hostObject')
   set hostObject(value) {
+    this.parameters = value.parameters;
+    console.log("AccountUUID from page = " + this.parameters?.AccountUUID)
     if (value.configuration?.query?.Key) {
       if(this.drawRequired(value))
         this.drawList(value.configuration);
@@ -38,9 +41,7 @@ export class TableComponent implements OnInit {
   }
 
   constructor(private translate: TranslateService,
-    private addonService: PepAddonService,
     private pluginService: AddonService,
-    private dataConvertorService: PepDataConvertorService,
     public loaderService: PepLoaderService,
     public dataVisualizationService: DataVisualizationService) {
   }
@@ -88,10 +89,7 @@ export class TableComponent implements OnInit {
     this.loaderService.show();
     this.dataSet = [];
     // sending variable names and values as body
-    let values = {}
-    for(const varName in configuration.variablesData) {
-        values[varName] = configuration.variablesData[varName].value
-    }
+    let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = {"VariableValues" : values} ?? {}
     this.pluginService.executeQuery(configuration.query.Key, body).then((data) => {
       try {

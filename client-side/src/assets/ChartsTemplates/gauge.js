@@ -14,7 +14,7 @@
 
 /**
  * This is the class the embedder will use to render the chart
- * In this file we will use a chart from apexcharts
+ * In this file, a chart from apexcharts is used
  */
 export default class MyChart {
 
@@ -39,7 +39,7 @@ export default class MyChart {
         const canvas = element.querySelector('#canvas');
 
         // retrieve the chart configuration
-        const conf = this.getConfiguration(configuration);
+        const conf = this.getConfiguration(canvas, configuration);
 
         // create a chart element on the canvas with the configuration
         this.chart = new ApexCharts(canvas, conf);
@@ -106,19 +106,23 @@ export default class MyChart {
     /**
      * This function returns a chart configuration object.
      */
-    getConfiguration(configuration) {
+    getConfiguration(canvas, configuration) {
 		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
-		const fontFamilyBody = $('.font-family-body').css("font-family") || "Inter-Regular";
+		const fontFamily = getComputedStyle(canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
 		const title = configuration.Title || '';
+		// set the height to the canvas height (or to min value for hidden canvas) (setting the chart height to 100% throws errors in the console log)
+		const height = canvas.clientHeight>0 ?  canvas.clientHeight+68 : '240';
+		const width = canvas.clientWidth>0 ?  canvas.clientWidth : '300';
+		
         return {
             chart: {
                 type: 'radialBar',
-                height: 240,
-                //width: 300,
+                height: height,
+                width: width,
 				sparkline: {
 					enabled: true
 				},
-				fontFamily: fontFamilyBody
+				fontFamily: fontFamily
             },
 			plotOptions: {
 				radialBar: {
@@ -148,7 +152,7 @@ export default class MyChart {
 				style: {
 					fontSize: '28px',
 					fontWeight: 'bold',
-					fontFamily: fontFamilyBody
+					fontFamily: fontFamily
 				}
 			},
 			title: {
@@ -160,7 +164,7 @@ export default class MyChart {
 				style: {
 					fontSize: '14px',
 					fontWeight: 'normal',
-					fontFamily: fontFamilyBody
+					fontFamily: fontFamily
 				}
 			},
 			stroke: {

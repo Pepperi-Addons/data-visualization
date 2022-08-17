@@ -14,7 +14,7 @@
 
 /**
  * This is the class the embedder will use to render the chart
- * In this file we will use a chart from apexcharts
+ * In this file, a chart from apexcharts is used
  */
 export default class MyChart {
 
@@ -39,7 +39,7 @@ export default class MyChart {
         const canvas = element.querySelector('#canvas');
 
         // retrieve the chart configuration
-        const conf = this.getConfiguration();
+        const conf = this.getConfiguration(canvas, configuration);
 
         // create a chart element on the canvas with the configuration
         this.chart = new ApexCharts(canvas, conf);
@@ -52,12 +52,15 @@ export default class MyChart {
      */
     update() {
 		// if there is no benchmark data, then create empty object
-		if (this.data.BenchmarkQueries.length==0) {
+		if (!this.data.BenchmarkQueries || this.data.BenchmarkQueries.length==0) {
 			this.data.BenchmarkQueries = [{
 				Name: '',
 				Groups: [],
 				Series: []
 			}]
+		}
+		if (!this.data.BenchmarkSet) {
+			this.data.BenchmarkSet = [];
 		}
 		
         const groups = this.data.DataQueries.map((data) => data.Groups).flat();
@@ -81,6 +84,7 @@ export default class MyChart {
         const dataSet = this.data.DataSet;
 		const benchmarkSet = this.data.BenchmarkSet;
 
+		let total = 0;
         let ser = [];
 		let actualSer = [];
 		let benchmarkSer = [];
@@ -88,7 +92,7 @@ export default class MyChart {
         if (uniqueGroups.length > 0) {
             actualSer = uniqueSeries.map(seriesName => {
                 return {
-					"type": "bar",
+					"type": "area",
                     "name": seriesName,
                     "data": uniqueGroups.map(groupName => {
                         return [
@@ -125,11 +129,15 @@ export default class MyChart {
 				}
 			});
 			ser = actualSer.concat(benchmarkSer);
+			// calculate the total
+			for (let ds of dataSet) {
+				total += ds[uniqueSeries[0]] || 0;
+			}
         } else {
            	// the data has no group by -> show the Series in the y-axis
 			const flattened = uniqueSeries.map(seriesName => dataSet[0][seriesName]);
 			actualSer = [{
-				"type": "bar",
+				"type": "area",
 				"data": flattened
 			}];
 			// add the benchmark group series
@@ -141,51 +149,36 @@ export default class MyChart {
 				}];
 			}
 			ser = actualSer.concat(benchmarkSer);
+			// calculate the total
+			total = flattened.reduce((a, b) => a + b, 0);
 			
             this.chart.updateOptions({
                 labels: uniqueSeries
             });
-            // set the colors to be distributed
-            this.chart.updateOptions({
-                plotOptions: {
-                    bar: {
-            //            distributed: true
-                    }
-                }
-            });
-            // hide the legend (since the series name is on the x axis)
-            this.chart.updateOptions({
-                legend: {
-                    show: false
-                }
-            });
         }
-
-		// hide the data labels if there are too many labels
-		const showLabels = ser.length * ser[0].data.length < 30;
+		
+		// round the value 
+		let valueMsg = '';
+		if (total >= 10 ** 9) {
+			valueMsg = (Math.trunc(total / 100000)/10).toLocaleString() + ' M';
+		} else if (total >= 10 ** 6) {
+			valueMsg = (Math.trunc(total / 100)/10).toLocaleString() + ' K';
+		} else if (total >= 10 ** 3) {
+			valueMsg = Math.trunc(total).toLocaleString();
+		} else {
+			valueMsg = total.toLocaleString();
+		}
+		
+		// update the subtitle text with the total
 		this.chart.updateOptions({
-			dataLabels: {
-				enabled: showLabels
+			subtitle: {
+				text: valueMsg
 			}
 		});
 		
         // update the chart data
         this.chart.updateSeries(ser);
-		
-		// calculate the optimal column width (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
-		// 20: minimum should be close to 20 (when only one item)
-		// 20+60: maximum should be close 80
-		// 10 and 2: the a and b from the function
-		const seriesLength = ser.reduce((sum, curr) => sum + (curr.data.length ||0),0);
-		const optimalPercent = 20 + (60 / (1 + 10*Math.exp(-seriesLength /2)));
-        this.chart.updateOptions({
-            plotOptions: {
-				bar: {
-					columnWidth: optimalPercent + "%"
-				}
-			}
-        });
-		
+	
 		// update the initial message to be seen if there is no data
 		this.chart.updateOptions({
             noData: {
@@ -198,87 +191,66 @@ export default class MyChart {
      * This function returns an html which will be created in the embedder.
      */
     getHTML() {
-        return `<div id="canvas" style="height: 100%;"></div>`;
+        return `<div id="canvas" style="height: 11rem"></div>`;
     }
 
     /**
      * This function returns a chart configuration object.
      */
-    getConfiguration() {
+    getConfiguration(canvas, configuration) {
 		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
-		const fontFamily = $('.font-family-body').css("font-family") || '"Segoe UI", "Helvetica Neue", sans-serif';
+		const fontFamily = getComputedStyle(canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
+		const title = configuration.Title || '';
+		// set the height to the canvas height (or to min value for hidden canvas) (setting the chart height to 100% throws errors in the console log)
+		const height = canvas.clientHeight>0 ?  canvas.clientHeight : '172';
+		
         return {
             chart: {
                 type: 'line',
-                height: "100%",
-                width: "100%",
-                toolbar: {
-                    show: true
-                },
-				fontFamily: fontFamily
+                height: height,
+                width: '100%',
+				fontFamily: fontFamily,
+				sparkline: {
+					enabled: true
+				}
             },
-			colors: colors,
 			fill: {
-				type: "solid",
-				opacity: 1
+				opacity: 0.3
 			},
-            plotOptions: {
-                bar: {
-                    horizontal: false,
-                    dataLabels: {
-                        position: 'top',
-                    },
-                    borderRadius: 4
-                }
-            },
-            legend: {
-                horizontalAlign: 'left',
-                onItemClick: {
-                    toggleDataSeries: true
-                },
-                labels: {
-                    useSeriesColors: true
-                }
-            },
-			xaxis:{
-				hideOverlappingLabels:true
-			},
-			yaxis:{
-				labels: {
-					formatter: function (value) {
-						let val = value;
-						if (val >= 10 ** 6) {
-							val = Math.trunc(val / 1000000) + ' M';
-						} else if (val >= 10 ** 3) {
-							val = Math.trunc(val / 1000) + ' K';
-						} 
-						return val;
-					}
+			colors: colors,
+			subtitle: {
+				floating: true,
+				text: '',
+				align: 'center',
+				//offsetX: 6,
+				offsetY: 38,
+				style: {
+					fontSize: '28px',
+					fontWeight: 'bold',
+					fontFamily: fontFamily
 				}
 			},
-            dataLabels: {
-				formatter: function (value, opt) {
-					let val = value;
-					if (val >= 10 ** 6) {
-						val = Math.trunc(val / 100000)/10 + ' M';
-						//val = (val / 1000000).toFixed(1) + ' M';
-					} else if (val >= 10 ** 3) {
-						val = Math.trunc(val / 100)/10 + ' K';
-						//val = (val / 1000).toFixed(1) + ' K';
-					} else if (val >= 1) {
-						val = Math.trunc(val*10)/10;
-						//val = Math.floor(val);
-					} else if (val == null) {
-						val = '';
-					}
-					return val;
-				},
-                style: {
-            //        colors: ['#000000']
-                },
-                offsetY: -10,
-				enabledOnSeries: [0]
-            },
+			title: {
+				floating: true,
+				text: title,
+				align: 'center',
+				//offsetX: 6,
+				offsetY: 16,
+				style: {
+					fontSize: '14px',
+					fontWeight: 'normal',
+					fontFamily: fontFamily
+				}
+			},
+			grid: {
+				padding: {
+					top: 70
+				}
+			},
+			stroke: {
+				lineCap: 'round',
+				width: 6
+			},
 			tooltip: {
 				y: {
 					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {

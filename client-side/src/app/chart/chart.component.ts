@@ -15,12 +15,16 @@ import { PepLoaderService } from '@pepperi-addons/ngx-lib';
 export class ChartComponent implements OnInit {
   @Input("hostObject")
   set hostObject(value) {
+    console.log("AccountUUID from page = " + value.parameters?.AccountUUID)
     if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
-      if (this.drawRequired(value)) 
+      if (this.drawRequired(value) || this.parameters?.AccountUUID!=value.parameters?.AccountUUID) {
+        this.parameters = value.parameters;
         this.drawChart(value.configuration);
+      }
     } else {
       this.deleteChart();
     }
+    this.parameters = value.parameters;
     this._configuration = value?.configuration;
   }
 
@@ -33,6 +37,7 @@ export class ChartComponent implements OnInit {
   chartInstance: any;
   isLibraryAlreadyLoaded = {};
   oldDefine: any;
+  parameters;
 
   constructor(
     private pluginService: AddonService,
@@ -49,10 +54,7 @@ export class ChartComponent implements OnInit {
   drawChart(configuration: any) {
     this.loaderService.show();
     // sending variable names and values as body
-    let values = {};
-    for (const varName in configuration.variablesData) {
-      values[varName] = (configuration.variablesData[varName].source == 'Variable') ? configuration.variablesData[varName].valueFromPage : configuration.variablesData[varName].value;
-    }
+    let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
     this.pluginService
       .executeQuery(configuration.query.Key, body)
@@ -62,7 +64,7 @@ export class ChartComponent implements OnInit {
             const configuration = {
               label: "Sales",
             };
-            this.loadSrcJSFiles(res.deps)
+            this.dataVisualizationService.loadSrcJSFiles(res.deps)
               .then(() => {
                 this.chartInstance = new res.default(
                   this.divView.nativeElement,
@@ -84,39 +86,6 @@ export class ChartComponent implements OnInit {
       .catch((err) => {
         this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query.Key} , error: ${err}`;
       });
-  }
-
-  loadSrcJSFiles(imports) {
-    let promises = [];
-
-    imports.forEach((src) => {
-      promises.push(
-        new Promise<void>((resolve) => {
-          this.isLibraryAlreadyLoaded[src] = false;
-          if (!this.isLibraryAlreadyLoaded[src]) {
-            let _oldDefine = window["define"];
-            this.oldDefine = _oldDefine;
-            //this.lockObject = true;
-            window["define"] = null;
-
-            const node = document.createElement("script");
-            node.src = src;
-            node.id = src;
-            node.onload = (script) => {
-              window["define"] = _oldDefine;
-              this.isLibraryAlreadyLoaded[src] = true;
-              console.log(`${src} loaded`);
-              resolve();
-            };
-            node.onerror = (script) => {};
-            document.getElementsByTagName("head")[0].appendChild(node);
-          } else {
-            resolve();
-          }
-        })
-      );
-    });
-    return Promise.all(promises);
   }
 
   getGalleryBorder() {

@@ -87,4 +87,48 @@ export class DataVisualizationService {
         }
     }
 
+    loadSrcJSFiles(imports) {
+        let promises = [];
+        let isLibraryAlreadyLoaded = {}
+        imports.forEach(src => {
+            promises.push(new Promise<void>((resolve) => {
+                isLibraryAlreadyLoaded[src] = false;
+                if (!isLibraryAlreadyLoaded[src]) {
+                    let _oldDefine = window['define'];
+                    //this.lockObject = true;
+                    window['define'] = null;
+
+                    const node = document.createElement('script');
+                    node.src = src;
+                    node.id = src;
+                    node.onload = (script) => {
+                        window['define'] = _oldDefine;
+                        isLibraryAlreadyLoaded[src] = true;
+                        console.log(`${src} loaded`)
+                        resolve()
+                    };
+                    node.onerror = (script) => {
+                    };
+                    document.getElementsByTagName('head')[0].appendChild(node);
+                }
+                else {
+                    resolve();
+                }
+            }));
+        });
+        return Promise.all(promises);
+    }
+
+    buildVariableValues(variablesData, parameters) {
+        let values = {}
+        for(const varName in variablesData) {
+            const varData = variablesData[varName];
+            if(varData.source == 'Variable') {
+                values[varName] = (parameters && parameters[varData.value]) ? parameters[varData.value] : '0';
+            } else {
+                values[varName] = varData.value;
+            }
+        }
+        return values;
+    }
 }

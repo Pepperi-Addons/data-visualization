@@ -14,7 +14,7 @@
 
 /**
  * This is the class the embedder will use to render the chart
- * In this file we will use a chart from apexcharts
+ * In this file, a chart from apexcharts is used
  */
 export default class MyChart {
 
@@ -65,7 +65,11 @@ export default class MyChart {
 				}
 			} else {
 				// single query - show the value
-				if (total1 >= 10 ** 3) {
+				if (total1 >= 10 ** 9) {
+					valueMsg = (Math.trunc(total1 / 100000)/10).toLocaleString() + ' M';
+				} else if (total1 >= 10 ** 6) {
+					valueMsg = (Math.trunc(total1 / 100)/10).toLocaleString() + ' K';
+				} else if (total1 >= 10 ** 3) {
 					valueMsg = Math.trunc(total1).toLocaleString();
 				} else {
 					valueMsg = total1.toLocaleString();
