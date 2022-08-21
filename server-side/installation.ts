@@ -9,7 +9,7 @@ The error Message is importent! it will be written in the audit log and help the
 */
 
 import { Client, Request } from '@pepperi-addons/debug-server'
-import { charts } from './meta-data';
+import { chartBlockScheme, charts, DimxChartImportRelation } from './meta-data';
 import { PapiClient, Relation } from '@pepperi-addons/papi-sdk'
 import MyService from './my.service';
 import semver from 'semver';
@@ -22,11 +22,13 @@ export async function install(client: Client, request: Request): Promise<any> {
         addonSecretKey: client.AddonSecretKey
     });
 
-    const res = await setPageBlockRelations(client);
+    const res = await setPageBlockAndDimxRelations(client);
 
     const res2 = await setUsageMonitorRelation(client);
 
     const res3 = await upsertCharts(client,request, new MyService(client), charts);
+
+    const res4 = await createBlockSchemes(client);
 
     let resultObject = {
         pageBlockRelation:res,
@@ -60,9 +62,9 @@ export async function upgrade(client: Client, request: Request): Promise<any> {
     // why do we need this relation?
     const res2 = await setUsageMonitorRelation(client);
 
-    if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.54') < 0) 
+    if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.78') < 0) 
 	{
-		throw new Error('Upgarding from versions earlier than 0.6.54 is not supported. Please uninstall the addon and install it again.');
+		throw new Error('Upgarding from versions earlier than 0.6.78 is not supported. Please uninstall the addon and install it again.');
 	}
 
 	return { success: true, resultObject: {} }
@@ -73,29 +75,30 @@ export async function downgrade(client: Client, request: Request): Promise<any> 
     return {success:true,resultObject:{}}
 }
 
-async function setPageBlockRelations(client){
+async function setPageBlockAndDimxRelations(client){
     try {
         let blockName = 'Chart';
 
         const pageComponentRelation: Relation = {
             RelationName: "PageBlock",
-            Name: blockName, 
-            Description: `Chart`, 
+            Name: "ChartBlock", 
+            Description: "Chart",
             Type: "NgComponent",
             SubType: "NG11",
             AddonUUID: client.AddonUUID,
-            AddonRelativeURL: 'chart', 
+            AddonRelativeURL: 'chart',
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
             EditorModuleName: `${blockName}EditorModule`
         };
+
         blockName = 'Scorecards';
-     
+
         const scorecardsComponentRelation: Relation = {
             RelationName: "PageBlock",
             Name: blockName,
-            Description: `Scorecards`, 
+            Description: `Scorecards`,
             Type: "NgComponent",
             SubType: "NG11",
             AddonUUID: client.AddonUUID,
@@ -107,7 +110,7 @@ async function setPageBlockRelations(client){
         };
 
         blockName = 'Table';
-     
+
         const tableComponentRelation: Relation = {
             RelationName: "PageBlock",
             Name: blockName, 
@@ -144,6 +147,7 @@ async function setPageBlockRelations(client){
         await service.upsertRelation(scorecardsComponentRelation);
         await service.upsertRelation(tableComponentRelation);
         await service.upsertRelation(benchmarkChartComponentRelation);
+        await service.upsertRelation(DimxChartImportRelation);
 
         return { success:true, resultObject: null };
     } catch(err) {
@@ -203,4 +207,14 @@ function handleException(err) {
         errorMessage: errorMessage,
         resultObject: {}
     };
+}
+
+async function createBlockSchemes(client: Client) {
+    try {
+        const service = new MyService(client)
+        await service.papiClient.addons.data.schemes.post(chartBlockScheme);
+        return { success: true, resultObject: null };
+    } catch(err) {
+        return { success: false, resultObject: err };
+    }
 }

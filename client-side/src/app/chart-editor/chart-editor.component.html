@@ -34,7 +34,7 @@
           [key]="'chartSelect'"
           [label]="'ChartDesign' | translate"
           [emptyOption]="false"
-          [value]="configuration.chart?.Key"
+          [value]="configuration.chart"
           [xAlignment]="'left'"
           [options]="chartsOptions"
           (valueChange)="onValueChanged('Chart', $event)"
@@ -109,11 +109,8 @@
           >
           </pep-slider>
         </div>
-        <!-- <pep-select  [key]="'querySelect'" [label]="'Select a data query'" [value]="this._configuration.query?.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onValueChanged('Query',$event)">
-        </pep-select> -->
       </div>
 
-      <!-- <addon-pepperi-list-exmaple [type]="'Data'" [ID]='0' [isActive]="activeTabIndex === 0" [data]="activeTabIndex === 0 ? currentData : null"></addon-pepperi-list-exmaple> -->
     </mat-tab>
     <mat-tab id="2" label="{{ 'Content' | translate }}">
       <label class="body-md ellipsis pull-left flip">{{

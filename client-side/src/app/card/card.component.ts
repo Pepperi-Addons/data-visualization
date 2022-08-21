@@ -34,7 +34,7 @@ export class CardComponent implements OnInit {
 
     ngOnInit(): void {
         this.boxShadow = this.scorecardsConfig?.useDropShadow === true ? this.dataVisualizationService.getCardShadow(this.scorecardsConfig?.dropShadow?.intensity / 100, this.scorecardsConfig?.dropShadow?.type) : 'unset';
-        if (this.card?.chart?.Key && this.card?.query?.Key)
+        if (this.card?.chart && this.card?.query)
             this.drawScorecard(this.card)
     }
 
@@ -45,9 +45,9 @@ export class CardComponent implements OnInit {
       let benchmarkValues = this.dataVisualizationService.buildVariableValues(card.benchmarkVariablesData, this.parameters);
       const body = { VariableValues: values } ?? {};
       const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
-        await this.pluginService.executeQuery(card.query.Key, body).then(async (data) => {
-          await this.pluginService.executeQuery(card.secondQuery?.Key, benchmarkBody).then(async (benchmarkData) => {
-            await System.import(card.chart.ScriptURI).then(async (res) => {
+        await this.pluginService.executeQuery(card.query, body).then(async (data) => {
+          await this.pluginService.executeQuery(card.secondQuery, benchmarkBody).then(async (benchmarkData) => {
+            await System.import(card.chartCache).then(async (res) => {
               const configuration = {
                   Title: card.title
               }
@@ -67,10 +67,10 @@ export class CardComponent implements OnInit {
                 this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
               })
             }).catch(err => {
-                this.divView.nativeElement.innerHTML = `Failed to load chart file: ${card.chart?.ScriptURI}, error: ${err}`;
+                this.divView.nativeElement.innerHTML = `Failed to load chart file: ${card.chartCache}, error: ${err}`;
             });
           }).catch((err) => {
-            this.divView.nativeElement.innerHTML = `Failed to execute query: ${card.query?.Key} , error: ${err}`;;
+            this.divView.nativeElement.innerHTML = `Failed to execute query: ${card.query} , error: ${err}`;;
           })
         })
       }

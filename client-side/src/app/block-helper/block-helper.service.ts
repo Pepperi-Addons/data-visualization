@@ -75,11 +75,11 @@ export abstract class BlockHelperService implements OnInit {
 
     this.getQueryOptions().then(queries => {
       queries.forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
-      const queryID = this.configuration?.query?.Key;
+      const queryID = this.configuration?.query;
       if (queryID) {
         this.pluginService.getDataQueryByKey(queryID).then(queryData => {
           if (queryData[0]) {
-            this._configuration.query = { Key: queryID };
+            this._configuration.query = queryID;
             this.selectedQuery = queryID;
             this.inputVars = queryData[0].Variables;
           }
@@ -142,7 +142,7 @@ export abstract class BlockHelperService implements OnInit {
 
   async queryChanged(e) {
     this.selectedQuery = e;
-    this._configuration.query = { Key: e };
+    this._configuration.query = e;
     this.inputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
     this._configuration.variablesData = {}
     for(let v of this.inputVars) {
@@ -158,10 +158,12 @@ export abstract class BlockHelperService implements OnInit {
         case 'Chart':
             if (event) {
                 const selectedChart = this.charts.filter(c => c.Key == event)[0];
-                this._configuration.chart = {Key: selectedChart.Key, ScriptURI: selectedChart.ScriptURI};
+                this._configuration.chart = selectedChart.Key;
+                this._configuration.chartCache = selectedChart.ScriptURI;
             }
             else {
                 this._configuration.chart = null;
+                this._configuration.chartCache = null;
             }
             break;
 

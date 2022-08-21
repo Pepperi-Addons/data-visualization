@@ -30,7 +30,7 @@
     },
     "dependencies": {
         "@pepperi-addons/debug-server": "*",
-        "@pepperi-addons/papi-sdk": "^1.29.1",
+        "@pepperi-addons/papi-sdk": "^1.39.9",
         "@pepperi-addons/pepperi-filters": "^1.0.10",
         "@pepperi-addons/system-addon-utils": "^1.0.4",
         "elastic-builder": "^2.16.0",

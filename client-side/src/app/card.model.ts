@@ -61,6 +61,6 @@ export class ICardEditor {
     benchmarkVariablesData;
     secondQuery;
     imageURL: string = "";
-    // linkTo: string = "";
     script: any;
+    chartCache: any;
 }

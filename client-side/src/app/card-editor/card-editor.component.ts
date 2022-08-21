@@ -57,7 +57,7 @@ export class CardEditorComponent implements OnInit {
                 this.benchmarkQueryOptions.push({key: q.Key, value: q.Name})
             });
         })
-        const queryID = this.configuration?.cards[this.id].query?.Key;
+        const queryID = this.configuration?.cards[this.id].query;
         if (queryID) {
             this.pluginService.getDataQueryByKey(queryID).then(queryData => {
                 if (queryData[0]) {
@@ -66,7 +66,7 @@ export class CardEditorComponent implements OnInit {
                 }
               })
         }
-        const secondQueryID = this.configuration?.cards[this.id].secondQuery?.Key;
+        const secondQueryID = this.configuration?.cards[this.id].secondQuery;
         if (secondQueryID) {
             this.pluginService.getDataQueryByKey(secondQueryID).then(secondQueryData => {
                 if(secondQueryData[0]) {
@@ -75,13 +75,14 @@ export class CardEditorComponent implements OnInit {
                 }
             })
         }
-        const chartID = this.configuration?.cards[this.id].chart?.Key;
+        const chartID = this.configuration?.cards[this.id].chart;
         if (chartID) {
             this.selectedDesign = chartID;
         } else {
             // set the first chart to be default
             const firstChart = this.charts[0];
-            this.configuration.cards[this.id].chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+            this.configuration.cards[this.id].chart = firstChart.Key;
+            this.configuration.cards[this.id].chartCache = firstChart.ScriptURI;
             this.selectedDesign = firstChart.Key;
         }
         this.updateHostObject();
@@ -134,7 +135,7 @@ export class CardEditorComponent implements OnInit {
 
     async queryChanged(e) {
         this.selectedQuery = e;
-        this.configuration.cards[this.id].query = { Key: e };
+        this.configuration.cards[this.id].query = e;
         this.inputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
         this.configuration.cards[this.id].variablesData = {}
         for(let v of this.inputVars) {
@@ -145,7 +146,7 @@ export class CardEditorComponent implements OnInit {
 
     async secondQueryChanged(e) {
         this.selectedBenchmarkQuery = e;
-        this.configuration.cards[this.id].secondQuery = { Key: e };
+        this.configuration.cards[this.id].secondQuery = e;
         this.benchmarkInputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
         this.configuration.cards[this.id].benchmarkVariablesData = {}
         for(let v of this.benchmarkInputVars) {
@@ -157,7 +158,9 @@ export class CardEditorComponent implements OnInit {
     designChanged(e){
         this.selectedDesign = e;
         const selectedChart = this.charts.filter(c => c.Key == e)[0];
-        this.configuration.cards[this.id].chart = {Key: selectedChart.Key, ScriptURI: selectedChart.ScriptURI};
+        this.configuration.cards[this.id].chart = selectedChart.Key;
+        this.configuration.cards[this.id].chartCache = selectedChart.ScriptURI;
+
         this.updateHostObject();
     }
 
@@ -170,6 +173,8 @@ export class CardEditorComponent implements OnInit {
           if(field=='source') {
             this.configuration.cards[this.id].variablesData[varName].source = e
             this.configuration.cards[this.id].variablesData[varName].value = null
+            if(e == 'Default')
+            this.configuration.cards[this.id].variablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
           } else {
             this.configuration.cards[this.id].variablesData[varName].value = e
           }
@@ -178,6 +183,8 @@ export class CardEditorComponent implements OnInit {
           if(field=='source') {
             this.configuration.cards[this.id].benchmarkVariablesData[varName].source = e
             this.configuration.cards[this.id].benchmarkVariablesData[varName].value = null
+            if(e == 'Default') 
+            this.configuration.cards[this.id].benchmarkVariablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
           } else {
             this.configuration.cards[this.id].benchmarkVariablesData[varName].value = e
           }

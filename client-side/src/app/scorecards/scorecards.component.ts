@@ -16,7 +16,7 @@ export class ScorecardsComponent implements OnInit {
 
   @Input('hostObject')
   set hostObject(value) {
-      this.parameters = value.parameters;
+      this.parameters = value.pageParameters;
       console.log("AccountUUID from page = " + this.parameters?.AccountUUID);
       this._configuration = value?.configuration;
   }

@@ -17,15 +17,17 @@ export class BenchmarkChartComponent implements OnInit {
 
     @Input('hostObject')
     set hostObject(value) {
-        this.parameters = value.parameters;
-        console.log("AccountUUID from page = " + this.parameters?.AccountUUID)
-        if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
-            if(this.drawRequired(value))
+        console.log("AccountUUID from page = " + value.pageParameters?.AccountUUID)
+        if (value.configuration?.chart && value.configuration?.query) {
+            if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
+                this.parameters = value.pageParameters;
                 this.drawChart(value.configuration);
+            }
         }
         else {
             this.deleteChart();
         }
+        this.parameters = value.pageParameters;
         this._configuration = value?.configuration;
     }
 
@@ -61,9 +63,9 @@ export class BenchmarkChartComponent implements OnInit {
         let benchmarkValues = this.dataVisualizationService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
         const body = { VariableValues: values } ?? {};
         const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
-        this.pluginService.executeQuery(configuration.query.Key, body).then((firstQueryData) => {
-            this.pluginService.executeQuery(configuration.secondQuery?.Key, benchmarkBody).then((secondQueryData) => {
-                System.import(configuration.chart.ScriptURI).then((res) => {
+        this.pluginService.executeQuery(configuration.query, body).then((firstQueryData) => {
+            this.pluginService.executeQuery(configuration.secondQuery, benchmarkBody).then((secondQueryData) => {
+                System.import(configuration.chartCache).then((res) => {
                     const configuration = {
                         label: 'Sales'
                     }
@@ -83,13 +85,13 @@ export class BenchmarkChartComponent implements OnInit {
                         this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
                     })
                 }).catch(err => {
-                    this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chart.ScriptURI}, error: ${err}`;
+                    this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
                 });
             }).catch((err) => {
-                this.divView.nativeElement.innerHTML = `Failed to execute second query: ${configuration.secondQuery.Key} , error: ${err}`;;
+                this.divView.nativeElement.innerHTML = `Failed to execute second query: ${configuration.secondQuery} , error: ${err}`;;
             })
         }).catch((err) => {
-            this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query.Key} , error: ${err}`;;
+            this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;;
         })
 
     }
@@ -111,9 +113,9 @@ export class BenchmarkChartComponent implements OnInit {
 
     drawRequired(value) {
     return (
-      this.configuration?.query?.Key != value.configuration.query?.Key ||
-      this.configuration?.chart?.Key != value.configuration.chart?.Key ||
-      this.configuration?.secondQuery?.Key != value.configuration.secondQuery?.Key ||
+      this.configuration?.query != value.configuration.query ||
+      this.configuration?.chart != value.configuration.chart ||
+      this.configuration?.secondQuery != value.configuration.secondQuery ||
       !this.pluginService.variableDatasEqual(this.configuration?.variablesData, value.configuration.variablesData) ||
       !this.pluginService.variableDatasEqual(this.configuration?.benchmarkVariablesData, value.configuration.benchmarkVariablesData)
     );
