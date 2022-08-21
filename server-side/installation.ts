@@ -59,7 +59,7 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
-    const res = await setPageBlockRelations(client);
+    const res = await setPageBlockAndDimxRelations(client);
     // why do we need this relation?
     const res2 = await setUsageMonitorRelation(client);
 
