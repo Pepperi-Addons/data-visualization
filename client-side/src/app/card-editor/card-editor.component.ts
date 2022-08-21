@@ -174,7 +174,7 @@ export class CardEditorComponent implements OnInit {
             this.configuration.cards[this.id].variablesData[varName].source = e
             this.configuration.cards[this.id].variablesData[varName].value = null
             if(e == 'Default')
-            this.configuration.cards[this.id].variablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
+            this.configuration.cards[this.id].variablesData[varName].value = this.getDefaultValue(varName);
           } else {
             this.configuration.cards[this.id].variablesData[varName].value = e
           }
@@ -184,12 +184,16 @@ export class CardEditorComponent implements OnInit {
             this.configuration.cards[this.id].benchmarkVariablesData[varName].source = e
             this.configuration.cards[this.id].benchmarkVariablesData[varName].value = null
             if(e == 'Default') 
-            this.configuration.cards[this.id].benchmarkVariablesData[varName].value = this.inputVars.filter(v => v.Name == varName)[0].DefaultValue
+            this.configuration.cards[this.id].benchmarkVariablesData[varName].value = this.getDefaultValue(varName);
           } else {
             this.configuration.cards[this.id].benchmarkVariablesData[varName].value = e
           }
         }
         this.updateHostObject();
+    }
+
+    getDefaultValue(varName) {
+        return this.inputVars.filter(v => v.Name == varName)[0].DefaultValue;
     }
 
     onVariablesDataChanged(data: any) {
