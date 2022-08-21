@@ -33,10 +33,8 @@ import {PepQueryBuilderModule} from '@pepperi-addons/ngx-lib/query-builder'
     PepTextboxModule,
     PepCheckboxModule,
     PepButtonModule,
-    CommonModule,
     PepTextareaModule,
     PepGroupButtonsModule,
-    CommonModule,
     PepDialogModule,
     PepFieldTitleModule,
     PepIconModule,
@@ -46,9 +44,9 @@ import {PepQueryBuilderModule} from '@pepperi-addons/ngx-lib/query-builder'
     TranslateModule.forChild({
       loader: {
           provide: TranslateLoader,
-          useFactory: (addonService: PepAddonService) =>
-              PepAddonService.createMultiTranslateLoader(addonService, ['ngx-lib','ngx-composite-lib'], config.AddonUUID),
-          deps: [PepAddonService],
+          useFactory: (addonService: PepAddonService) => 
+              PepAddonService.createMultiTranslateLoader(config.AddonUUID, addonService, ['ngx-lib', 'ngx-composite-lib']),
+          deps: [PepAddonService]
       }, isolate: false
   }),
   ],

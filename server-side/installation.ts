@@ -59,6 +59,7 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
+    const res = await setPageBlockRelations(client);
     // why do we need this relation?
     const res2 = await setUsageMonitorRelation(client);
 
@@ -84,13 +85,16 @@ async function setPageBlockAndDimxRelations(client){
             Name: "ChartBlock", 
             Description: "Chart",
             Type: "NgComponent",
-            SubType: "NG11",
+            SubType: "NG14",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'chart',
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`
+            EditorModuleName: `${blockName}EditorModule`,
+            ElementsModule: 'WebComponents',
+            ElementName: `chart-element-${client.AddonUUID}`,
+            EditorElementName: `chart-editor-element-${client.AddonUUID}`,
         };
 
         blockName = 'Scorecards';
@@ -100,13 +104,16 @@ async function setPageBlockAndDimxRelations(client){
             Name: blockName,
             Description: `Scorecards`,
             Type: "NgComponent",
-            SubType: "NG11",
+            SubType: "NG14",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'scorecards', 
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`
+            EditorModuleName: `${blockName}EditorModule`,
+            ElementsModule: 'WebComponents',
+            ElementName: `scorecards-element-${client.AddonUUID}`,
+            EditorElementName: `scorecards-editor-element-${client.AddonUUID}`,
         };
 
         blockName = 'Table';
@@ -116,13 +123,16 @@ async function setPageBlockAndDimxRelations(client){
             Name: blockName, 
             Description: `Table`,
             Type: "NgComponent",
-            SubType: "NG11",
+            SubType: "NG14",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'table', 
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`
+            EditorModuleName: `${blockName}EditorModule`,
+            ElementsModule: 'WebComponents',
+            ElementName: `table-element-${client.AddonUUID}`,
+            EditorElementName: `table-editor-element-${client.AddonUUID}`,
         };
 
         blockName = 'BenchmarkChart';
@@ -132,13 +142,16 @@ async function setPageBlockAndDimxRelations(client){
             Name: blockName, 
             Description: `BenchmarkChart`,
             Type: "NgComponent",
-            SubType: "NG11",
+            SubType: "NG14",
             AddonUUID: client.AddonUUID,
             AddonRelativeURL: 'benchmark_chart', 
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`
+            EditorModuleName: `${blockName}EditorModule`,
+            ElementsModule: 'WebComponents',
+            ElementName: `benchmark-chart-element-${client.AddonUUID}`,
+            EditorElementName: `benchmark-chart-editor-element-${client.AddonUUID}`,
         };
 
 

@@ -1,6 +1,6 @@
 {
   "AddonUUID": "00000000-0000-0000-0000-0da1a0de41e5",
-  "AddonVersion": "0.6.78",
+  "AddonVersion": "0.6.128",
   "DebugPort": 4500,
   "WebappBaseUrl": "https://app.sandbox.pepperi.com",
   "DefaultEditor": "main",
@@ -12,16 +12,12 @@
   "Editors": [
     "main"
   ],
-  "Assets": [
-    "en.json",
-    "en.ngx-lib.json"
-  ],
   "PublishConfig": {
-    "ClientStack": "ng10",
+    "ClientStack": "ng14",
     "Editors": [],
     "Dependencies": {
       "charts": "1.0.1",
-      "pages": "0.0.100",
+      "pages": "0.7.120",
       "query_manager": "0.0.56"
     },
     "CPISide": []

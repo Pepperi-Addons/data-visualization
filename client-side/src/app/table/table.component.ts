@@ -49,7 +49,6 @@ export class TableComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.hostEvents.emit({ action: 'block-loaded' });
   }
 
   private getListDataSource(fields): GenericListDataSource {

@@ -2,7 +2,7 @@ import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } fr
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { PepAddonService, PepColorService, PepCustomizationService, PepFileService } from '@pepperi-addons/ngx-lib';
+import { PepAddonService, PepColorService, PepCustomizationService, PepFileService, PepNgxLibModule } from '@pepperi-addons/ngx-lib';
 import { PepButtonModule } from '@pepperi-addons/ngx-lib/button';
 import { PepSelectModule } from '@pepperi-addons/ngx-lib/select';
 import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
@@ -30,12 +30,14 @@ const pepIcons = [
 @NgModule({
     declarations: [BenchmarkChartEditorComponent],
     imports: [
+        CommonModule,
+        HttpClientModule,
+        PepNgxLibModule,
         PepSelectModule,
         PepTextboxModule,
         PepCheckboxModule,
         PepButtonModule,
         PepTopBarModule,
-        CommonModule,
         PepTextareaModule,
         PepSliderModule,
         PepGroupButtonsModule,
@@ -47,9 +49,9 @@ const pepIcons = [
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
-                useFactory: (addonService: PepAddonService) =>
-                    PepAddonService.createMultiTranslateLoader(addonService, ['ngx-lib','ngx-composite-lib'], config.AddonUUID),
-                deps: [PepAddonService],
+                useFactory: (addonService: PepAddonService) => 
+                    PepAddonService.createMultiTranslateLoader(config.AddonUUID, addonService, ['ngx-lib', 'ngx-composite-lib']),
+                deps: [PepAddonService]
             }, isolate: false
         }),
     ],

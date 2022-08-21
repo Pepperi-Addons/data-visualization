@@ -4,7 +4,7 @@
     class="editor-tabs"
     [selectedIndex]="activeTabIndex"
     (selectedTabChange)="tabClick($event)"
-    animationDuration="100ms"
+    animationDuration="0ms"
   >
     <mat-tab id="1" label="{{ 'General' | translate }}">
       <div *ngIf="blockLoaded">

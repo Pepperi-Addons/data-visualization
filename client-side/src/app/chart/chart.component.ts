@@ -46,7 +46,7 @@ export class ChartComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.hostEvents.emit({ action: "block-loaded" });
+    // debugger;
   }
 
   ngOnChanges(e: any): void {}

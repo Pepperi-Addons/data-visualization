@@ -1,5 +1,5 @@
 <div pep-main-area style="height: inherit">
-    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" animationDuration="100ms">
+    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" animationDuration="0ms">
         <mat-tab id="1" label="{{'General' | translate}}">
             <div *ngIf="blockLoaded">
                 <div id="border">
@@ -13,9 +13,9 @@
                     <pep-checkbox [value]="configuration?.scorecardsConfig.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
                     </pep-checkbox>
                     <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
-                    <pep-group-buttons [buttons]="SlideDropShadowStyle" [selectedButtonKey]=" this.configuration?.scorecardsConfig.dropShadow?.type" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
+                    <pep-group-buttons [buttons]="DropShadowStyle" [selectedButtonKey]=" this.configuration?.scorecardsConfig.dropShadow?.type" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
                     </pep-group-buttons>
-                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useDropShadow" [value]="configuration?.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
+                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.scorecardsConfig.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.scorecardsConfig.useDropShadow" [value]="configuration?.scorecardsConfig.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
                     </pep-slider>
                 </div>
             </div>
@@ -27,8 +27,9 @@
                 <card-editor *ngFor="let currentCard of configuration?.cards;"
                     [id]="currentCard?.id" [charts]="charts" [chartsOptions]="chartsOptions" [pageParametersOptions]="pageParametersOptions" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
                     [isDraggable]="true" (editClick)='onCardEditClick($event);' (removeClick)='onCardRemoveClick($event);'
-                    [configuration]="configuration" [pageParameters]="pageParameters"
+                    [configuration]="configuration"
                     cdkDrag [cdkDragDisabled]="currentCard?.id == configuration?.scorecardsConfig?.editSlideIndex" style="cursor: grab;" (cdkDragStarted)="onDragStart($event)" (cdkDragEnded)="onDragEnd($event)">
+                    <!-- NOT IN USE [pageParameters]="pageParameters" -->
                 </card-editor>
             </div>
             <pep-button class="add-content-button" value="{{ 'Add' | translate}}" styleType="regular" iconName="number_plus" iconPosition="end"

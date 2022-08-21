@@ -50,7 +50,6 @@ export class BenchmarkChartComponent implements OnInit {
         ) { }
 
     ngOnInit(): void {
-        this.hostEvents.emit({ action: 'block-loaded' });
     }
 
     ngOnChanges(e: any): void {

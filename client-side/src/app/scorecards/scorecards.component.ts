@@ -34,7 +34,6 @@ export class ScorecardsComponent implements OnInit {
   parameters;
 
   async ngOnInit() {
-    this.hostEvents.emit({ action: 'block-loaded' });
   }
 
 }

@@ -17,9 +17,9 @@ import { MatDialog } from '@angular/material/dialog';
         TranslateModule.forChild({
             loader: {
                 provide: TranslateLoader,
-                useFactory: (addonService: PepAddonService) =>
-                    PepAddonService.createMultiTranslateLoader(addonService, ['ngx-lib','ngx-composite-lib'], config.AddonUUID),
-                deps: [PepAddonService],
+                useFactory: (addonService: PepAddonService) => 
+                    PepAddonService.createMultiTranslateLoader(config.AddonUUID, addonService, ['ngx-lib', 'ngx-composite-lib']),
+                deps: [PepAddonService]
             }, isolate: false
         }),
     ],
