@@ -44,13 +44,10 @@ export class ScorecardsEditorComponent implements OnInit {
 
         this.pageParameters = value?.pageParameters || {};
         this.pageParametersOptions = []
-        Object.keys(this.pageParameters).forEach(paramKey => {
-        this.pageParametersOptions.push({key: paramKey, value: paramKey})
-        });
-        this.pageParametersOptions.push({key: "Account", value: "Account"})
-
-        // this._pageParameters = value?.pageParameters || {};
-        // this._pageConfiguration = value?.pageConfiguration || this.defaultPageConfiguration;
+        // Object.keys(this.pageParameters).forEach(paramKey => {
+        // this.pageParametersOptions.push({key: paramKey, value: paramKey})
+        // });
+        this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
     }
 
     activeTabIndex = 0;

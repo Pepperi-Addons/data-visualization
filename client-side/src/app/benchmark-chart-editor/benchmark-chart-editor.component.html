@@ -11,7 +11,7 @@
                 </pep-group-buttons-settings>
                 <h2>{{'ChartDesign' | translate}}
                 </h2>
-                <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="configuration.chart?.Key" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">
+                <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="configuration.chart" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">
                 </pep-select>
                 <pep-textbox [label]="'ChartHeight' | translate" [type]="'decimal'" [(value)]="configuration.height" (valueChange)="onValueChanged('Height', $event)"></pep-textbox>
                 <div id="border">
@@ -30,12 +30,8 @@
                     <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useDropShadow" [value]="configuration?.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
                     </pep-slider>
                 </div>
-                <!-- <pep-select  [key]="'querySelect'" [label]="'Select a data query'" [value]="this._configuration.query?.Key" [xAlignment]="'left'" [options]='queriesOptions' (valueChange)="onValueChanged('Query',$event)">
-        </pep-select> -->
-
             </div>
 
-            <!-- <addon-pepperi-list-exmaple [type]="'Data'" [ID]='0' [isActive]="activeTabIndex === 0" [data]="activeTabIndex === 0 ? currentData : null"></addon-pepperi-list-exmaple> -->
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
             <label class="body-md ellipsis pull-left flip">{{

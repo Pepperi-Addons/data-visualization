@@ -33,7 +33,9 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
             if (!this.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = res[0];
-                this.configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+                this.configuration.chart = firstChart.Key;
+                this.configuration.chartCache = firstChart.ScriptURI;
+
             }
             super.ngOnInit();
         })

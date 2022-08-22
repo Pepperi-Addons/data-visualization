@@ -15,16 +15,16 @@ import { PepLoaderService } from '@pepperi-addons/ngx-lib';
 export class ChartComponent implements OnInit {
   @Input("hostObject")
   set hostObject(value) {
-    console.log("AccountUUID from page = " + value.parameters?.AccountUUID)
-    if (value.configuration?.chart?.Key && value.configuration?.query?.Key) {
-      if (this.drawRequired(value) || this.parameters?.AccountUUID!=value.parameters?.AccountUUID) {
-        this.parameters = value.parameters;
+    console.log("AccountUUID from page = " + value.pageParameters?.AccountUUID)
+    if (value.configuration?.chart && value.configuration?.query) {
+      if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
+        this.parameters = value.pageParameters;
         this.drawChart(value.configuration);
       }
     } else {
       this.deleteChart();
     }
-    this.parameters = value.parameters;
+    this.parameters = value.pageParameters;
     this._configuration = value?.configuration;
   }
 
@@ -57,9 +57,9 @@ export class ChartComponent implements OnInit {
     let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
     this.pluginService
-      .executeQuery(configuration.query.Key, body)
+      .executeQuery(configuration.query, body)
       .then((data) => {
-        System.import(configuration.chart.ScriptURI)
+        System.import(configuration.chartCache)
           .then((res) => {
             const configuration = {
               label: "Sales",
@@ -80,11 +80,11 @@ export class ChartComponent implements OnInit {
               });
           })
           .catch((err) => {
-            this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chart.ScriptURI}, error: ${err}`;
+            this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
           });
       })
       .catch((err) => {
-        this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query.Key} , error: ${err}`;
+        this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
       });
   }
 
@@ -103,8 +103,8 @@ export class ChartComponent implements OnInit {
 
   drawRequired(value) {
     return (
-      this.configuration?.query?.Key != value.configuration.query?.Key ||
-      this.configuration?.chart?.Key != value.configuration.chart?.Key ||
+      this.configuration?.query != value.configuration.query ||
+      this.configuration?.chart != value.configuration.chart ||
       !this.pluginService.variableDatasEqual(
         this.configuration?.variablesData,
         value.configuration.variablesData
