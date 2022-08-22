@@ -66,11 +66,11 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
 
     async secondQueryChanged(e) {
         this.selectedBenchmarkQuery = e;
-        this._configuration.secondQuery = { Key: e };
+        this.configuration.secondQuery = { Key: e };
         this.benchmarkInputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
-        this._configuration.benchmarkVariablesData = {}
+        this.configuration.benchmarkVariablesData = {}
         for(let v of this.benchmarkInputVars) {
-            this._configuration.benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
+            this.configuration.benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
         }
         this.updateHostObject();
     }

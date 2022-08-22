@@ -1,5 +1,5 @@
 import { TranslateService } from '@ngx-translate/core';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
 import { AddonService } from '../../services/addon.service';
@@ -13,29 +13,54 @@ import { BlockHelperService } from '../block-helper/block-helper.service';
     styleUrls: ['./chart-editor.component.scss']
 })
 
-export class ChartEditorComponent extends BlockHelperService implements OnInit {    
+export class ChartEditorComponent implements OnInit {    
+    @Input()
+    set hostObject(value) {
+        if (value && value.configuration) {
+            this.blockHelperService.configuration = value.configuration
+        } else {
+            if (this.blockHelperService.blockLoaded) {
+                this.loadDefaultConfiguration();
+            }
+        }
+        this.blockHelperService.pageParametersOptions = []
+        this.blockHelperService.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
+    }
+
+    @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
+
     constructor(protected addonService: PepAddonService,
         public routeParams: ActivatedRoute,
         public router: Router,
         public route: ActivatedRoute,
         protected translate: TranslateService,
         protected dataVisualizationService: DataVisualizationService,
-        public pluginService: AddonService) {
-        super(addonService,routeParams,router,route,translate,dataVisualizationService,pluginService);
+        public pluginService: AddonService,
+        protected blockHelperService: BlockHelperService) {
+        // super(addonService,routeParams,router,route,translate,dataVisualizationService,pluginService);
+    }
+
+    private loadDefaultConfiguration() {
+        this.blockHelperService.configuration = this.getDefaultHostObject();
+        this.blockHelperService.updateHostObject(this.hostEvents);
     }
 
     async ngOnInit(): Promise<void> {
-        if (!this.configuration || Object.keys(this.configuration).length == 0) {
+
+        if (!this.blockHelperService.configuration || Object.keys(this.blockHelperService.configuration).length == 0) {
             this.loadDefaultConfiguration();
         };
-        this.pluginService.fillChartsOptions(this.chartsOptions,'Chart').then(res => {           
-            this.charts = res;
-            if (!this.configuration.chart) {
+
+        this.pluginService.fillChartsOptions(this.blockHelperService.chartsOptions,'Chart').then(res => {           
+            this.blockHelperService.charts = res;
+            if (!this.blockHelperService.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = res[0];
-                this.configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+                this.blockHelperService.configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
             }
-            super.ngOnInit();
+
+            this.blockHelperService.initData(this.hostEvents, this.getQueryOptions);
+            
         })
     }
 
@@ -48,6 +73,6 @@ export class ChartEditorComponent extends BlockHelperService implements OnInit {
     }
 
     onVariablesDataChanged(data: any) {
-        this.variablesDataChanged(data.event, data.name, data.field, false);
+        this.blockHelperService.variablesDataChanged(data.event, data.name, data.field, false, this.hostEvents);
     }
 }
