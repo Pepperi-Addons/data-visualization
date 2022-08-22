@@ -172,7 +172,7 @@ export class BlockHelperService {
 
   async queryChanged(e, hostEvents: EventEmitter<any>) {
     this.selectedQuery = e;
-    this.configuration.query = { Key: e };
+    this.configuration.query = e;
     this.inputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
     this.configuration.variablesData = {}
     for(let v of this.inputVars) {
@@ -188,10 +188,12 @@ export class BlockHelperService {
         case 'Chart':
             if (event) {
                 const selectedChart = this.charts.filter(c => c.Key == event)[0];
-                this.configuration.chart = {Key: selectedChart.Key, ScriptURI: selectedChart.ScriptURI};
+                this.configuration.chart = selectedChart.Key;
+                this.configuration.chartCache = selectedChart.ScriptURI;
             }
             else {
                 this.configuration.chart = null;
+                this.configuration.chartCache = null;
             }
             break;
 

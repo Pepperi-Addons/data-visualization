@@ -56,7 +56,8 @@ export class ChartEditorComponent implements OnInit {
             if (!this.blockHelperService.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = res[0];
-                this.blockHelperService.configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+                this.blockHelperService.configuration.chart = firstChart.Key;
+                this.blockHelperService.configuration.chartCache = firstChart.ScriptURI;
             }
 
             this.blockHelperService.initData(this.hostEvents, this.getQueryOptions);

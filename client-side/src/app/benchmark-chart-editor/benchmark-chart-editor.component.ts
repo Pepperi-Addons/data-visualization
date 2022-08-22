@@ -38,14 +38,15 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
             if (!this.configuration.chart) {
                 // set the first chart to be default
                 const firstChart = res[0];
-                this.configuration.chart = {Key: firstChart.Key, ScriptURI: firstChart.ScriptURI};
+                this.configuration.chart = firstChart.Key;
+                this.configuration.chartCache = firstChart.ScriptURI;
             }
             super.ngOnInit();
         })
         this.getQueryOptions().then( benchmarkQueries => {
             benchmarkQueries.forEach(q => this.benchmarkQueryOptions.push({key: q.Key, value: q.Name}));
         })
-        const secondQueryID = this.configuration?.secondQuery?.Key;
+        const secondQueryID = this.configuration?.secondQuery;
         if (secondQueryID) {
             this.pluginService.getDataQueryByKey(secondQueryID).then(secondQueryData => {
                 if(secondQueryData[0]) {
@@ -66,7 +67,7 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
 
     async secondQueryChanged(e) {
         this.selectedBenchmarkQuery = e;
-        this.configuration.secondQuery = { Key: e };
+        this._configuration.secondQuery = e;
         this.benchmarkInputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
         this.configuration.benchmarkVariablesData = {}
         for(let v of this.benchmarkInputVars) {

@@ -25,13 +25,19 @@ class MyService {
 
     getCharts(chartsNames) {
         var namesString = "("
-        for(var name of chartsNames){
+        for(var name of chartsNames) {
             namesString+= `"`+name+`",`;
         }
         namesString = namesString.substring(0,namesString.length-1)
         namesString+= ")"
-        
         return this.papiClient.get(`/charts?where=Name in ${namesString}`)
+    }
+
+    async fixImportedData(body) {
+        let configurationToFix = body.Object;
+        const importedChart = await this.papiClient.get(`/charts?where=Key=${configurationToFix.chart}`);
+        configurationToFix.chartCache = importedChart.ScriptURI;
+        return configurationToFix;
     }
 }
 

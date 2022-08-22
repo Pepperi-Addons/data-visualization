@@ -126,7 +126,7 @@ export class DataVisualizationService {
             if(varData.source == 'Variable') {
                 values[varName] = (parameters && parameters[varData.value]) ? parameters[varData.value] : '0';
             } else {
-                values[varName] = varData.value;
+                values[varName] = varData.value ?? '0';
             }
         }
         return values;

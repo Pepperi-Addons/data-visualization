@@ -1,5 +1,6 @@
+import { AddonDataScheme, Relation } from '@pepperi-addons/papi-sdk'
 import {Chart} from './models/chart'
-
+import config from '../addon.config.json';
 
 export const charts: Chart[] = [
     {
@@ -123,4 +124,30 @@ export const charts: Chart[] = [
         System: true
     }
 ]
+
+export const chartBlockScheme: AddonDataScheme = {
+    Name: "ChartBlock",
+    Type: 'data',
+    Fields: {
+        chart: {
+            Type: "Resource",
+            Resource: "Charts",
+            AddonUUID: "3d118baf-f576-4cdb-a81e-c2cc9af4d7ad"
+        },
+        query: {
+            Type: "Resource",
+            Resource: "DataQueries",
+            AddonUUID: "c7544a9d-7908-40f9-9814-78dc9c03ae77"
+        }
+    },
+}
+
+export const DimxChartImportRelation: Relation = {
+    AddonUUID: config.AddonUUID,
+    Name: 'Chart',
+    RelationName: 'DataImportResource',
+    Type: 'AddonAPI',
+    Description: 'relation for importing chart blocks',
+    FixRelativeURL: '/api/fix_imported_data'
+}
 

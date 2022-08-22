@@ -31,12 +31,14 @@ export class TableComponent implements OnInit {
 
   @Input('hostObject')
   set hostObject(value) {
-    this.parameters = value.parameters;
     console.log("AccountUUID from page = " + this.parameters?.AccountUUID)
-    if (value.configuration?.query?.Key) {
-      if(this.drawRequired(value))
+    if (value.configuration?.query) {
+      if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
+        this.parameters = value.pageParameters;
         this.drawList(value.configuration);
+      }
     }
+    this.parameters = value.pageParameters;
     this._configuration = value?.configuration;
   }
 
@@ -91,7 +93,7 @@ export class TableComponent implements OnInit {
     // sending variable names and values as body
     let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = {"VariableValues" : values} ?? {}
-    this.pluginService.executeQuery(configuration.query.Key, body).then((data) => {
+    this.pluginService.executeQuery(configuration.query, body).then((data) => {
       try {
         // flat the series & groups
         const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
@@ -153,7 +155,7 @@ export class TableComponent implements OnInit {
 
   drawRequired(value) {
     return (
-      this.configuration?.query?.Key != value.configuration.query?.Key ||
+      this.configuration?.query != value.configuration.query ||
       !this.pluginService.variableDatasEqual(
         this.configuration?.variablesData,
         value.configuration.variablesData
