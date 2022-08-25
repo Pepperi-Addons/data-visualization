@@ -8,30 +8,30 @@ import { AddonService } from "src/services/addon.service";
 import { DataVisualizationService } from "src/services/data-visualization.service";
 import { Serie } from "../../../../server-side/models/data-query";
 import { Overlay } from "../models/overlay ";
-
+import { config } from '../addon.config';
 
 @Injectable()
-export abstract class BlockHelperService implements OnInit {
+export class BlockHelperService {
 
-  @Input()
-  set hostObject(value) {
-    if (value && value.configuration) {
-      this._configuration = value.configuration
-    } else {
-      if (this.blockLoaded) {
-        this.loadDefaultConfiguration();
-      }
-    }
-    this.pageParametersOptions = []
-    this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
-  }
+  // @Input()
+  // set hostObject(value) {
+  //   if (value && value.configuration) {
+  //     this._configuration = value.configuration
+  //   } else {
+  //     if (this.blockLoaded) {
+  //       this.loadDefaultConfiguration();
+  //     }
+  //   }
+  //   this.pageParametersOptions = []
+  //   this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
+  // }
 
-  @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
-  protected _configuration: any;
+  // @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
+  public configuration: any;
   private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
   private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
   pageParametersOptions = [];
-  get configuration() {return this._configuration};
+  
   label = false;
   activeTabIndex = 0;
   charts: any;
@@ -42,69 +42,106 @@ export abstract class BlockHelperService implements OnInit {
   DropShadowStyle: Array<PepButton> = [];
   PepSizes: Array<PepButton> = [];
   queryOptions = [];
-  selectedQuery: string = ''
+  benchmarkQueryOptions = [];
   inputVars;
+  benchmarkInputVars;
 
-
-  constructor(protected addonService: PepAddonService,
-    public routeParams: ActivatedRoute,
-    public router: Router,
-    public route: ActivatedRoute,
+  constructor(
     protected translate: TranslateService,
     protected dataVisualizationService: DataVisualizationService,
     public pluginService: AddonService) {
-    this.pluginService.addonUUID = this.routeParams.snapshot.params['addon_uuid'];
+    this.pluginService.addonUUID = config.AddonUUID;
   }
 
-  async ngOnInit()  {
-    if (!this.configuration || Object.keys(this.configuration).length == 0) {
-      this.loadDefaultConfiguration();
-    };
-
-    this.PepSizes = [
-      { key: 'sm', value: this.translate.instant('SM') },
-      { key: 'md', value: this.translate.instant('MD') },
-      { key: 'lg', value: this.translate.instant('LG') },
-      { key: 'xl', value: this.translate.instant('XL') }
-    ];
-
-    this.DropShadowStyle = [
-      { key: 'Soft', value: this.translate.instant('Soft') },
-      { key: 'Regular', value: this.translate.instant('Regular') }
-    ];
-
-    this.getQueryOptions().then(queries => {
-      queries.forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
-      const queryID = this.configuration?.query;
-      if (queryID) {
-        this.pluginService.getDataQueryByKey(queryID).then(queryData => {
-          if (queryData[0]) {
-            this._configuration.query = queryID;
-            this.selectedQuery = queryID;
-            this.inputVars = queryData[0].Variables;
-          }
+  initData(hostEvents: EventEmitter<any>) {
+      this.PepSizes = [
+          { key: 'sm', value: this.translate.instant('SM') },
+          { key: 'md', value: this.translate.instant('MD') },
+          { key: 'lg', value: this.translate.instant('LG') },
+          { key: 'xl', value: this.translate.instant('XL') }
+      ];
+      this.DropShadowStyle = [
+          { key: 'Soft', value: this.translate.instant('Soft') },
+          { key: 'Regular', value: this.translate.instant('Regular') }
+      ];
+      
+      this.pluginService.getAllQueries().then(queries => {
+        queries.forEach(q => {
+          this.queryOptions.push({key: q.Key, value: q.Name});
+          this.benchmarkQueryOptions.push({key: q.Key, value: q.Name})
         })
-      }
-      this.blockLoaded = true;
-      this.updatePageConfigurationObject();
-      this.updateHostObject();
-      this.hostEvents.emit({ action: 'block-editor-loaded' });
-    })
+
+        const queryID = this.configuration?.query;
+        if (queryID) {
+          this.pluginService.getDataQueryByKey(queryID).then(queryData => {
+            if (queryData[0]) {
+              this.inputVars = queryData[0].Variables;
+            }
+          })
+        }
+        const secondQueryID = this.configuration?.secondQuery;
+        if (secondQueryID) {
+            this.pluginService.getDataQueryByKey(secondQueryID).then(secondQueryData => {
+                if(secondQueryData[0]) {
+                    this.benchmarkInputVars = secondQueryData[0].Variables;
+                }
+            })
+        }
+        this.blockLoaded = true;
+        this.updatePageConfigurationObject(hostEvents);
+        this.updateHostObject(hostEvents);
+        // this.hostEvents.emit({ action: 'block-editor-loaded' });
+      })
   }
 
-  protected loadDefaultConfiguration() {
-    this._configuration = this.getDefaultHostObject();
-    this.updateHostObject();
-  }
+  // async ngOnInit()  {
+    // if (!this.configuration || Object.keys(this.configuration).length == 0) {
+    //   this.loadDefaultConfiguration();
+    // };
+
+    // this.PepSizes = [
+    //   { key: 'sm', value: this.translate.instant('SM') },
+    //   { key: 'md', value: this.translate.instant('MD') },
+    //   { key: 'lg', value: this.translate.instant('LG') },
+    //   { key: 'xl', value: this.translate.instant('XL') }
+    // ];
+
+    // this.DropShadowStyle = [
+    //   { key: 'Soft', value: this.translate.instant('Soft') },
+    //   { key: 'Regular', value: this.translate.instant('Regular') }
+    // ];
+
+    // this.getQueryOptions().then(queries => {
+    //   queries.forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
+    //   const queryID = this.configuration?.query?.Key;
+    //   if (queryID) {
+    //     this.pluginService.getDataQueryByKey(queryID).then(queryData => {
+    //       if (queryData[0]) {
+    //         this.configuration.query = { Key: queryID };
+    //         this.inputVars = queryData[0].Variables;
+    //       }
+    //     })
+    //   }
+    //   this.blockLoaded = true;
+    //   this.updatePageConfigurationObject();
+    //   this.updateHostObject();
+    //   this.hostEvents.emit({ action: 'block-editor-loaded' });
+    // })
+  // }
+
+  // public loadDefaultConfiguration() {
+  //   this.configuration = this.getDefaultHostObject();
+  //   this.updateHostObject();
+  // }
 
   // need to be overriden
-  protected abstract getDefaultHostObject();
+  // protected abstract getDefaultHostObject();
 
   onEditClick() {
   }
 
-  updateHostObject() {
-    this.hostEvents.emit({
+  updateHostObject(hostEvents: EventEmitter<any>) {
+    hostEvents.emit({
         action: 'set-configuration',
         configuration: this.configuration,
     });
@@ -113,17 +150,17 @@ export abstract class BlockHelperService implements OnInit {
   tabClick(event) {
   }
 
-  onFieldChange(key, event) {
+  onFieldChange(key, event, hostEvents: EventEmitter<any>) {
     const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value : event;
 
     if (key.indexOf('.') > -1) {
         let keyObj = key.split('.');
-        this._configuration[keyObj[0]][keyObj[1]] = value;
+        this.configuration[keyObj[0]][keyObj[1]] = value;
     }
     else {
-        this._configuration[key] = value;
+        this.configuration[key] = value;
     }
-    this.updateHostObject();
+    this.updateHostObject(hostEvents);
   }
 
   getSliderBackground(color) {
@@ -140,56 +177,65 @@ export abstract class BlockHelperService implements OnInit {
     return 'linear-gradient(to ' + alignTo + ', ' + gradStr + ')';
   }
 
-  async queryChanged(e) {
-    this.selectedQuery = e;
-    this._configuration.query = e;
+  async queryChanged(e, hostEvents: EventEmitter<any>) {
+    this.configuration.query = e;
     this.inputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
-    this._configuration.variablesData = {}
+    this.configuration.variablesData = {}
     for(let v of this.inputVars) {
-      this._configuration.variablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
+      this.configuration.variablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
     }
-    this.updateHostObject();
+    this.updateHostObject(hostEvents);
   }
 
-  abstract getQueryOptions();
+  async secondQueryChanged(e, hostEvents: EventEmitter<any>) {
+    this.configuration.secondQuery = e;
+    this.benchmarkInputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
+    this.configuration.benchmarkVariablesData = {}
+    for(let v of this.benchmarkInputVars) {
+        this.configuration.benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
+    }
+    this.updateHostObject(hostEvents);
+}
 
-  onValueChanged(type, event) {
+  // abstract getQueryOptions();
+
+  onValueChanged(type, event, hostEvents: EventEmitter<any>) {
     switch (type) {
         case 'Chart':
             if (event) {
                 const selectedChart = this.charts.filter(c => c.Key == event)[0];
-                this._configuration.chart = selectedChart.Key;
-                this._configuration.chartCache = selectedChart.ScriptURI;
+                this.configuration.chart = selectedChart.Key;
+                this.configuration.chartCache = selectedChart.ScriptURI;
             }
             else {
-                this._configuration.chart = null;
-                this._configuration.chartCache = null;
+                this.configuration.chart = null;
+                this.configuration.chartCache = null;
             }
             break;
 
         case 'Label':
-            this._configuration.label = event;
+            this.configuration.label = event;
             break;
 
         case 'useLabel':
-            this._configuration.useLabel=event;
+            this.configuration.useLabel=event;
             if(!event)
-                this._configuration.label="";
+                this.configuration.label="";
             break;
 
         case 'Height':
             if(event == ""){
-                this._configuration.height = 22; //default value
+                this.configuration.height = 22; //default value
             }
             else
-                this._configuration.height = event;
+                this.configuration.height = event;
 
             break;
     }
-    this.updateHostObject();
+    this.updateHostObject(hostEvents);
   }
 
-  variablesDataChanged(e, varName, field, isBenchmark) {
+  variablesDataChanged(e, varName, field, isBenchmark, hostEvents: EventEmitter<any>) {
     if(!isBenchmark) {
       if(field=='source') {
         this.configuration.variablesData[varName].source = e
@@ -210,10 +256,18 @@ export abstract class BlockHelperService implements OnInit {
         this.configuration.benchmarkVariablesData[varName].value = e
       }
     }
-    this.updateHostObject();
+    this.updateHostObject(hostEvents);
   }
 
-  private updatePageConfigurationObject() {
+  onVariablesDataChanged(data: any, hostEvents: EventEmitter<any>) {
+    this.variablesDataChanged(data.event, data.name, data.field, false, hostEvents);
+  }
+
+  onBenchmarkVariablesDataChanged(data: any, hostEvents: EventEmitter<any>) {
+      this.variablesDataChanged(data.event, data.name, data.field, true, hostEvents);
+  }
+
+  private updatePageConfigurationObject(hostEvents: EventEmitter<any>) {
     this._pageConfiguration = this.defaultPageConfiguration;
     //defining the page parameters we want to consume
     //currently the only page parameter consumed is AccountUUID
@@ -223,9 +277,10 @@ export abstract class BlockHelperService implements OnInit {
         Consume: true,
         Produce: false
     });
-    this.hostEvents.emit({
+    hostEvents.emit({
         action: 'set-page-configuration',
         pageConfiguration: this._pageConfiguration
     });
   }
+
 }

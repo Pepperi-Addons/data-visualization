@@ -126,7 +126,7 @@ export const charts: Chart[] = [
 ]
 
 export const chartBlockScheme: AddonDataScheme = {
-    Name: "ChartBlock",
+    Name: "Chart",
     Type: 'data',
     Fields: {
         chart: {

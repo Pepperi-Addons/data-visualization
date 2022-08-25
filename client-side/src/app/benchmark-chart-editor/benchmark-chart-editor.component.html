@@ -1,88 +1,157 @@
 <div pep-main-area>
-    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" (selectedTabChange)="tabClick($event)" animationDuration="0ms">
-        <mat-tab id="1" label="{{'General' | translate}}">
-            <div *ngIf="blockLoaded">
-                <pep-checkbox [value]="configuration.useLabel" [label]="'Title' | translate" [renderTitle]="false" (valueChange)="onValueChanged('useLabel',$event)"></pep-checkbox>
-                <pep-textbox [label]="'TitleText' | translate" [type]="'text'" [disabled]="!configuration.useLabel" [(value)]="configuration.label" (valueChange)="onValueChanged('Label', $event)"></pep-textbox>
-                <pep-group-buttons-settings
-                [groupType]="'horizontal-align'" [subHeader]="'Alignment' | translate"
-                [disabled]="!configuration.useLabel" [btnKey]="configuration?.horizontalAlign"
-                (btnkeyChange)="onFieldChange('horizontalAlign',$event)">
-                </pep-group-buttons-settings>
-                <h2>{{'ChartDesign' | translate}}
-                </h2>
-                <pep-select [key]="'chartSelect'" [label]="'ChartDesign'| translate" [emptyOption]="false" [value]="configuration.chart" [xAlignment]="'left'" [options]='chartsOptions' (valueChange)="onValueChanged('Chart',$event)">
-                </pep-select>
-                <pep-textbox [label]="'ChartHeight' | translate" [type]="'decimal'" [(value)]="configuration.height" (valueChange)="onValueChanged('Height', $event)"></pep-textbox>
-                <div id="border">
-                    <pep-checkbox [value]="configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
-                    <pep-color [value]="configuration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
-                    </pep-color>
-                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useBorder" [value]="configuration?.border?.opacity" [background]="getSliderBackground(configuration?.border?.color)" (valueChange)="onFieldChange('border.opacity',$event)">
-                    </pep-slider>
-                </div>
-                <div id="dropShadow">
-                    <pep-checkbox [value]="configuration?.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
-                    </pep-checkbox>
-                    <label class="body-xs normal ellipsis">{{'ShadowIntensity' | translate}}</label>
-                    <pep-group-buttons [buttons]="DropShadowStyle" [selectedButtonKey]="configuration?.dropShadow?.type" buttonsClass="md regular" [buttonsDisabled]="!configuration?.useDropShadow" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
-                    </pep-group-buttons>
-                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.useDropShadow" [value]="configuration?.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
-                    </pep-slider>
-                </div>
-            </div>
+  <mat-tab-group
+    #tabGroup
+    class="editor-tabs"
+    [selectedIndex]="blockHelperService.activeTabIndex"
+    (selectedTabChange)="blockHelperService.tabClick($event)"
+    animationDuration="0ms"
+    >
 
-        </mat-tab>
-        <mat-tab id="2" label="{{'Content' | translate}}">
-            <label class="body-md ellipsis pull-left flip">{{
-                "Data queries" | translate
-            }}</label>
-            <pep-select
-                [label]="'select a query from defined queries'"
-                [value]="selectedQuery"
-                [mandatory]="false"
-                [disabled]="false"
+    <mat-tab id="1" label="{{ 'General' | translate }}">
+      <!-- <div *ngIf="blockHelperService.blockLoaded"> -->
+        <pep-checkbox
+            [value]="blockHelperService.configuration.useLabel"
+            [label]="'Title' | translate"
+            [renderTitle]="false"
+            (valueChange)="blockHelperService.onValueChanged('useLabel', $event, hostEvents)"
+        ></pep-checkbox>
+        <pep-textbox
+            [label]="'TitleText' | translate"
+            [type]="'text'"
+            [disabled]="!blockHelperService.configuration.useLabel"
+            [(value)]="blockHelperService.configuration.label"
+            (valueChange)="blockHelperService.onValueChanged('Label', $event, hostEvents)"
+        ></pep-textbox>
+        <pep-group-buttons-settings
+            [groupType]="'horizontal-align'"
+            [subHeader]="'Alignment' | translate"
+            [disabled]="!blockHelperService.configuration.useLabel"
+            [btnKey]="blockHelperService.configuration?.horizontalAlign"
+            (btnkeyChange)="blockHelperService.onFieldChange('horizontalAlign',$event,hostEvents)"
+        ></pep-group-buttons-settings>
+        <h2>{{ "ChartDesign" | translate }}</h2>
+        <pep-select
+            [key]="'chartSelect'"
+            [label]="'ChartDesign' | translate"
+            [emptyOption]="false"
+            [value]="blockHelperService.configuration.chart"
+            [xAlignment]="'left'"
+            [options]="blockHelperService.chartsOptions"
+            (valueChange)="blockHelperService.onValueChanged('Chart', $event, hostEvents)"
+            *ngIf="blockHelperService.blockLoaded"
+        ></pep-select>
+        <pep-textbox
+            [label]="'ChartHeight' | translate"
+            [type]="'decimal'"
+            [(value)]="blockHelperService.configuration.height"
+            (valueChange)="blockHelperService.onValueChanged('Height', $event, hostEvents)"
+        ></pep-textbox>
+        <div id="border">
+            <pep-checkbox
+                [value]="blockHelperService.configuration?.useBorder"
+                [label]="'Border' | translate"
+                [renderTitle]="false"
+                (valueChange)="blockHelperService.onFieldChange('useBorder', $event, hostEvents)"
+            ></pep-checkbox>
+            <pep-color
+                [value]="blockHelperService.configuration?.border?.color"
+                [label]="'BorderColor' | translate"
+                [disabled]="!blockHelperService.configuration?.useBorder"
                 xAlignment="left"
-                [options]="queryOptions"
+                type="any"
                 [showTitle]="true"
-                [emptyOption]="false"
-                (valueChange)="queryChanged($event)"
-            ></pep-select>
+                [showAAComplient]="true"
+                (valueChange)="blockHelperService.onFieldChange('border.color', $event, hostEvents)"
+            ></pep-color>
+            <pep-slider
+                [label]="'BorderOpacity' | translate"
+                [hint]="blockHelperService.configuration?.border?.opacity?.toString()"
+                [minValue]="0"
+                [maxValue]="100"
+                [disabled]="!blockHelperService.configuration?.useBorder"
+                [value]="blockHelperService.configuration?.border?.opacity"
+                [background]="blockHelperService.getSliderBackground(blockHelperService.configuration?.border?.color)"
+                (valueChange)="blockHelperService.onFieldChange('border.opacity',$event, hostEvents)"
+            ></pep-slider>
+        </div>
+        <div id="dropShadow">
+            <pep-checkbox
+                [value]="blockHelperService.configuration?.useDropShadow"
+                [label]="'DropShadow' | translate"
+                [renderTitle]="false"
+                (valueChange)="blockHelperService.onFieldChange('useDropShadow', $event,hostEvents)"
+            ></pep-checkbox>
+            <label class="body-xs normal ellipsis">
+                {{"ShadowIntensity" | translate}}
+            </label>
+            <pep-group-buttons
+                [buttons]="blockHelperService.DropShadowStyle"
+                [selectedButtonKey]="blockHelperService.configuration?.dropShadow?.type"
+                buttonsClass="md regular"
+                [buttonsDisabled]="!blockHelperService.configuration?.useDropShadow"
+                (buttonClick)="blockHelperService.onFieldChange('dropShadow.type',$event,hostEvents)"
+                viewType="toggle"
+                stretch="true"
+            ></pep-group-buttons>
+            <pep-slider
+                [label]="'ShadowIntensity' | translate"
+                [hint]="blockHelperService.configuration?.dropShadow?.intensity?.toString()"
+                [background]="'RGBA(0,0,0,50%)'"
+                [minValue]="0"
+                [maxValue]="100"
+                [disabled]="!blockHelperService.configuration?.useDropShadow"
+                [value]="blockHelperService.configuration?.dropShadow?.intensity"
+                (valueChange)="blockHelperService.onFieldChange('dropShadow.intensity',$event,hostEvents)"
+            ></pep-slider>
+        </div>
+      <!-- </div> -->
+    </mat-tab>
 
-            <addon-query-select
-                [inputVars]="inputVars"
-                [variablesData]="configuration?.variablesData"
-                [pageParametersOptions]="pageParametersOptions"
-                (variablesDataChange)="onVariablesDataChanged($event)"
-            ></addon-query-select>
+    <mat-tab id="2" label="{{ 'Content' | translate }}">
+      <!-- <div *ngIf="blockHelperService.blockLoaded"> -->
+        <label class="body-md ellipsis pull-left flip">
+          {{ "Data queries" | translate }}
+        </label>
+        <pep-select
+          [label]="'select a query from defined queries'"
+          [value]="blockHelperService.configuration.query"
+          [mandatory]="false"
+          [disabled]="false"
+          xAlignment="left"
+          [options]="blockHelperService.queryOptions"
+          [showTitle]="true"
+          [emptyOption]="false"
+          (valueChange)="blockHelperService.queryChanged($event, hostEvents)"
+          *ngIf="blockHelperService.blockLoaded"
+        ></pep-select>
 
-            <pep-select
-                [label]="'select a query from defined queries'"
-                [value]="selectedBenchmarkQuery"
-                [mandatory]="false"
-                [disabled]="false"
-                xAlignment="left"
-                [options]="benchmarkQueryOptions"
-                [showTitle]="true"
-                [emptyOption]="false"
-                (valueChange)="secondQueryChanged($event)"
-            ></pep-select>
+        <addon-query-select
+          [inputVars]="blockHelperService.inputVars"
+          [variablesData]="blockHelperService.configuration?.variablesData"
+          [pageParametersOptions]="blockHelperService.pageParametersOptions"
+          (variablesDataChange)="blockHelperService.onVariablesDataChanged($event, hostEvents)"
+        ></addon-query-select>
 
-            <addon-query-select
-                [inputVars]="benchmarkInputVars"
-                [variablesData]="configuration?.benchmarkVariablesData"
-                [pageParametersOptions]="pageParametersOptions"
-                (variablesDataChange)="onBenchmarkVariablesDataChanged($event)"
-            ></addon-query-select>
+        <pep-select
+          [label]="'select a query from defined queries'"
+          [value]="blockHelperService.configuration.secondQuery"
+          [mandatory]="false"
+          [disabled]="false"
+          xAlignment="left"
+          [options]="blockHelperService.benchmarkQueryOptions"
+          [showTitle]="true"
+          [emptyOption]="false"
+          (valueChange)="blockHelperService.secondQueryChanged($event, hostEvents)"
+          *ngIf="blockHelperService.blockLoaded"
+        ></pep-select>
 
-        </mat-tab>
-        <!-- <mat-tab  id="3" label="{{'SetupTabHeader' | translate}}">
-            <addon-pepperi-list-exmaple [type]="'Setup'" [ID]='2' [isActive]="activeTabIndex === 2" [data]="activeTabIndex === 2 ? currentData : null"></addon-pepperi-list-exmaple>
-        </mat-tab> -->
-
-        <!-- <mat-tab *ngFor="let tab of relationsData; let index = index" [label]="getRelationDataTabLabel(tab)">
-            <addon-pepperi-list-exmaple [type]="'Relation'" [ID]=index+3 [isActive]="activeTabIndex === index+3" [relationsData]="activeTabIndex === index+3 ? tab : null"></addon-pepperi-list-exmaple>
-          </mat-tab> -->
-
-    </mat-tab-group>
+        <addon-query-select
+          [inputVars]="blockHelperService.benchmarkInputVars"
+          [variablesData]="blockHelperService.configuration?.benchmarkVariablesData"
+          [pageParametersOptions]="blockHelperService.pageParametersOptions"
+          (variablesDataChange)="blockHelperService.onBenchmarkVariablesDataChanged($event,hostEvents)"
+        ></addon-query-select>
+      <!-- </div> -->
+    </mat-tab>
+  </mat-tab-group>
 </div>

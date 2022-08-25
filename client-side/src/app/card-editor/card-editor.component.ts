@@ -4,6 +4,7 @@ import { IScorecards } from 'src/app/card.model';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AddonService } from 'src/services/addon.service';
 import { ActivatedRoute } from '@angular/router';
+import { config } from '../addon.config';
 
 @Component({
     selector: 'card-editor',
@@ -43,10 +44,10 @@ export class CardEditorComponent implements OnInit {
 
     constructor(
         public routeParams: ActivatedRoute,
-        private translate: TranslateService,
-        public pluginService: AddonService
-        ) {
-            this.pluginService.addonUUID = this.routeParams.snapshot.params['addon_uuid'];
+        public pluginService: AddonService,
+        
+    ) {
+        this.pluginService.addonUUID = config.AddonUUID;
     }
 
     async ngOnInit(): Promise<void> {

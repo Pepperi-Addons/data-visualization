@@ -15,20 +15,21 @@ import MyService from './my.service';
 import semver from 'semver';
 
 export async function install(client: Client, request: Request): Promise<any> {
-    const papiClient = new PapiClient({
-        baseURL: client.BaseURL,
-        token: client.OAuthAccessToken,
-        addonUUID: client.AddonUUID,
-        addonSecretKey: client.AddonSecretKey
-    });
+    // const papiClient = new PapiClient({
+    //     baseURL: client.BaseURL,
+    //     token: client.OAuthAccessToken,
+    //     addonUUID: client.AddonUUID,
+    //     addonSecretKey: client.AddonSecretKey
+    // });
+    const service = new MyService(client)
 
-    const res = await setPageBlockAndDimxRelations(client);
+    const res = await setPageBlockAndDimxRelations(service);
 
-    const res2 = await setUsageMonitorRelation(client);
+    const res2 = await setUsageMonitorRelation(service);
 
-    const res3 = await upsertCharts(client,request, new MyService(client), charts);
+    const res3 = {success: true}//await upsertCharts(client,request, new MyService(client), charts);
 
-    const res4 = await createBlockSchemes(client);
+    const res4 = await createBlockSchemes(service);
 
     let resultObject = {
         pageBlockRelation:res,
@@ -59,9 +60,10 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
-    const res = await setPageBlockAndDimxRelations(client);
+    const service = new MyService(client)
+    const res = await setPageBlockAndDimxRelations(service);
     // why do we need this relation?
-    const res2 = await setUsageMonitorRelation(client);
+    const res2 = await setUsageMonitorRelation(service);
 
     if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.78') < 0) 
 	{
@@ -76,25 +78,25 @@ export async function downgrade(client: Client, request: Request): Promise<any> 
     return {success:true,resultObject:{}}
 }
 
-async function setPageBlockAndDimxRelations(client){
+async function setPageBlockAndDimxRelations(service: MyService){
     try {
         let blockName = 'Chart';
 
         const pageComponentRelation: Relation = {
             RelationName: "PageBlock",
-            Name: "ChartBlock", 
+            Name: blockName,
             Description: "Chart",
             Type: "NgComponent",
             SubType: "NG14",
-            AddonUUID: client.AddonUUID,
+            AddonUUID: service.addonUUID,
             AddonRelativeURL: 'chart',
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
             EditorModuleName: `${blockName}EditorModule`,
             ElementsModule: 'WebComponents',
-            ElementName: `chart-element-${client.AddonUUID}`,
-            EditorElementName: `chart-editor-element-${client.AddonUUID}`,
+            ElementName: `chart-element-${service.addonUUID}`,
+            EditorElementName: `chart-editor-element-${service.addonUUID}`,
         };
 
         blockName = 'Scorecards';
@@ -105,15 +107,15 @@ async function setPageBlockAndDimxRelations(client){
             Description: `Scorecards`,
             Type: "NgComponent",
             SubType: "NG14",
-            AddonUUID: client.AddonUUID,
+            AddonUUID: service.addonUUID,
             AddonRelativeURL: 'scorecards', 
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
             EditorModuleName: `${blockName}EditorModule`,
             ElementsModule: 'WebComponents',
-            ElementName: `scorecards-element-${client.AddonUUID}`,
-            EditorElementName: `scorecards-editor-element-${client.AddonUUID}`,
+            ElementName: `scorecards-element-${service.addonUUID}`,
+            EditorElementName: `scorecards-editor-element-${service.addonUUID}`,
         };
 
         blockName = 'Table';
@@ -124,15 +126,15 @@ async function setPageBlockAndDimxRelations(client){
             Description: `Table`,
             Type: "NgComponent",
             SubType: "NG14",
-            AddonUUID: client.AddonUUID,
+            AddonUUID: service.addonUUID,
             AddonRelativeURL: 'table', 
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
             EditorModuleName: `${blockName}EditorModule`,
             ElementsModule: 'WebComponents',
-            ElementName: `table-element-${client.AddonUUID}`,
-            EditorElementName: `table-editor-element-${client.AddonUUID}`,
+            ElementName: `table-element-${service.addonUUID}`,
+            EditorElementName: `table-editor-element-${service.addonUUID}`,
         };
 
         blockName = 'BenchmarkChart';
@@ -143,19 +145,19 @@ async function setPageBlockAndDimxRelations(client){
             Description: `BenchmarkChart`,
             Type: "NgComponent",
             SubType: "NG14",
-            AddonUUID: client.AddonUUID,
+            AddonUUID: service.addonUUID,
             AddonRelativeURL: 'benchmark_chart', 
             ComponentName: `${blockName}Component`, 
             ModuleName: `${blockName}Module`, 
             EditorComponentName: `${blockName}EditorComponent`, 
             EditorModuleName: `${blockName}EditorModule`,
             ElementsModule: 'WebComponents',
-            ElementName: `benchmark-chart-element-${client.AddonUUID}`,
-            EditorElementName: `benchmark-chart-editor-element-${client.AddonUUID}`,
+            ElementName: `benchmark-chart-element-${service.addonUUID}`,
+            EditorElementName: `benchmark-chart-editor-element-${service.addonUUID}`,
         };
 
 
-        const service = new MyService(client);
+        //const service = new MyService(client);
         await service.upsertRelation(pageComponentRelation);
         await service.upsertRelation(scorecardsComponentRelation);
         await service.upsertRelation(tableComponentRelation);
@@ -169,7 +171,7 @@ async function setPageBlockAndDimxRelations(client){
 }
 
 
-async function setUsageMonitorRelation(client){
+async function setUsageMonitorRelation(service: MyService){
     try {
 
         const usageMonitorRelation: Relation = {
@@ -177,11 +179,10 @@ async function setUsageMonitorRelation(client){
             Name: "", 
             Description: `Data index and queries usage data`, 
             Type: "AddonAPI",
-            AddonUUID: client.AddonUUID,
+            AddonUUID: service.addonUUID,
             AddonRelativeURL: 'monitor/usage_data'
         };
        
-        const service = new MyService(client);
        var res =  await service.upsertRelation(usageMonitorRelation);
 
         return { success:true, resultObject: null };
@@ -222,9 +223,8 @@ function handleException(err) {
     };
 }
 
-async function createBlockSchemes(client: Client) {
+async function createBlockSchemes(service: MyService) {
     try {
-        const service = new MyService(client)
         await service.papiClient.addons.data.schemes.post(chartBlockScheme);
         return { success: true, resultObject: null };
     } catch(err) {

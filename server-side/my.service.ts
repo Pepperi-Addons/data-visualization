@@ -4,8 +4,10 @@ import { Client } from '@pepperi-addons/debug-server';
 class MyService {
 
     papiClient: PapiClient
+    addonUUID: string = '';
 
     constructor(private client: Client) {
+        this.addonUUID = client.AddonUUID
         this.papiClient = new PapiClient({
             baseURL: client.BaseURL,
             token: client.OAuthAccessToken,
@@ -16,7 +18,7 @@ class MyService {
     }
 
     upsertRelation(relation): Promise<any> {
-        return this.papiClient.post('/addons/data/relations', relation);
+        return this.papiClient.addons.data.relations.upsert(relation);
     }
 
     upsertChart(chart) {

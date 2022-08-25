@@ -26,6 +26,7 @@
                         [disabled]="false"
                         [value]="variablesData[currentVariable.Name].value"
                         [type]="'text'"
+                        [maxFieldCharacters]="10"
                         (valueChange)="onVariablesDataChanged($event,currentVariable.Name,'value')"
                     ></pep-textbox>
 
