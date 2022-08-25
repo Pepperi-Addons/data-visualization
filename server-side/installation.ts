@@ -27,7 +27,7 @@ export async function install(client: Client, request: Request): Promise<any> {
 
     const res2 = await setUsageMonitorRelation(service);
 
-    const res3 = {success: true}//await upsertCharts(client,request, new MyService(client), charts);
+    const res3 = await upsertCharts(client,request, new MyService(client), charts);
 
     const res4 = await createBlockSchemes(service);
 
@@ -64,7 +64,7 @@ export async function upgrade(client: Client, request: Request): Promise<any> {
     const res = await setPageBlockAndDimxRelations(service);
     // why do we need this relation?
     const res2 = await setUsageMonitorRelation(service);
-
+    const res4 = await createBlockSchemes(service);
     if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.78') < 0) 
 	{
 		throw new Error('Upgarding from versions earlier than 0.6.78 is not supported. Please uninstall the addon and install it again.');
