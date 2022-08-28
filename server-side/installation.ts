@@ -15,12 +15,7 @@ import MyService from './my.service';
 import semver from 'semver';
 
 export async function install(client: Client, request: Request): Promise<any> {
-    // const papiClient = new PapiClient({
-    //     baseURL: client.BaseURL,
-    //     token: client.OAuthAccessToken,
-    //     addonUUID: client.AddonUUID,
-    //     addonSecretKey: client.AddonSecretKey
-    // });
+   
     const service = new MyService(client)
 
     const res = await setPageBlockAndDimxRelations(service);
@@ -62,7 +57,6 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 export async function upgrade(client: Client, request: Request): Promise<any> {
     const service = new MyService(client)
     const res = await setPageBlockAndDimxRelations(service);
-    // why do we need this relation?
     const res2 = await setUsageMonitorRelation(service);
     const res4 = await createBlockSchemes(service);
     if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.78') < 0) 
