@@ -12,21 +12,6 @@ import { config } from '../addon.config';
 
 @Injectable()
 export class BlockHelperService {
-
-  // @Input()
-  // set hostObject(value) {
-  //   if (value && value.configuration) {
-  //     this._configuration = value.configuration
-  //   } else {
-  //     if (this.blockLoaded) {
-  //       this.loadDefaultConfiguration();
-  //     }
-  //   }
-  //   this.pageParametersOptions = []
-  //   this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
-  // }
-
-  // @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   public configuration: any;
   private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
   private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
@@ -66,7 +51,8 @@ export class BlockHelperService {
       ];
       
       this.pluginService.getAllQueries().then(queries => {
-        queries.forEach(q => {
+        const sorted_queries = queries.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
+        sorted_queries.forEach(q => {
           this.queryOptions.push({key: q.Key, value: q.Name});
           this.benchmarkQueryOptions.push({key: q.Key, value: q.Name})
         })
@@ -79,6 +65,7 @@ export class BlockHelperService {
             }
           })
         }
+
         const secondQueryID = this.configuration?.secondQuery;
         if (secondQueryID) {
             this.pluginService.getDataQueryByKey(secondQueryID).then(secondQueryData => {
@@ -90,52 +77,8 @@ export class BlockHelperService {
         this.blockLoaded = true;
         this.updatePageConfigurationObject(hostEvents);
         this.updateHostObject(hostEvents);
-        // this.hostEvents.emit({ action: 'block-editor-loaded' });
       })
   }
-
-  // async ngOnInit()  {
-    // if (!this.configuration || Object.keys(this.configuration).length == 0) {
-    //   this.loadDefaultConfiguration();
-    // };
-
-    // this.PepSizes = [
-    //   { key: 'sm', value: this.translate.instant('SM') },
-    //   { key: 'md', value: this.translate.instant('MD') },
-    //   { key: 'lg', value: this.translate.instant('LG') },
-    //   { key: 'xl', value: this.translate.instant('XL') }
-    // ];
-
-    // this.DropShadowStyle = [
-    //   { key: 'Soft', value: this.translate.instant('Soft') },
-    //   { key: 'Regular', value: this.translate.instant('Regular') }
-    // ];
-
-    // this.getQueryOptions().then(queries => {
-    //   queries.forEach(q => this.queryOptions.push({key: q.Key, value: q.Name}));
-    //   const queryID = this.configuration?.query?.Key;
-    //   if (queryID) {
-    //     this.pluginService.getDataQueryByKey(queryID).then(queryData => {
-    //       if (queryData[0]) {
-    //         this.configuration.query = { Key: queryID };
-    //         this.inputVars = queryData[0].Variables;
-    //       }
-    //     })
-    //   }
-    //   this.blockLoaded = true;
-    //   this.updatePageConfigurationObject();
-    //   this.updateHostObject();
-    //   this.hostEvents.emit({ action: 'block-editor-loaded' });
-    // })
-  // }
-
-  // public loadDefaultConfiguration() {
-  //   this.configuration = this.getDefaultHostObject();
-  //   this.updateHostObject();
-  // }
-
-  // need to be overriden
-  // protected abstract getDefaultHostObject();
 
   onEditClick() {
   }
@@ -196,8 +139,6 @@ export class BlockHelperService {
     }
     this.updateHostObject(hostEvents);
 }
-
-  // abstract getQueryOptions();
 
   onValueChanged(type, event, hostEvents: EventEmitter<any>) {
     switch (type) {

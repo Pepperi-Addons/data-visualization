@@ -61,20 +61,8 @@ export class ChartEditorComponent implements OnInit {
         }
     }
 
-    protected getDefaultHostObject(): ChartConfiguration {
-      return new ChartConfiguration();
-    }
-
     private loadDefaultConfiguration() {
-        this.blockHelperService.configuration = this.getDefaultHostObject();
+        this.blockHelperService.configuration = new ChartConfiguration();
         this.blockHelperService.updateHostObject(this.hostEvents);
     }
-
-    // async getQueryOptions(){
-    //     return await this.pluginService.getAllQueries();
-    // }
-
-    // onVariablesDataChanged(data: any) {
-    //     this.blockHelperService.variablesDataChanged(data.event, data.name, data.field, false, this.hostEvents);
-    // }
 }
