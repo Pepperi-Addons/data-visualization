@@ -1,11 +1,12 @@
 import { TranslateService } from '@ngx-translate/core';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PepAddonService } from '@pepperi-addons/ngx-lib';
 import { AddonService } from '../../services/addon.service';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { ChartConfiguration } from '../models/chart-configuration';
 import { BlockHelperService } from '../block-helper/block-helper.service';
+import { config } from '../addon.config';
 
 @Component({
     selector: 'benchmark-chart-editor',
@@ -13,11 +14,25 @@ import { BlockHelperService } from '../block-helper/block-helper.service';
     styleUrls: ['./benchmark-chart-editor.component.scss']
 })
 
-export class BenchmarkChartEditorComponent extends BlockHelperService implements OnInit {
+export class BenchmarkChartEditorComponent implements OnInit {
 
     benchmarkQueryOptions = [];
-    selectedBenchmarkQuery: string = ''
     benchmarkInputVars;
+
+    @Input()
+    set hostObject(value) {
+        if (value && value.configuration) {
+            this.blockHelperService.configuration = value.configuration
+        } else {
+            if (this.blockHelperService.blockLoaded) {
+                this.loadDefaultConfiguration();
+            }
+        }
+        this.blockHelperService.pageParametersOptions = []
+        this.blockHelperService.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
+    }
+
+    @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
 
     constructor(protected addonService: PepAddonService,
         public routeParams: ActivatedRoute,
@@ -25,34 +40,26 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
         public route: ActivatedRoute,
         protected translate: TranslateService,
         protected dataVisualizationService: DataVisualizationService,
-        public pluginService: AddonService) {
-        super(addonService,routeParams,router,route,translate,dataVisualizationService,pluginService);
+        public pluginService: AddonService,
+        protected blockHelperService: BlockHelperService) {
+            this.pluginService.addonUUID = config.AddonUUID;
+            this.blockHelperService = new BlockHelperService(translate,dataVisualizationService,pluginService);
     }
 
     async ngOnInit(): Promise<void> {
-        if (!this.configuration || Object.keys(this.configuration).length == 0) {
+        if (!this.blockHelperService.configuration || Object.keys(this.blockHelperService.configuration).length == 0) {
             this.loadDefaultConfiguration();
         }
-        this.pluginService.fillChartsOptions(this.chartsOptions,'Benchmark chart').then(res => {
-            this.charts = res;
-            if (!this.configuration.chart) {
-                // set the first chart to be default
-                const firstChart = res[0];
-                this.configuration.chart = firstChart.Key;
-                this.configuration.chartCache = firstChart.ScriptURI;
-            }
-            super.ngOnInit();
-        })
-        this.getQueryOptions().then( benchmarkQueries => {
-            benchmarkQueries.forEach(q => this.benchmarkQueryOptions.push({key: q.Key, value: q.Name}));
-        })
-        const secondQueryID = this.configuration?.secondQuery;
-        if (secondQueryID) {
-            this.pluginService.getDataQueryByKey(secondQueryID).then(secondQueryData => {
-                if(secondQueryData[0]) {
-                    this.selectedBenchmarkQuery = secondQueryID;
-                    this.benchmarkInputVars = secondQueryData[0].Variables;
+        if(!this.blockHelperService.blockLoaded) {
+            this.pluginService.fillChartsOptions(this.blockHelperService.chartsOptions,'Benchmark chart').then(res => {
+                this.blockHelperService.charts = res;
+                if (!this.blockHelperService.configuration.chart) {
+                    // set the first chart to be default
+                    const firstChart = res[0];
+                    this.blockHelperService.configuration.chart = firstChart.Key;
+                    this.blockHelperService.configuration.chartCache = firstChart.ScriptURI;
                 }
+                this.blockHelperService.initData(this.hostEvents);
             })
         }
     }
@@ -61,26 +68,12 @@ export class BenchmarkChartEditorComponent extends BlockHelperService implements
       return new ChartConfiguration();
     }
 
-    async getQueryOptions(){
-        return this.pluginService.getAllQueries();
-    }
+    // async getQueryOptions(){
+    //     return this.pluginService.getAllQueries();
+    // }
 
-    async secondQueryChanged(e) {
-        this.selectedBenchmarkQuery = e;
-        this._configuration.secondQuery = e;
-        this.benchmarkInputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
-        this._configuration.benchmarkVariablesData = {}
-        for(let v of this.benchmarkInputVars) {
-            this._configuration.benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
-        }
-        this.updateHostObject();
-    }
-
-    onVariablesDataChanged(data: any) {
-        this.variablesDataChanged(data.event, data.name, data.field, false);
-    }
-
-    onBenchmarkVariablesDataChanged(data: any) {
-        this.variablesDataChanged(data.event, data.name, data.field, true);
+    private loadDefaultConfiguration() {
+        this.blockHelperService.configuration = this.getDefaultHostObject();
+        this.blockHelperService.updateHostObject(this.hostEvents);
     }
 }

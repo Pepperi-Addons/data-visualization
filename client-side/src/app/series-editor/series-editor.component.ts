@@ -130,7 +130,7 @@ export class SeriesEditorComponent implements OnInit {
     if (incoming?.seriesName) {
       this.series.Name = incoming.seriesName;
     }
-    this.pluginService.addonUUID = this.routeParams.snapshot.params['addon_uuid'];
+    this.pluginService.addonUUID = config.AddonUUID;
   }
 
   ngOnInit(): void {

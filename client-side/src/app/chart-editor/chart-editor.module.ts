@@ -23,6 +23,7 @@ import { SeriesEditorModule } from '../series-editor';
 import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { QuerySelectModule } from '../common/query-select/query-select.module';
+import { BlockHelperService } from '../block-helper/block-helper.service';
 
 const pepIcons = [
     pepIconSystemBin,
@@ -68,6 +69,7 @@ const pepIcons = [
         HttpClient,
         PepFileService,
         DataVisualizationService,
+        BlockHelperService
     ]
 })
 export class ChartEditorModule {

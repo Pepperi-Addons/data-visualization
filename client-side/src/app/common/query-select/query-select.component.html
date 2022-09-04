@@ -26,6 +26,7 @@
                         [disabled]="false"
                         [value]="variablesData[currentVariable.Name].value"
                         [type]="'text'"
+                        [maxFieldCharacters]= "(currentVariable.Type == 'Number') ? '10' : '40' "
                         (valueChange)="onVariablesDataChanged($event,currentVariable.Name,'value')"
                     ></pep-textbox>
 

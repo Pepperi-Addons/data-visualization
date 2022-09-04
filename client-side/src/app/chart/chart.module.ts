@@ -8,6 +8,7 @@ import { config } from '../addon.config';
 import { PepTopBarModule } from '@pepperi-addons/ngx-lib/top-bar';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { PepDialogModule } from '@pepperi-addons/ngx-lib/dialog';
+import { BlockHelperService } from '../block-helper/block-helper.service';
 
 @NgModule({
     declarations: [ChartComponent],

@@ -126,7 +126,7 @@ export const charts: Chart[] = [
 ]
 
 export const chartBlockScheme: AddonDataScheme = {
-    Name: "ChartBlock",
+    Name: "Chart",
     Type: 'data',
     Fields: {
         chart: {
@@ -148,6 +148,7 @@ export const DimxChartImportRelation: Relation = {
     RelationName: 'DataImportResource',
     Type: 'AddonAPI',
     Description: 'relation for importing chart blocks',
-    FixRelativeURL: '/api/fix_imported_data'
+    FixRelativeURL: '/api/fix_imported_data',
+    AddonRelativeURL: ''
 }
 
