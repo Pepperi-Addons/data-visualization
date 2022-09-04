@@ -56,12 +56,4 @@ export class TableEditorComponent implements OnInit {
   protected getDefaultHostObject(): ScorecardsConfiguration {
     return new ScorecardsConfiguration();
   }
-
-  // async getQueryOptions(){
-  //   return await this.pluginService.getAllQueries();
-  // }
-
-  // onVariablesDataChanged(data: any) {
-  //   this.variablesDataChanged(data.event, data.name, data.field, false);
-  // }
 }

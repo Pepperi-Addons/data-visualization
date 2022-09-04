@@ -150,8 +150,6 @@ async function setPageBlockAndDimxRelations(service: MyService){
             EditorElementName: `benchmark-chart-editor-element-${service.addonUUID}`,
         };
 
-
-        //const service = new MyService(client);
         await service.upsertRelation(pageComponentRelation);
         await service.upsertRelation(scorecardsComponentRelation);
         await service.upsertRelation(tableComponentRelation);
