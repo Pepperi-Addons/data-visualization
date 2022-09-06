@@ -68,10 +68,6 @@ export class BenchmarkChartEditorComponent implements OnInit {
       return new ChartConfiguration();
     }
 
-    // async getQueryOptions(){
-    //     return this.pluginService.getAllQueries();
-    // }
-
     private loadDefaultConfiguration() {
         this.blockHelperService.configuration = this.getDefaultHostObject();
         this.blockHelperService.updateHostObject(this.hostEvents);

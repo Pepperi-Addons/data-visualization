@@ -1,5 +1,6 @@
 <div [ngStyle]="{'border': dataVisualizationService.getChartBorder(this.scorecardsConfig?.useBorder, this.scorecardsConfig?.border),
     'box-shadow': boxShadow,
-    'border-radius': '0.5rem'}">
+    'border-radius': '0.5rem',
+    'margin': scorecardsConfig?.useDropShadow === true ? '1rem' : '0rem'}">
     <div #previewArea></div>
 </div>

@@ -41,6 +41,15 @@ class MyService {
         configurationToFix.chartCache = importedChart.ScriptURI;
         return configurationToFix;
     }
+
+    async fixImportedScorecardsData(body) {
+        let configurationToFix = body.Object;
+        for(let cardIndex in configurationToFix.cards ) {
+            const importedChart = await this.papiClient.get(`/charts?where=Key=${configurationToFix.cards[cardIndex].chart}`);
+            configurationToFix.cards[cardIndex].chartCache = importedChart.ScriptURI;
+        }
+        return configurationToFix;
+    }
 }
 
 export default MyService;

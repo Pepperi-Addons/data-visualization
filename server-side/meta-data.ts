@@ -142,6 +142,70 @@ export const chartBlockScheme: AddonDataScheme = {
     },
 }
 
+export const benchmarkChartBlockScheme: AddonDataScheme = {
+    Name: "BenchmarkChart",
+    Type: 'data',
+    Fields: {
+        chart: {
+            Type: "Resource",
+            Resource: "Charts",
+            AddonUUID: "3d118baf-f576-4cdb-a81e-c2cc9af4d7ad"
+        },
+        query: {
+            Type: "Resource",
+            Resource: "DataQueries",
+            AddonUUID: "c7544a9d-7908-40f9-9814-78dc9c03ae77"
+        },
+        secondQuery: {
+            Type: "Resource",
+            Resource: "DataQueries",
+            AddonUUID: "c7544a9d-7908-40f9-9814-78dc9c03ae77"
+        }
+    },
+}
+
+export const tableBlockScheme: AddonDataScheme = {
+    Name: "Table",
+    Type: 'data',
+    Fields: {
+        query: {
+            Type: "Resource",
+            Resource: "DataQueries",
+            AddonUUID: "c7544a9d-7908-40f9-9814-78dc9c03ae77"
+        }
+    },
+}
+
+export const scorecardsBlockScheme: AddonDataScheme = {
+    Name: "Scorecards",
+    Type: 'data',
+    Fields: {
+        cards: {
+            Type: "Array",
+            Items: {
+                Type: "Object",
+                Fields: {
+                    chart: {
+                        Type: "Resource",
+                        Resource: "Charts",
+                        AddonUUID: "3d118baf-f576-4cdb-a81e-c2cc9af4d7ad"
+                    },
+                    query: {
+                        Type: "Resource",
+                        Resource: "DataQueries",
+                        AddonUUID: "c7544a9d-7908-40f9-9814-78dc9c03ae77"
+                    },
+                    secondQuery: {
+                        Type: "Resource",
+                        Resource: "DataQueries",
+                        AddonUUID: "c7544a9d-7908-40f9-9814-78dc9c03ae77"
+                    }
+                }
+            }
+        }
+    },
+}
+
 export const DimxChartImportRelation: Relation = {
     AddonUUID: config.AddonUUID,
     Name: 'Chart',
@@ -149,6 +213,26 @@ export const DimxChartImportRelation: Relation = {
     Type: 'AddonAPI',
     Description: 'relation for importing chart blocks',
     FixRelativeURL: '/api/fix_imported_data',
+    AddonRelativeURL: ''
+}
+
+export const DimxBenchmarkChartImportRelation: Relation = {
+    AddonUUID: config.AddonUUID,
+    Name: 'BenchmarkChart',
+    RelationName: 'DataImportResource',
+    Type: 'AddonAPI',
+    Description: 'relation for importing benchmark chart blocks',
+    FixRelativeURL: '/api/fix_imported_data',
+    AddonRelativeURL: ''
+}
+
+export const DimxScorecardsImportRelation: Relation = {
+    AddonUUID: config.AddonUUID,
+    Name: 'Scorecards',
+    RelationName: 'DataImportResource',
+    Type: 'AddonAPI',
+    Description: 'relation for importing scorecards blocks',
+    FixRelativeURL: '/api/fix_imported_scorecards_data',
     AddonRelativeURL: ''
 }
 

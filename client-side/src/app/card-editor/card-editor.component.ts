@@ -5,6 +5,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { AddonService } from 'src/services/addon.service';
 import { ActivatedRoute } from '@angular/router';
 import { config } from '../addon.config';
+import { DataVisualizationService } from 'src/services/data-visualization.service';
 
 @Component({
     selector: 'card-editor',
@@ -24,6 +25,7 @@ export class CardEditorComponent implements OnInit {
     // set pageParameters(value: any) {
     //     this._pageParameters = value;
     // }
+    
 
     @Input() isDraggable = false;
     @Input() showActions = true;
@@ -34,18 +36,17 @@ export class CardEditorComponent implements OnInit {
 
     dialogRef: MatDialogRef<any>;
     public title: string;
-    selectedDesign = ''
-    selectedQuery;
-    selectedBenchmarkQuery = 'None';
     queryOptions = [];
     benchmarkQueryOptions = [];
     inputVars;
     benchmarkInputVars;
+    blockLoaded = false;
 
     constructor(
         public routeParams: ActivatedRoute,
         public pluginService: AddonService,
-        
+        protected translate: TranslateService,
+        protected dataVisualizationService: DataVisualizationService,
     ) {
         this.pluginService.addonUUID = config.AddonUUID;
     }
@@ -53,7 +54,8 @@ export class CardEditorComponent implements OnInit {
     async ngOnInit(): Promise<void> {
         this.title = this.configuration?.cards[this.id].titleContent;
         this.getQueryOptions().then(queries => {
-            queries.forEach(q => {
+            const sorted_queries = queries.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
+            sorted_queries.forEach(q => {
                 this.queryOptions.push({key: q.Key, value: q.Name})
                 this.benchmarkQueryOptions.push({key: q.Key, value: q.Name})
             });
@@ -62,7 +64,6 @@ export class CardEditorComponent implements OnInit {
         if (queryID) {
             this.pluginService.getDataQueryByKey(queryID).then(queryData => {
                 if (queryData[0]) {
-                  this.selectedQuery = queryID;
                   this.inputVars = queryData[0].Variables;
                 }
               })
@@ -71,21 +72,19 @@ export class CardEditorComponent implements OnInit {
         if (secondQueryID) {
             this.pluginService.getDataQueryByKey(secondQueryID).then(secondQueryData => {
                 if(secondQueryData[0]) {
-                    this.selectedBenchmarkQuery = secondQueryID;
                     this.benchmarkInputVars = secondQueryData[0].Variables;
                 }
             })
         }
+
         const chartID = this.configuration?.cards[this.id].chart;
-        if (chartID) {
-            this.selectedDesign = chartID;
-        } else {
+        if (!chartID) {
             // set the first chart to be default
             const firstChart = this.charts[0];
             this.configuration.cards[this.id].chart = firstChart.Key;
             this.configuration.cards[this.id].chartCache = firstChart.ScriptURI;
-            this.selectedDesign = firstChart.Key;
         }
+        this.blockLoaded = true
         this.updateHostObject();
     }
 
@@ -135,7 +134,6 @@ export class CardEditorComponent implements OnInit {
     }
 
     async queryChanged(e) {
-        this.selectedQuery = e;
         this.configuration.cards[this.id].query = e;
         this.inputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
         this.configuration.cards[this.id].variablesData = {}
@@ -146,7 +144,6 @@ export class CardEditorComponent implements OnInit {
     }
 
     async secondQueryChanged(e) {
-        this.selectedBenchmarkQuery = e;
         this.configuration.cards[this.id].secondQuery = e;
         this.benchmarkInputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
         this.configuration.cards[this.id].benchmarkVariablesData = {}
@@ -157,11 +154,9 @@ export class CardEditorComponent implements OnInit {
     }
 
     designChanged(e){
-        this.selectedDesign = e;
         const selectedChart = this.charts.filter(c => c.Key == e)[0];
         this.configuration.cards[this.id].chart = selectedChart.Key;
         this.configuration.cards[this.id].chartCache = selectedChart.ScriptURI;
-
         this.updateHostObject();
     }
 

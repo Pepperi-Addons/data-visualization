@@ -1,10 +1,10 @@
 <div class="minHeight" [ngStyle]="{'border': dataVisualizationService.getChartBorder(this.configuration?.useBorder, this.configuration?.border),
                  'box-shadow': configuration?.useDropShadow === true ? dataVisualizationService.getCardShadow(this.configuration?.dropShadow?.intensity/100,configuration?.dropShadow?.type) : 'unset',
                  'overflow': 'hidden',
-                 'margin': configuration?.useDropShadow === true ? '1.5rem' : '0rem'}">
-<div class="pep-border-bottom" [ngStyle]="{'text-align':configuration?.horizontalAlign}">
-    <label class="body-xl bold ellipsis">{{configuration?.label}}</label>
-</div>
-        <div #previewArea [ngStyle]="{'height.rem': this.configuration?.height}">
-        </div>
+                 'margin': configuration?.useDropShadow === true ? '1rem' : '0rem'}">
+    <div class="pep-border-bottom" [ngStyle]="{'text-align':configuration?.horizontalAlign}">
+        <label class="body-xl bold ellipsis">{{configuration?.label}}</label>
+    </div>
+    <div #previewArea [ngStyle]="{'height.rem': this.configuration?.height}">
+    </div>
 </div>

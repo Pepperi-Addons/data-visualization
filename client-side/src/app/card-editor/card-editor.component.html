@@ -20,7 +20,7 @@
         ></pep-textbox>
         <pep-select
             [label] = "'Design' | translate"
-            [value]="selectedDesign"
+            [value]="configuration?.cards[id].chart"
             [mandatory]="false"
             [disabled]="false"
             xAlignment="left"
@@ -28,10 +28,11 @@
             [showTitle]="true"
             [emptyOption]="false"
             (valueChange)="designChanged($event)"
+            *ngIf="blockLoaded"
         ></pep-select>
         <pep-select
             [label] = "'Data query' | translate"
-            [value]="selectedQuery"
+            [value]="configuration?.cards[id].query"
             [mandatory]="false"
             [disabled]="false"
             xAlignment="left"
@@ -39,6 +40,7 @@
             [showTitle]="true"
             [emptyOption]="false"
             (valueChange)="queryChanged($event)"
+            *ngIf="blockLoaded"
         ></pep-select>
         <addon-query-select
             [inputVars]="inputVars"
@@ -48,7 +50,7 @@
         ></addon-query-select>
         <pep-select
             [label] = "'Benchmark query' | translate"
-            [value]="selectedBenchmarkQuery"
+            [value]="configuration?.cards[id].secondQuery"
             [mandatory]="false"
             [disabled]="false"
             xAlignment="left"
@@ -56,6 +58,7 @@
             [showTitle]="true"
             [emptyOption]="false"
             (valueChange)="secondQueryChanged($event)"
+            *ngIf="blockLoaded"
         ></pep-select>
         <addon-query-select
             [inputVars]="benchmarkInputVars"
