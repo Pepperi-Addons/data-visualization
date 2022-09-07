@@ -18,7 +18,8 @@
     "Dependencies": {
       "charts": "1.0.1",
       "pages": "0.7.120",
-      "query_manager": "0.0.56"
+      "query_manager": "0.5.125",
+      "webapp": "17.14.75"
     },
     "CPISide": []
   }
