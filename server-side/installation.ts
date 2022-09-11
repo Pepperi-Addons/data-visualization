@@ -9,7 +9,7 @@ The error Message is importent! it will be written in the audit log and help the
 */
 
 import { Client, Request } from '@pepperi-addons/debug-server'
-import { chartBlockScheme, charts, DimxChartImportRelation } from './meta-data';
+import { benchmarkChartBlockScheme, chartBlockScheme, charts, DimxChartImportRelation, scorecardsBlockScheme, tableBlockScheme } from './meta-data';
 import { PapiClient, Relation } from '@pepperi-addons/papi-sdk'
 import MyService from './my.service';
 import semver from 'semver';
@@ -218,6 +218,9 @@ function handleException(err) {
 async function createBlockSchemes(service: MyService) {
     try {
         await service.papiClient.addons.data.schemes.post(chartBlockScheme);
+        await service.papiClient.addons.data.schemes.post(benchmarkChartBlockScheme);
+        await service.papiClient.addons.data.schemes.post(tableBlockScheme);
+        await service.papiClient.addons.data.schemes.post(scorecardsBlockScheme);
         return { success: true, resultObject: null };
     } catch(err) {
         return { success: false, resultObject: err };
