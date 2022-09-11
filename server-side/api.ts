@@ -11,3 +11,13 @@ export function fix_imported_data(client: Client, request: Request) {
     }
 }
 
+export function fix_imported_scorecards_data(client: Client, request: Request) {
+    const service = new MyService(client)
+    if (request.method == 'POST') {
+        return service.fixImportedScorecardsData(request.body);
+    }
+    else if (request.method == 'GET') {
+        throw new Error(`Method ${request.method} not supported`);
+    }
+}
+

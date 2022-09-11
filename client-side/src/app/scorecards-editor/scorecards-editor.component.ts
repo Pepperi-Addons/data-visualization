@@ -124,10 +124,10 @@ export class ScorecardsEditorComponent implements OnInit {
   
       if (key.indexOf('.') > -1) {
           let keyObj = key.split('.');
-          this._configuration[keyObj[0]][keyObj[1]] = value;
+          this.configuration.scorecardsConfig[keyObj[0]][keyObj[1]] = value;
       }
       else {
-          this._configuration[key] = value;
+          this.configuration.scorecardsConfig[key] = value;
       }
       this.updateHostObject();
     }
