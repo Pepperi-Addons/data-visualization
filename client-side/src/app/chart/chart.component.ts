@@ -46,7 +46,6 @@ export class ChartComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // debugger;
   }
 
   ngOnChanges(e: any): void {}
