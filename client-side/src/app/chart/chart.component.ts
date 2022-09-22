@@ -77,14 +77,17 @@ export class ChartComponent implements OnInit {
               })
               .catch((err) => {
                 this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+                this.loaderService.hide();
               });
           })
           .catch((err) => {
             this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
+            this.loaderService.hide();
           });
       })
       .catch((err) => {
         this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
+        this.loaderService.hide();
       });
   }
 

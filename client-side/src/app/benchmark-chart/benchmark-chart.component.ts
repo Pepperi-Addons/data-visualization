@@ -82,15 +82,19 @@ export class BenchmarkChartComponent implements OnInit {
                         this.loaderService.hide();
                     }).catch(err => {
                         this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+                        this.loaderService.hide();
                     })
                 }).catch(err => {
                     this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
+                    this.loaderService.hide();
                 });
             }).catch((err) => {
-                this.divView.nativeElement.innerHTML = `Failed to execute second query: ${configuration.secondQuery} , error: ${err}`;;
+                this.divView.nativeElement.innerHTML = `Failed to execute second query: ${configuration.secondQuery} , error: ${err}`;
+                this.loaderService.hide();
             })
         }).catch((err) => {
-            this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;;
+            this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
+            this.loaderService.hide();
         })
 
     }

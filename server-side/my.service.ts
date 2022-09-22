@@ -38,9 +38,9 @@ class MyService {
     async fixImportedData(body) {
         console.log("@@@@ charts fix:" + JSON.stringify(body.Object) + "@@@@")
         let configurationToFix = body.Object;
-        const importedChart = await this.papiClient.get(`/charts?where=Key=${configurationToFix.chart}`);
-        console.log("@@@@" + JSON.stringify(importedChart) + "@@@@")
-        configurationToFix.chartCache = importedChart.ScriptURI;
+        const existingCharts = await this.papiClient.get(`/charts?where=Key=${configurationToFix.chart}`);
+        console.log("@@@@" + JSON.stringify(existingCharts) + "@@@@")
+        configurationToFix.chartCache = existingCharts.length > 0 ? existingCharts[0].ScriptURI : '';
         return configurationToFix;
     }
 
