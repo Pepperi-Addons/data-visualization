@@ -55,16 +55,21 @@ export async function uninstall(client: Client, request: Request): Promise<any> 
 }
 
 export async function upgrade(client: Client, request: Request): Promise<any> {
+    if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.139') < 0) 
+	{
+		throw new Error('Upgarding from versions earlier than 0.6.139 is not supported. Please uninstall the addon and install it again.');
+	}
     const service = new MyService(client)
     const res = await setPageBlockAndDimxRelations(service);
     const res2 = await setUsageMonitorRelation(service);
-    const res4 = await createBlockSchemes(service);
-    if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.78') < 0) 
-	{
-		throw new Error('Upgarding from versions earlier than 0.6.78 is not supported. Please uninstall the addon and install it again.');
-	}
-
-	return { success: true, resultObject: {} }
+    const res3 = await createBlockSchemes(service);
+    let status = res.success && res2.success && res3.success;
+    let resultObject = {
+        pageBlockRelation:res,
+        usageMonitorRelation:res2,
+        blockSchemes:res3
+    };
+	return { success: status, resultObject: resultObject }
     
 }
 
