@@ -44,6 +44,17 @@ export default class MyChart {
         // create a chart element on the canvas with the configuration
         this.chart = new ApexCharts(canvas, conf);
         this.chart.render();
+		
+		// add a resize observer, to change the chart width upon hiding parent div
+		const ro = new ResizeObserver(entries => {
+			// set the height to a fixed size upon div invisibility(otherwise there is an error) and to 100% upon visibility
+			this.chart.updateOptions({
+				chart: {
+					width: entries[0].contentRect.width==0 ? '300' : '100%'
+				}
+			});
+		});
+		ro.observe(canvas);
     }
 
     /**
@@ -114,6 +125,7 @@ export default class MyChart {
                 text: 'No data'
             }
         });
+		
     }
 
     /**
@@ -129,15 +141,14 @@ export default class MyChart {
     getConfiguration(canvas) {
 		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
 		const fontFamily = getComputedStyle(canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
-		// set the height & width to the canvas height (or to min value for hidden canvas) (setting the chart height or width to 100% throws errors in the console log)
+		// set the height to the canvas height (or to min value for hidden canvas) (setting the chart height to 100% throws errors in the console log)
 		const height = canvas.clientHeight>0 ?  canvas.clientHeight : '352';
-		const width = canvas.clientWidth>0 ?  canvas.clientWidth : '300';
 		
         return {
             chart: {
                 type: 'pie',
 				height: height,
-				width: width,
+				width: '100%',
                 toolbar: {
                     show: true
                 },
