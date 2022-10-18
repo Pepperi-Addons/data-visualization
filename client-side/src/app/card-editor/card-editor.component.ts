@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { IScorecards } from 'src/app/card.model';
-import { MatDialogRef } from '@angular/material/dialog';
+// import { MatDialogRef } from '@angular/material/dialog';
 import { AddonService } from 'src/services/addon.service';
 import { ActivatedRoute } from '@angular/router';
 import { config } from '../addon.config';
@@ -34,7 +34,7 @@ export class CardEditorComponent implements OnInit {
     @Output() removeClick: EventEmitter<any> = new EventEmitter();
     @Output() editClick: EventEmitter<any> = new EventEmitter();
 
-    dialogRef: MatDialogRef<any>;
+    // dialogRef: MatDialogRef<any>;
     public title: string;
     queryOptions = [];
     benchmarkQueryOptions = [];

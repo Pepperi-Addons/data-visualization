@@ -9,7 +9,7 @@ import { PepTextboxModule } from '@pepperi-addons/ngx-lib/textbox';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { PepSliderModule} from '@pepperi-addons/ngx-lib/slider';
 import { PepAddonService, PepNgxLibModule } from '@pepperi-addons/ngx-lib';
-import { MatDialogModule } from '@angular/material/dialog';
+// import { MatDialogModule } from '@angular/material/dialog';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { PepGroupButtonsModule } from '@pepperi-addons/ngx-lib/group-buttons';
 import { PepImageModule } from '@pepperi-addons/ngx-lib/image';
@@ -31,7 +31,7 @@ import { QuerySelectModule } from '../common/query-select/query-select.module';
         PepSliderModule,
         PepNgxLibModule,
         PepSelectModule,
-        MatDialogModule,
+        // MatDialogModule,
         PepGroupButtonsModule,
         PepColorModule,
         PepImageModule,
