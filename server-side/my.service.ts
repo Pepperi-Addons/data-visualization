@@ -45,10 +45,12 @@ class MyService {
     }
 
     async fixImportedScorecardsData(body) {
+        console.log("@@@@ scorecard charts fix:" + JSON.stringify(body.Object) + "@@@@")
         let configurationToFix = body.Object;
         for(let cardIndex in configurationToFix.cards) {
-            const importedChart = await this.papiClient.get(`/charts?where=Key=${configurationToFix.cards[cardIndex].chart}`);
-            configurationToFix.cards[cardIndex].chartCache = importedChart.ScriptURI;
+            const existingCharts = await this.papiClient.get(`/charts?where=Key=${configurationToFix.cards[cardIndex].chart}`);
+            console.log("@@@@ scorecards existingCharts: " + JSON.stringify(existingCharts) + "@@@@")
+            configurationToFix.cards[cardIndex].chartCache = existingCharts.length > 0 ? existingCharts[0].ScriptURI : '';
         }
         return configurationToFix;
     }

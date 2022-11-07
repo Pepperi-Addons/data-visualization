@@ -126,13 +126,6 @@ export class CardEditorComponent implements OnInit {
         this.updateHostObject();
     }
 
-    onHostEvents(event: any) {
-        if(event?.url) {
-            this.configuration.cards[this.id]['imageURL'] = event.url;
-            this.updateHostObject();
-        }
-    }
-
     async queryChanged(e) {
         this.configuration.cards[this.id].query = e;
         this.inputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;

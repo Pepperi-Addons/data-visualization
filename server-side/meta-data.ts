@@ -141,11 +141,6 @@ export const benchmarkChartBlockScheme: AddonDataScheme = {
     Name: "BenchmarkChart",
     Type: 'data',
     Fields: {
-        chart: {
-            Type: "Resource",
-            Resource: "Charts",
-            AddonUUID: "3d118baf-f576-4cdb-a81e-c2cc9af4d7ad"
-        },
         query: {
             Type: "Resource",
             Resource: "DataQueries",
@@ -180,11 +175,6 @@ export const scorecardsBlockScheme: AddonDataScheme = {
             Items: {
                 Type: "Object",
                 Fields: {
-                    chart: {
-                        Type: "Resource",
-                        Resource: "Charts",
-                        AddonUUID: "3d118baf-f576-4cdb-a81e-c2cc9af4d7ad"
-                    },
                     query: {
                         Type: "Resource",
                         Resource: "DataQueries",
