@@ -120,16 +120,15 @@ export class ScorecardsEditorComponent implements OnInit {
     }
 
     onFieldChange(key, event) {
-      const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value : event;
-  
-      if (key.indexOf('.') > -1) {
-          let keyObj = key.split('.');
-          this.configuration.scorecardsConfig[keyObj[0]][keyObj[1]] = value;
-      }
-      else {
-          this.configuration.scorecardsConfig[key] = value;
-      }
-      this.updateHostObject();
+        const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value : event;
+        if (key.indexOf('.') > -1) {
+            let keyObj = key.split('.');
+            this.configuration.scorecardsConfig[keyObj[0]][keyObj[1]] = value;
+        }
+        else {
+            this.configuration.scorecardsConfig[key] = value;
+        }
+        this.updateHostObject();
     }
     
     public onHostObjectChange(event) {
@@ -246,73 +245,69 @@ export class ScorecardsEditorComponent implements OnInit {
         return { scorecardsConfig: new IScorecardsEditor(), cards: [this.getDefaultCard()] };
     }
 
-  async getQueryOptions(){
-    let queries = await this.pluginService.getAllQueries();
-    queries = queries.filter(query =>{
-      for(let s of query.Series)
-        if(s.BreakBy.FieldID!='' || s.GroupBy[0].FieldID!='') return false;
-      
-      return true;
-    })
+    async getQueryOptions(){
+        let queries = await this.pluginService.getAllQueries();
+        queries = queries.filter(query =>{
+        for(let s of query.Series)
+            if(s.BreakBy.FieldID!='' || s.GroupBy[0].FieldID!='') return false;
+        
+        return true;
+        })
 
-    return queries;
-  }
-
-  addNewCardClick() {
-    let card = new ICardEditor();
-    card.id = (this.configuration?.cards.length);
-
-    this.configuration?.cards.push( card);
-    this.updateHostObject();
-  }
-
-  onCardEditClick(event) {
-       
-    if(this.configuration?.scorecardsConfig?.editSlideIndex === event.id){ //close the editor
-        this.configuration.scorecardsConfig.editSlideIndex = -1;
+        return queries;
     }
-    else{ 
-        this.currentCardindex = this.configuration.scorecardsConfig.editSlideIndex = parseInt(event.id);
-    }
-    //this.updateHostObjectField(`scorecardsConfig.editSlideIndex`, this.configuration.scorecardsConfig.editSlideIndex);
-    //this.cdr.detectChanges();
-    //this.updateHostObject();
-  }
-  
-  onCardRemoveClick(event){
-      this.configuration?.cards.splice(event.id, 1);
-      this.configuration?.cards.forEach(function(card, index, arr) {card.id = index; });
-      this.updateHostObject();
-  }
 
-  drop(event: CdkDragDrop<string[]>) {
-      if (event.previousContainer === event.container) {
-      moveItemInArray(this.configuration.cards, event.previousIndex, event.currentIndex);
-      for(let index = 0 ; index < this.configuration.cards.length; index++){
-          this.configuration.cards[index].id = index;
-      }
+    addNewCardClick() {
+        let card = new ICardEditor();
+        card.id = (this.configuration?.cards.length);
+
+        this.configuration?.cards.push( card);
         this.updateHostObject();
-      } 
-  }
+    }
 
-  onDragStart(event: CdkDragStart) {
-      this.changeCursorOnDragStart();
-  }
+    onCardEditClick(event) {
+        
+        if(this.configuration?.scorecardsConfig?.editSlideIndex === event.id){ //close the editor
+            this.configuration.scorecardsConfig.editSlideIndex = -1;
+        }
+        else{ 
+            this.currentCardindex = this.configuration.scorecardsConfig.editSlideIndex = parseInt(event.id);
+        }
+    }
+  
+    onCardRemoveClick(event) {
+        this.configuration?.cards.splice(event.id, 1);
+        this.configuration?.cards.forEach(function(card, index, arr) {card.id = index; });
+        this.updateHostObject();
+    }
 
-  onDragEnd(event: CdkDragEnd) {
-      this.changeCursorOnDragEnd();
-  }
+    drop(event: CdkDragDrop<string[]>) {
+        if (event.previousContainer === event.container) {
+        moveItemInArray(this.configuration.cards, event.previousIndex, event.currentIndex);
+        for(let index = 0 ; index < this.configuration.cards.length; index++){
+            this.configuration.cards[index].id = index;
+        }
+            this.updateHostObject();
+        } 
+    }
 
-  changeCursorOnDragStart() {
-    document.body.classList.add('inheritCursors');
-    document.body.style.cursor = 'grabbing';
-}
+    onDragStart(event: CdkDragStart) {
+        this.changeCursorOnDragStart();
+    }
 
-changeCursorOnDragEnd() {
-    document.body.classList.remove('inheritCursors');
-    document.body.style.cursor = 'unset';
-}
+    onDragEnd(event: CdkDragEnd) {
+        this.changeCursorOnDragEnd();
+    }
 
+    changeCursorOnDragStart() {
+        document.body.classList.add('inheritCursors');
+        document.body.style.cursor = 'grabbing';
+    }
+
+    changeCursorOnDragEnd() {
+        document.body.classList.remove('inheritCursors');
+        document.body.style.cursor = 'unset';
+    }
 
 
 }

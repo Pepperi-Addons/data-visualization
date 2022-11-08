@@ -25,7 +25,7 @@ export interface IScorecards{
 
 export class IScorecardsEditor {
     maxColumns: number = 1;
-    gap: number = 0.5;
+    gap: PepSizeType = 'sm';
     cardHeight: number = 16;
     useText: boolean = true;
     cardTextColor: textColor = 'system-primary';
@@ -44,7 +44,6 @@ export class IScorecardsEditor {
     editSlideIndex: number = -1;
     useRoundCorners: boolean = false;
     roundCornersSize: PepSizeType = 'md';
-
     useDropShadow: boolean = true;
     dropShadow: DropShadow = new DropShadow();
     useBorder: boolean = false;
@@ -60,7 +59,6 @@ export class ICardEditor {
     variablesData;
     benchmarkVariablesData;
     secondQuery;
-    imageURL: string = "";
     script: any;
     chartCache: any;
 }

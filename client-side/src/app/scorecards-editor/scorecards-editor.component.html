@@ -2,6 +2,12 @@
     <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" animationDuration="0ms">
         <mat-tab id="1" label="{{'General' | translate}}">
             <div *ngIf="blockLoaded">
+                <pep-group-buttons-settings pepResetConfigurationField="scorecardsConfig.gap" [hideReset]="configuration?.scorecardsConfig?.gap === configurationSource?.scorecardsConfig?.gap" 
+                    [resetHostEvents]="hostEvents"
+                    [groupType]="'sizes'" [subHeader]="'Gaps (rem)' | translate"
+                    [btnKey]="configuration?.scorecardsConfig?.gap" [useNone]="true" [excludeKeys]="['xs','xl','xxl']"
+                    (btnkeyChange)="onFieldChange('gap',$event)">
+                </pep-group-buttons-settings>
                 <div id="border">
                     <pep-checkbox [value]="configuration?.scorecardsConfig.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
                     <pep-color [value]="configuration?.scorecardsConfig.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.scorecardsConfig.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
