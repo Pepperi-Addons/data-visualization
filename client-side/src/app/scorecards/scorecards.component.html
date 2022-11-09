@@ -1,5 +1,5 @@
-<div id='cards' style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));"
-    [ngStyle]="{'gap': gapInRem}">
+<div class="scorecardsCont" #scorecardsContainer id='cards'
+    [ngClass]="['cardsGap_'+ configuration?.scorecardsConfig?.gap]">
     <gallery-card #cardContainer *ngFor="let currentCard of configuration?.cards"
                 [card]="currentCard"
                 [scorecardsConfig]="configuration?.scorecardsConfig"

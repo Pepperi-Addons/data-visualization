@@ -1,0 +1,22 @@
+@use '@pepperi-addons/ngx-lib/src/core/style/abstracts/variables' as variables;
+
+.scorecardsCont{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+
+    &.cardsGap_xs{
+        gap: variables.$spacing-xs;
+    }
+    &.cardsGap_sm{
+        gap: variables.$spacing-sm;
+    }
+    &.cardsGap_md{
+        gap: variables.$spacing-md;
+    }
+    &.cardsGap_lg{
+        gap: variables.$spacing-lg;
+    }
+    &.cardsGap_xl{
+        gap: variables.$spacing-xl;
+    }
+}

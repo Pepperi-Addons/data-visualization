@@ -15,7 +15,6 @@ export class ScorecardsComponent implements OnInit {
       this.parameters = value.pageParameters;
       console.log("AccountUUID from page = " + this.parameters?.AccountUUID);
       this._configuration = value?.configuration;
-      this.gapInRem = this.convertToRem(this.configuration?.scorecardsConfig.gap);
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
@@ -32,21 +31,6 @@ export class ScorecardsComponent implements OnInit {
   gapInRem: string;
 
   async ngOnInit() {
-  }
-
-  convertToRem(gap) {
-    switch(gap) {
-    case 'none':
-      return '0rem'
-    case 'sm':
-        return '2rem'
-    case 'md':
-        return '4rem'
-    case 'lg':
-        return '8rem'
-    default:
-        return '2rem'
-    }
   }
 
 }
