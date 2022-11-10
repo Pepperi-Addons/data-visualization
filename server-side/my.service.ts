@@ -38,7 +38,7 @@ class MyService {
     async fixImportedData(body) {
         console.log("@@@@ charts fix:" + JSON.stringify(body.Object) + "@@@@")
         let configurationToFix = body.Object;
-        const existingCharts = await this.papiClient.get(`/charts?where=Key=${configurationToFix.chart}`);
+        const existingCharts = await this.papiClient.get(`/charts?where=Key='${configurationToFix.chart}'`);
         console.log("@@@@" + JSON.stringify(existingCharts) + "@@@@")
         configurationToFix.chartCache = existingCharts.length > 0 ? existingCharts[0].ScriptURI : '';
         return configurationToFix;
@@ -48,7 +48,7 @@ class MyService {
         console.log("@@@@ scorecard charts fix:" + JSON.stringify(body.Object) + "@@@@")
         let configurationToFix = body.Object;
         for(let cardIndex in configurationToFix.cards) {
-            const existingCharts = await this.papiClient.get(`/charts?where=Key=${configurationToFix.cards[cardIndex].chart}`);
+            const existingCharts = await this.papiClient.get(`/charts?where=Key='${configurationToFix.cards[cardIndex].chart}'`);
             console.log("@@@@ scorecards existingCharts: " + JSON.stringify(existingCharts) + "@@@@")
             configurationToFix.cards[cardIndex].chartCache = existingCharts.length > 0 ? existingCharts[0].ScriptURI : '';
         }
