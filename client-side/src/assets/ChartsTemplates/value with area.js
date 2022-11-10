@@ -165,10 +165,10 @@ export default class MyChart {
 			valueMsg = (Math.trunc(total / 100)/10).toLocaleString() + ' K';
 		} else if (total >= 10 ** 3) {
 			valueMsg = Math.trunc(total).toLocaleString();
-		} else {
+		} else if (ser.length > 0) {
 			valueMsg = total.toLocaleString();
 		}
-		
+
 		// update the subtitle text with the total
 		this.chart.updateOptions({
 			subtitle: {

@@ -204,13 +204,13 @@ export default class MyChart {
 				formatter: function (value, opt) {
 					let val = value;
 					if (val >= 10 ** 6) {
-						val = Math.trunc(val / 100000)/10 + ' M';
+						val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
 						//val = (val / 1000000).toFixed(1) + ' M';
 					} else if (val >= 10 ** 3) {
-						val = Math.trunc(val / 100)/10 + ' K';
+						val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
 						//val = (val / 1000).toFixed(1) + ' K';
 					} else if (val >= 1) {
-						val = Math.trunc(val*10)/10;
+						val = (Math.trunc(val*10)/10).toLocaleString();
 						//val = Math.floor(val);
 					} else if (val == null) {
 						val = '';
