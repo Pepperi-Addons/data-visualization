@@ -109,7 +109,7 @@ export default class MyChart {
         }
 
 		// hide the data labels if there are too many labels
-		const showLabels = ser.length * ser[0].data.length < 30;
+		const showLabels = ser.length > 0 && ser.length * ser[0].data.length < 30;
 		this.chart.updateOptions({
 			dataLabels: {
 				enabled: showLabels
@@ -211,14 +211,11 @@ export default class MyChart {
                 formatter: function (value, opt) {
 					let val = value;
 					if (val >= 10 ** 6) {
-						val = Math.trunc(val / 100000)/10 + ' M';
-						//val = (val / 1000000).toFixed(1) + ' M';
+						val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
 					} else if (val >= 10 ** 3) {
-						val = Math.trunc(val / 100)/10 + ' K';
-						//val = (val / 1000).toFixed(1) + ' K';
+						val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
 					} else if (val >= 1) {
-						val = Math.trunc(val*10)/10;
-						//val = Math.floor(val);
+						val = (Math.trunc(val*10)/10).toLocaleString();
 					} else if (val == null) {
 						val = '';
 					}
