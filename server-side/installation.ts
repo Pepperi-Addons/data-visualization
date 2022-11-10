@@ -22,7 +22,7 @@ export async function install(client: Client, request: Request): Promise<any> {
 
     const res2 = await setUsageMonitorRelation(service);
 
-    const res3 = await upsertCharts(client,request, new MyService(client), charts);
+    const res3 = await upsertCharts(client,request, service, charts);
 
     const res4 = await createBlockSchemes(service);
 
@@ -63,11 +63,13 @@ export async function upgrade(client: Client, request: Request): Promise<any> {
     const res = await setPageBlockAndDimxRelations(service);
     const res2 = await setUsageMonitorRelation(service);
     const res3 = await createBlockSchemes(service);
-    let status = res.success && res2.success && res3.success;
+    const res4 = await upsertCharts(client,request, service, charts);
+    let status = res.success && res2.success && res3.success && res4.success;
     let resultObject = {
         pageBlockRelation:res,
         usageMonitorRelation:res2,
-        blockSchemes:res3
+        blockSchemes:res3,
+        upsertCharts:res4
     };
 	return { success: status, resultObject: resultObject }
     
