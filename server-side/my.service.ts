@@ -26,13 +26,17 @@ class MyService {
     }
 
     getCharts(chartsNames) {
-        var namesString = "("
+        var namesString = "(";
         for(var name of chartsNames) {
             namesString+= `"`+name+`",`;
         }
-        namesString = namesString.substring(0,namesString.length-1)
-        namesString+= ")"
-        return this.papiClient.get(`/charts?where=Name in ${namesString}`)
+        namesString = namesString.substring(0,namesString.length-1);
+        namesString+= ")";
+        return this.papiClient.get(`/charts?where=Name in ${namesString}`);
+    }
+
+    getGaugeChart() {
+        return this.papiClient.get(`/charts?where=Name=Gauge`);
     }
 
     async fixImportedData(body) {
