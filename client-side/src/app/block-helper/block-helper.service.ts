@@ -1,7 +1,6 @@
 import { EventEmitter, Injectable, Input, OnInit, Output } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { TranslateService } from "@ngx-translate/core";
-import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { PepButton } from "@pepperi-addons/ngx-lib/button";
 import { PageConfiguration } from "@pepperi-addons/papi-sdk";
 import { AddonService } from "src/services/addon.service";
