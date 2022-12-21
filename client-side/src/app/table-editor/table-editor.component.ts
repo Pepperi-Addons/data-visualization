@@ -7,6 +7,7 @@ import { ScorecardsConfiguration } from '../models/scorecards-configuration';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { BlockHelperService } from '../block-helper/block-helper.service';
 import { config } from '../addon.config';
+import { ChartConfiguration } from '../models/chart-configuration';
 
 @Component({
   selector: 'app-list-editor',
@@ -44,7 +45,21 @@ export class TableEditorComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.blockHelperService.initData(this.hostEvents);
+    if (!this.blockHelperService.configuration || Object.keys(this.blockHelperService.configuration).length == 0) {
+      this.loadDefaultConfiguration();
+    };
+    if(!this.blockHelperService.blockLoaded) {
+        this.pluginService.fillChartsOptions(this.blockHelperService.chartsOptions,'Table chart').then(res => {           
+            this.blockHelperService.charts = res;
+            if (!this.blockHelperService.configuration.chart) {
+                // set the first chart to be default
+                const firstChart = res[0];
+                this.blockHelperService.configuration.chart = firstChart.Key;
+                this.blockHelperService.configuration.chartCache = firstChart.ScriptURI;
+            }
+            this.blockHelperService.initData(this.hostEvents);
+        })
+    }
   }
 
   private loadDefaultConfiguration() {
@@ -52,8 +67,7 @@ export class TableEditorComponent implements OnInit {
     this.blockHelperService.updateHostObject(this.hostEvents);
   }
 
-  // using the same configuration as scorecards
-  protected getDefaultHostObject(): ScorecardsConfiguration {
-    return new ScorecardsConfiguration();
+  protected getDefaultHostObject(): ChartConfiguration {
+    return new ChartConfiguration();
   }
 }

@@ -21,7 +21,7 @@ import { ChartEditorModule } from '../chart-editor';
 import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { QuerySelectModule } from '../common/query-select/query-select.module';
-
+import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
 
 const pepIcons = [
   pepIconSystemBin,
@@ -41,6 +41,7 @@ const pepIcons = [
     PepSliderModule,
     PepColorModule,
     PepGroupButtonsModule,
+    PepGroupButtonsSettingsModule,
     MatTabsModule,
     ChartEditorModule,
     QuerySelectModule,

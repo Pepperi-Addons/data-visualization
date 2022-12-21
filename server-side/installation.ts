@@ -143,8 +143,7 @@ async function setPageBlockAndDimxRelations(service: MyService){
             EditorModuleName: `${blockName}EditorModule`,
             ElementsModule: 'WebComponents',
             ElementName: `table-element-${service.addonUUID}`,
-            EditorElementName: `table-editor-element-${service.addonUUID}`,
-            Hidden: true
+            EditorElementName: `table-editor-element-${service.addonUUID}`
         };
 
         blockName = 'BenchmarkChart';

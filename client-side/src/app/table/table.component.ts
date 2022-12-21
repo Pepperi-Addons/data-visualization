@@ -1,31 +1,29 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { PepAddonService, PepDataConvertorService, PepLoaderService, PepRowData } from '@pepperi-addons/ngx-lib';
-import { PepListComponent } from '@pepperi-addons/ngx-lib/list';
+import { PepLoaderService } from '@pepperi-addons/ngx-lib';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { AddonService } from '../../services/addon.service';
-import { DataView, GridDataViewField, DataViewFieldTypes } from '@pepperi-addons/papi-sdk/dist/entities/data-view';
 import { GenericListDataSource } from '../generic-list/generic-list.component';
-import { CardsGridDataView } from '@pepperi-addons/papi-sdk';
-import { of } from 'rxjs';
-import { BaseConfiguration } from '../models/base-configuration';
+import { ChartConfiguration } from '../models/chart-configuration';
 
 @Component({
   selector: 'table-scorecards',
   templateUrl: './table.component.html',
-  styleUrls: ['./table.component.css']
+  styleUrls: ['./table.component.scss']
 })
 export class TableComponent implements OnInit {
 
-  @ViewChild(PepListComponent) customList: PepListComponent;
   dataObjects: any[] = []
   dataSet;
   listDataSource: GenericListDataSource;
   parameters;
+  chartInstance: any;
+
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
-  private _configuration: BaseConfiguration;
-  get configuration(): BaseConfiguration {
+  @ViewChild("previewArea") divView: ElementRef;
+  private _configuration: ChartConfiguration;
+  get configuration(): ChartConfiguration {
     return this._configuration;
   }
 
@@ -35,7 +33,7 @@ export class TableComponent implements OnInit {
     if (value.configuration?.query) {
       if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
         this.parameters = value.pageParameters;
-        this.drawList(value.configuration);
+        this.drawChart(value.configuration);
       }
     }
     this.parameters = value.pageParameters;
@@ -51,106 +49,44 @@ export class TableComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  private getListDataSource(fields): GenericListDataSource {
-    let tableFields = [];
-    fields.forEach(field => {
-      tableFields.push({
-        FieldID: field,
-        Type: 'TextBox',
-        Title: field,
-        Mandatory: false,
-        ReadOnly: true,
-        Style: {
-          Alignment: {
-            Horizontal: "Left",
-            Vertical: "Center",
-          },
-        }
-      })
-    });
-    return {
-      getDataView: () => {
-        const cardView: CardsGridDataView = {
-          Type: 'CardsGrid',
-          Fields: tableFields,
-          Columns: [
-            {
-              Width: 0
-            },
-            {
-              Width: 0
-            }
-          ]
-        }
-        return of(cardView);
-      }
-    };
-  }
-
-  drawList(configuration) {
+  drawChart(configuration: any) {
     this.loaderService.show();
-    this.dataSet = [];
     // sending variable names and values as body
     let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
-    const body = {"VariableValues" : values} ?? {}
-    this.pluginService.executeQuery(configuration.query, body).then((data) => {
-      try {
-        // flat the series & groups
-        const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
-        const groups = data.DataQueries.map((data) => data.Groups).reduce((x, value) => x.concat(value), []);
-
-        const distinctSeries = this.getDistinct(series);
-        const distinctgroups = this.getDistinct(groups);
-
-        data.DataSet.forEach(dataSet => {
-          this.dataSet.push(dataSet);
-        });
-        this.dataSet = this.dataSet.slice();
-        this.listDataSource = this.getListDataSource([...distinctgroups,...distinctSeries ]);
-        this.loaderService.hide();
-      }
-      catch (err) {
-        console.log(err);
-      }
-    }).catch((err) => {
-      console.log(err);
-    })
-  }
-
-  getDistinct(arr) {
-    return arr.filter(function (elem, index, self) {
-      return index === self.indexOf(elem);
-    });
-  }
-
-  convertToPepRowData(object: any, dataView: DataView) {
-    const row = new PepRowData();
-    row.Fields = [];
-    for (let i = 0; i < dataView.Fields.length; i++) {
-      let field = dataView.Fields[i] as GridDataViewField;
-      row.Fields.push({
-        ApiName: field.FieldID,
-        Title: this.translate.instant(field.Title),
-        XAlignment: 1,
-        FormattedValue: object[field.FieldID] || '',
-        Value: object[field.FieldID] || '',
-        ColumnWidth: dataView['Columns'][i]?.Width ? dataView['Columns'][i]?.Width : 10,
-        AdditionalValue: '',
-        OptionalValues: [],
-        FieldType: DataViewFieldTypes[field.Type],
-        ReadOnly: field.ReadOnly,
-        Enabled: !field.ReadOnly
+    const body = { VariableValues: values } ?? {};
+    this.pluginService
+      .executeQuery(configuration.query, body)
+      .then((data) => {
+        System.import(configuration.chartCache)
+          .then((res) => {
+            const configuration = {
+              label: "Sales",
+            };
+            this.dataVisualizationService.loadSrcJSFiles(res.deps)
+              .then(() => {
+                this.chartInstance = new res.default(
+                  this.divView.nativeElement,
+                  configuration
+                );
+                this.chartInstance.data = data;
+                this.chartInstance.update();
+                window.dispatchEvent(new Event("resize"));
+                this.loaderService.hide();
+              })
+              .catch((err) => {
+                this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+                this.loaderService.hide();
+              });
+          })
+          .catch((err) => {
+            this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
+            this.loaderService.hide();
+          });
       })
-    }
-
-
-    return row;
-  }
-
-  deleteList() {
-    // if (this.divView) {
-    //   this.divView.nativeElement.innerHTML = "";
-    // }
+      .catch((err) => {
+        this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
+        this.loaderService.hide();
+      });
   }
 
   drawRequired(value) {

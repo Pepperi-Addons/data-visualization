@@ -24,11 +24,11 @@
   
   pep-checkbox{
     height: 2rem;
-    min-height: 2rem;
-    // margin-bottom: .5rem;
+    min-height: 2rem !important;
+    margin-bottom: .5rem !important;
 
     ::ng-deep  .pep-checkbox-container{
-        background: transparent;
+        background: transparent !important;
         padding-inline: 0;
 
         label{
