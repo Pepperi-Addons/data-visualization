@@ -22,6 +22,9 @@ import { PepColorModule } from '@pepperi-addons/ngx-lib/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { QuerySelectModule } from '../common/query-select/query-select.module';
 import { PepGroupButtonsSettingsModule } from '@pepperi-addons/ngx-composite-lib/group-buttons-settings';
+import { CardEditorModule } from '../card-editor/card-editor.module';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+
 
 const pepIcons = [
   pepIconSystemBin,
@@ -45,6 +48,8 @@ const pepIcons = [
     MatTabsModule,
     ChartEditorModule,
     QuerySelectModule,
+    DragDropModule,
+    CardEditorModule,
     TranslateModule.forChild({
       loader: {
           provide: TranslateLoader,

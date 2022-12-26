@@ -8,6 +8,9 @@ import { DataVisualizationService } from 'src/services/data-visualization.servic
 import { BlockHelperService } from '../block-helper/block-helper.service';
 import { config } from '../addon.config';
 import { ChartConfiguration } from '../models/chart-configuration';
+import { ICardEditor, IScorecards, IScorecardsEditor } from '../card.model';
+import { PageConfiguration } from '@pepperi-addons/papi-sdk';
+import { PepButton } from '@pepperi-addons/ngx-lib/button';
 
 @Component({
   selector: 'app-list-editor',
@@ -18,56 +21,136 @@ export class TableEditorComponent implements OnInit {
 
   @Input()
   set hostObject(value) {
-    if (value && value.configuration) {
-      this.blockHelperService.configuration = value.configuration
-    } else {
-      if (this.blockHelperService.blockLoaded) {
-        this.loadDefaultConfiguration();
+    if (value && value.configuration && Object.keys(value.configuration).length) {
+      if(!this._configuration) {
+        this._configuration = value.configuration;
       }
-    }
-    this.blockHelperService.pageParametersOptions = []
-    this.blockHelperService.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
+      if(value.configurationSource && Object.keys(value.configuration).length > 0){
+          this.configurationSource = value.configurationSource;
+      }
+    } else {
+          if(this.blockLoaded){
+              this.loadDefaultConfiguration();
+          }
+      }
+
+    this.pageParameters = value?.pageParameters || {};
+    this.pageParametersOptions = [];
+    // Object.keys(this.pageParameters).forEach(paramKey => {
+    // this.pageParametersOptions.push({key: paramKey, value: paramKey})
+    // });
+    this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
+  private _configuration: IScorecards;
+  get configuration(): IScorecards {
+      return this._configuration;
+  }
+  configurationSource;
+  blockLoaded = false;
+  activeTabIndex = 0;
+  chartsOptions: { key: string, value: string }[] = [];
+  charts;
+  currentCardindex: number;
+  private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
+  private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
+  protected pageParameters: any;
+  pageParametersOptions = [];
+  public textColor: Array<PepButton> = [];
+  public TextPositionStyling: Array<PepButton> = [];
+  public GroupTitleAndDescription: Array<PepButton> = [];
+  DropShadowStyle: Array<PepButton> = [];
 
   constructor(protected addonService: PepAddonService,
     public routeParams: ActivatedRoute,
     public router: Router,
     public route: ActivatedRoute,
     protected translate: TranslateService,
-    protected dataVisualizationService: DataVisualizationService,
+    protected dvService: DataVisualizationService,
     public pluginService: AddonService,
     protected blockHelperService: BlockHelperService
   ) {
       this.pluginService.addonUUID = config.AddonUUID;
-      this.blockHelperService = new BlockHelperService(translate,dataVisualizationService,pluginService);
+      this.blockHelperService = new BlockHelperService(translate,dvService,pluginService);
   }
 
   async ngOnInit(): Promise<void> {
-    if (!this.blockHelperService.configuration || Object.keys(this.blockHelperService.configuration).length == 0) {
+    if (!this.configuration || Object.keys(this.configuration).length == 0) {
       this.loadDefaultConfiguration();
-    };
-    if(!this.blockHelperService.blockLoaded) {
-        this.pluginService.fillChartsOptions(this.blockHelperService.chartsOptions,'Table chart').then(res => {           
-            this.blockHelperService.charts = res;
-            if (!this.blockHelperService.configuration.chart) {
-                // set the first chart to be default
-                const firstChart = res[0];
-                this.blockHelperService.configuration.chart = firstChart.Key;
-                this.blockHelperService.configuration.chartCache = firstChart.ScriptURI;
-            }
-            this.blockHelperService.initData(this.hostEvents);
-        })
+    }
+    this.configuration.scorecardsConfig.editSlideIndex = -1;
+    this.DropShadowStyle = this.dvService.getShadowStyles();
+    
+    if(!this.blockLoaded) {
+      this.pluginService.fillChartsOptions(this.chartsOptions,'Table chart').then(res => {           
+          this.charts = res;
+          this.dvService.setDefaultChart(this.configuration.scorecardsConfig, res);
+          this.updatePageConfigurationObject();
+          this.updateHostObject();
+          this.blockLoaded = true;
+          this.hostEvents.emit({ action: 'block-editor-loaded' });
+      })
     }
   }
 
   private loadDefaultConfiguration() {
-    this.blockHelperService.configuration = this.getDefaultHostObject();
-    this.blockHelperService.updateHostObject(this.hostEvents);
+    this._configuration = this.getDefaultHostObject();
+        this.updateHostObject();
   }
 
-  protected getDefaultHostObject(): ChartConfiguration {
-    return new ChartConfiguration();
+  private getDefaultCard(): ICardEditor {
+    let card = new ICardEditor();
+    card.id = 0;
+    card.title = "Query1"
+    return card;
+  }
+
+  getDefaultHostObject(): IScorecards {
+    return { scorecardsConfig: new IScorecardsEditor(), cards: [this.getDefaultCard()] };
+  }
+
+  onCardEditClick(event) {
+      if(this.configuration?.scorecardsConfig?.editSlideIndex === event.id){ //close the editor
+          this.configuration.scorecardsConfig.editSlideIndex = -1;
+      }
+      else{ 
+          this.currentCardindex = this.configuration.scorecardsConfig.editSlideIndex = parseInt(event.id);
+      }
+  }
+
+  updateHostObject() {
+    this.hostEvents.emit({
+        action: 'set-configuration',
+        configuration: this.configuration
+    });
+  }
+
+  public onHostObjectChange(event) {
+    if(event && event.action) {
+        if (event.action === 'set-configuration') {
+            this._configuration = event.configuration;
+            this.updateHostObject();
+
+            // Update page configuration only if updatePageConfiguration
+            if (event.updatePageConfiguration) {
+                this.updatePageConfigurationObject();
+            }
+        }
+    }
+  }
+
+  private updatePageConfigurationObject() {
+    this._pageConfiguration = this.defaultPageConfiguration;
+    this._pageConfiguration.Parameters.push({
+        Key: 'AccountUUID',
+        Type: 'String',
+        Consume: true,
+        Produce: false
+    });
+    this.hostEvents.emit({
+        action: 'set-page-configuration',
+        pageConfiguration: this._pageConfiguration
+    });
   }
 }

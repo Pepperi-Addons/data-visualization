@@ -87,5 +87,7 @@
     "Assgined_Accounts":"Accounts assigned to current user",
     "All_Users": "All users",
     "Current_User":"Current user",
-    "ChartHeight": "Chart Height"
+    "ChartHeight": "Chart height",
+    "BorderColor": "Border color",
+    "BorderOpacity": "Border opacity"
 }

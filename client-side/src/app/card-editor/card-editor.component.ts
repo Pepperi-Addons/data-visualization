@@ -19,14 +19,7 @@ export class CardEditorComponent implements OnInit {
     @Input() charts: any;
     @Input() chartsOptions: { key: string, value: string }[];
     @Input() pageParametersOptions;
-
-    // private _pageParameters: any = {};
-    // @Input()
-    // set pageParameters(value: any) {
-    //     this._pageParameters = value;
-    // }
-    
-
+    @Input() isScorecard: boolean;
     @Input() isDraggable = false;
     @Input() showActions = true;
 

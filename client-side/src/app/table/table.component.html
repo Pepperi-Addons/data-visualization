@@ -1,11 +1,11 @@
-<div class="minHeight" [ngStyle]="{'border': dataVisualizationService.getChartBorder(this.configuration?.useBorder, this.configuration?.border),
-                'box-shadow': configuration?.useDropShadow === true ? dataVisualizationService.getCardShadow(this.configuration?.dropShadow?.intensity/100,configuration?.dropShadow?.type) : 'unset',
+<div class="minHeight" [ngStyle]="{'border': dataVisualizationService.getChartBorder(this.configuration?.scorecardsConfig.useBorder, this.configuration?.scorecardsConfig.border),
+                'box-shadow': configuration?.scorecardsConfig.useDropShadow === true ? dataVisualizationService.getCardShadow(this.configuration?.scorecardsConfig.dropShadow?.intensity/100,configuration?.scorecardsConfig.dropShadow?.type) : 'unset',
                 'overflow': 'hidden',
-                'margin': configuration?.useDropShadow === true ? '1rem' : '0rem'}">
-    <div class="pep-border-bottom" [ngStyle]="{'text-align':configuration?.horizontalAlign}">
-        <label class="body-xl bold ellipsis">{{configuration?.label}}</label>
+                'margin': configuration?.scorecardsConfig.useDropShadow === true ? '1rem' : '0rem'}">
+    <div class="pep-border-bottom" [ngStyle]="{'text-align':configuration?.scorecardsConfig.horizontalAlign}">
+        <label class="body-xl bold ellipsis">{{configuration?.scorecardsConfig.label}}</label>
     </div>
-    <div #previewArea [ngStyle]="{'height.rem': this.configuration?.height}">
+    <div #previewArea [ngStyle]="{'height.rem': this.configuration?.scorecardsConfig.height}">
     </div>
 </div>
 

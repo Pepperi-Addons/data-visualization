@@ -34,8 +34,17 @@ export default class MyChart {
      * the embedder calls this function when there are changes to the chart data
      */
     update() {
-        const groups = this.data.DataQueries.map((data) => data.Groups).flat();
-        const series = this.data.DataQueries.map((data) => data.Series).flat();
+/*
+this.data = [{
+	"DataQueries":[{"Name":"Data1","Groups":["ActionDate"],"Series":["Series 1","Series 2"]},{"Name":"Data2","Groups":["ActionDate"],"Series":["Series 3"]}],
+	"DataSet":[{"ActionDate":"Jan","Series 1":93,"Series 2":19,"Series 3":77},{"ActionDate":"Feb","Series 1":81,"Series 2":59,"Series 3":83},{"ActionDate":"Mar","Series 1":14,"Series 2":93,"Series 3":58},{"ActionDate":"Apr","Series 1":58,"Series 2":36,"Series 3":91},{"ActionDate":"May","Series 1":44,"Series 2":3,"Series 3":42},{"ActionDate":"Jun","Series 1":15,"Series 2":28,"Series 3":19}]
+	},{
+	"DataQueries":[{"Name":"Data1a","Groups":["ActionDate"],"Series":["Series 1a","Series 2a"]},{"Name":"Data2","Groups":["ActionDate"],"Series":["Series 3a"]}],
+	"DataSet":[{"ActionDate":"Jan","Series 1a":93,"Series 2a":19,"Series 3a":77},{"ActionDate":"Feb","Series 1a":81,"Series 2a":59,"Series 3a":83},{"ActionDate":"Mar","Series 1a":14,"Series 2a":93,"Series 3a":58},{"ActionDate":"Apr","Series 1a":58,"Series 2a":36,"Series 3a":91}]
+}];
+*/	
+        const groups = this.data.map((x) => x.DataQueries.map((data) => data.Groups).flat()).flat();
+        const series = this.data.map((x) => x.DataQueries.map((data) => data.Series).flat()).flat();
 
         const uniqueGroups = groups.filter(function (elem, index, self) {
             return index === self.indexOf(elem);
@@ -44,8 +53,6 @@ export default class MyChart {
         const uniqueSeries = series.filter(function (elem, index, self) {
             return index === self.indexOf(elem);
         });
-
-        const dataSet = this.data.DataSet;
 
         // Create a table.
 		const table = document.createElement("table");
@@ -64,6 +71,19 @@ export default class MyChart {
 				th.setAttribute('style', 'padding:4px 6px; border:solid 1px #ddd; background-color: #E0E0E0;');
 				th.innerHTML = col[i];
 				tr.appendChild(th);
+			}
+
+			// create merge data set
+			var key = uniqueGroups[0];
+			let arr1 = this.data[0].DataSet;
+			let dataSet = [];
+			for(let i=0; i<arr1.length; i++) {
+				let line = {...arr1[i]};
+				for (let j=1; j<this.data.length; j++) {
+					let arrJ = this.data[j].DataSet;
+					line = {...line,...(arrJ.find((itmInner) => itmInner[key] === line[key]))};
+				}
+				dataSet.push(line);
 			}
 
 			// add json data to the table as rows.
@@ -86,6 +106,11 @@ export default class MyChart {
 		
         } else {
             // the data has no group by -> show the Series as rows
+			
+			// create merge data set
+			let dataSet = this.data.map((x) => x.DataSet).flat();
+			
+			// add json data to the table as rows.
 			for (let i = 0; i < uniqueSeries.length; i++) {
 				let tr = table.insertRow(-1);
 				let tabCell = tr.insertCell(-1);
