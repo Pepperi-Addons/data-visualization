@@ -3,7 +3,6 @@
     #tabGroup
     class="editor-tabs"
     [selectedIndex]="blockHelperService.activeTabIndex"
-    (selectedTabChange)="blockHelperService.tabClick($event)"
     animationDuration="0ms"
   >
     <mat-tab id="1" label="{{ 'General' | translate }}">

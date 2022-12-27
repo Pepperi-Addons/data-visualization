@@ -6,14 +6,14 @@
                 [value]="configuration?.scorecardsConfig.useLabel"
                 [label]="'Title' | translate"
                 [renderTitle]="false"
-                (valueChange)="dvService.onValueChanged('useLabel',$event,hostEvents,configuration.scorecardsConfig,charts)"
+                (valueChange)="dvService.onValueChanged('useLabel',$event,hostEvents,configuration,charts)"
                 ></pep-checkbox>
                 <pep-textbox
                 [label]="'TitleText' | translate"
                 [type]="'text'"
                 [disabled]="!configuration?.scorecardsConfig.useLabel"
                 [(value)]="configuration?.scorecardsConfig.label"
-                (valueChange)="dvService.onValueChanged('Label',$event,hostEvents,configuration.scorecardsConfig,charts)"
+                (valueChange)="dvService.onValueChanged('Label',$event,hostEvents,configuration,charts)"
                 ></pep-textbox>
                 <pep-group-buttons-settings
                 [groupType]="'horizontal-align'"
@@ -30,14 +30,14 @@
                     [value]="configuration?.scorecardsConfig.chart"
                     [xAlignment]="'left'"
                     [options]="chartsOptions"
-                    (valueChange)="dvService.onValueChanged('Chart',$event,hostEvents,configuration.scorecardsConfig,charts)"
+                    (valueChange)="dvService.onValueChanged('Chart',$event,hostEvents,configuration,charts)"
                     *ngIf="blockLoaded">
                 </pep-select>
                 <pep-textbox
                     [label]="'ChartHeight' | translate"
                     [type]="'int'"
                     [(value)]="configuration?.scorecardsConfig.height"
-                    (valueChange)="dvService.onValueChanged('Height',$event,hostEvents,configuration.scorecardsConfig,charts)"
+                    (valueChange)="dvService.onValueChanged('Height',$event,hostEvents,configuration,charts)"
                     ></pep-textbox>
                 <div id="border">
                     <pep-checkbox [value]="configuration?.scorecardsConfig.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="dvService.onFieldChange('useBorder',$event,hostEvents,configuration)"></pep-checkbox>

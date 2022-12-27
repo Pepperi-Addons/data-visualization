@@ -86,9 +86,6 @@ export class BlockHelperService {
     });
   }
 
-  tabClick(event) {
-  }
-
   async queryChanged(e, hostEvents: EventEmitter<any>) {
     this.configuration.query = e;
     this.inputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;

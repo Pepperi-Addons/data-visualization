@@ -103,7 +103,7 @@ export class ChartComponent implements OnInit {
     if (this.divView) this.divView.nativeElement.innerHTML = "";
   }
 
-  drawRequired(value) {
+  drawRequired(value): boolean {
     return (
       this.configuration?.query != value.configuration.query ||
       this.configuration?.chart != value.configuration.chart ||

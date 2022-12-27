@@ -78,16 +78,19 @@ export class TableComponent implements OnInit {
     });
   }
 
-  drawRequired(value) {
-    if(this.configuration?.scorecardsConfig.chart != value.configuration.scorecardsConfig.chart)
-      return true;
-    if(this.configuration?.cards && this.configuration?.cards.length != value.configuration?.cards.length)
-      return true;
-    for(let i=0; i < this.configuration?.cards.length; i++) {
-      if(this.isDiff(this.configuration?.cards[i],value.configuration?.cards[i]))
-        return true;
+  drawRequired(value): boolean {
+    let isRequired = false;
+    if(this.configuration?.scorecardsConfig.chart != value.configuration.scorecardsConfig.chart ||
+      (this.configuration?.cards && this.configuration?.cards.length != value.configuration?.cards.length)) {
+      isRequired = true;
     }
-    return false;
+    else {
+      for(let i=0; i < this.configuration?.cards.length; i++) {
+        if(this.isDiff(this.configuration?.cards[i],value.configuration?.cards[i]))
+        isRequired = true;
+      }
+    }
+    return isRequired;
   }
 
   isDiff(card1, card2) {

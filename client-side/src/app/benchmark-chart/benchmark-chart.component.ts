@@ -114,7 +114,7 @@ export class BenchmarkChartComponent implements OnInit {
             this.divView.nativeElement.innerHTML = "";
     }
 
-    drawRequired(value) {
+    drawRequired(value): boolean {
     return (
       this.configuration?.query != value.configuration.query ||
       this.configuration?.chart != value.configuration.chart ||

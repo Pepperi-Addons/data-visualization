@@ -188,6 +188,12 @@ export class DataVisualizationService {
     }
 
     onValueChanged(type, event, hostEvents: EventEmitter<any>, configuration, charts) {
+        let originalConf = null;
+        // to support the structure of scorecards and table configurations
+        if(configuration.scorecardsConfig) {
+            originalConf = configuration;
+            configuration = configuration.scorecardsConfig;
+        }
         switch (type) {
             case 'Chart':
                 if (event) {
@@ -220,7 +226,13 @@ export class DataVisualizationService {
     
                 break;
         }
-        this.updateHostObject(hostEvents,configuration);
+        if(originalConf) {
+            originalConf.scorecardsConfig = configuration;
+            this.updateHostObject(hostEvents,originalConf);
+        }
+        else {
+            this.updateHostObject(hostEvents,configuration);
+        }
       }
 
       addNewCardClick(hostEvents, configuration, isTable = false) {
