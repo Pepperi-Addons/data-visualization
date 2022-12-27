@@ -62,14 +62,12 @@ export class BenchmarkChartComponent implements OnInit {
         let benchmarkValues = this.dataVisualizationService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
         const body = { VariableValues: values } ?? {};
         const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
-        this.pluginService.executeQuery(configuration.query, body).then((firstQueryData) => {
-            this.pluginService.executeQuery(configuration.secondQuery, benchmarkBody).then((secondQueryData) => {
-                System.import(configuration.chartCache).then((res) => {
-                    const configuration = {
-                        label: 'Sales'
-                    }
-                    this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
-                        this.chartInstance = new res.default(this.divView.nativeElement, configuration);
+        System.import(configuration.chartCache).then((res) => {
+            const conf = {label: 'Sales'};
+            this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
+                this.chartInstance = new res.default(this.divView.nativeElement, conf);
+                this.pluginService.executeQuery(configuration.query, body).then((firstQueryData) => {
+                    this.pluginService.executeQuery(configuration.secondQuery, benchmarkBody).then((secondQueryData) => {
                         this.chartInstance.data = firstQueryData;
                         this.chartInstance.data["BenchmarkQueries"] = []
                         this.chartInstance.data["BenchmarkSet"] = []
@@ -80,22 +78,22 @@ export class BenchmarkChartComponent implements OnInit {
                         this.chartInstance.update();
                         window.dispatchEvent(new Event('resize'));
                         this.loaderService.hide();
-                    }).catch(err => {
-                        this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+                    }).catch((err) => {
+                        this.divView.nativeElement.innerHTML = `Failed to execute second query: ${configuration.secondQuery} , error: ${err}`;
                         this.loaderService.hide();
                     })
-                }).catch(err => {
-                    this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
+                }).catch((err) => {
+                    this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
                     this.loaderService.hide();
-                });
-            }).catch((err) => {
-                this.divView.nativeElement.innerHTML = `Failed to execute second query: ${configuration.secondQuery} , error: ${err}`;
+                })
+            }).catch(err => {
+                this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
                 this.loaderService.hide();
             })
-        }).catch((err) => {
-            this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
+        }).catch(err => {
+            this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
             this.loaderService.hide();
-        })
+        });
 
     }
 
