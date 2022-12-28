@@ -86,8 +86,10 @@ export class TableComponent implements OnInit {
     }
     else {
       for(let i=0; i < this.configuration?.cards.length; i++) {
-        if(this.isDiff(this.configuration?.cards[i],value.configuration?.cards[i]))
-        isRequired = true;
+        if(this.isDiff(this.configuration?.cards[i],value.configuration?.cards[i])) {
+          isRequired = true;
+          break;
+        }
       }
     }
     return isRequired;
