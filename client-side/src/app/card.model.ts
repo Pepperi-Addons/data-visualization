@@ -48,6 +48,11 @@ export class IScorecardsEditor {
     dropShadow: DropShadow = new DropShadow();
     useBorder: boolean = false;
     border: Color = new Color();
+    height: number = 22;
+    chart: any;
+    chartCache: any;
+    label: any;
+    useLabel: any;
 }
 
 export class ICardEditor {

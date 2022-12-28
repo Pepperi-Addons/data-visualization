@@ -1,42 +1,44 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { PepAddonService, PepDataConvertorService, PepLoaderService, PepRowData } from '@pepperi-addons/ngx-lib';
-import { PepListComponent } from '@pepperi-addons/ngx-lib/list';
+import { PepLoaderService } from '@pepperi-addons/ngx-lib';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { AddonService } from '../../services/addon.service';
-import { DataView, GridDataViewField, DataViewFieldTypes } from '@pepperi-addons/papi-sdk/dist/entities/data-view';
+import { IScorecards, IScorecardsEditor } from '../card.model';
 import { GenericListDataSource } from '../generic-list/generic-list.component';
-import { CardsGridDataView } from '@pepperi-addons/papi-sdk';
-import { of } from 'rxjs';
-import { BaseConfiguration } from '../models/base-configuration';
+import { ChartConfiguration } from '../models/chart-configuration';
 
 @Component({
   selector: 'table-scorecards',
   templateUrl: './table.component.html',
-  styleUrls: ['./table.component.css']
+  styleUrls: ['./table.component.scss']
 })
 export class TableComponent implements OnInit {
 
-  @ViewChild(PepListComponent) customList: PepListComponent;
   dataObjects: any[] = []
   dataSet;
   listDataSource: GenericListDataSource;
   parameters;
+  chartInstance: any;
+
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
-  private _configuration: BaseConfiguration;
-  get configuration(): BaseConfiguration {
+  @ViewChild("previewArea") divView: ElementRef;
+  private _configuration: IScorecards;
+  get configuration(): IScorecards {
     return this._configuration;
   }
 
   @Input('hostObject')
   set hostObject(value) {
-    console.log("AccountUUID from page = " + this.parameters?.AccountUUID)
-    if (value.configuration?.query) {
+    console.log("AccountUUID from page = " + this.parameters?.AccountUUID);
+    if (value.configuration?.cards.length > 0 && !value.configuration?.cards.some(c => !c.query)) {
       if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
         this.parameters = value.pageParameters;
-        this.drawList(value.configuration);
+        this.drawTable(value.configuration);
       }
+    }
+    else if(value.configuration?.cards.length == 0) {
+      this.deleteChart();
     }
     this.parameters = value.pageParameters;
     this._configuration = value?.configuration;
@@ -51,116 +53,62 @@ export class TableComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  private getListDataSource(fields): GenericListDataSource {
-    let tableFields = [];
-    fields.forEach(field => {
-      tableFields.push({
-        FieldID: field,
-        Type: 'TextBox',
-        Title: field,
-        Mandatory: false,
-        ReadOnly: true,
-        Style: {
-          Alignment: {
-            Horizontal: "Left",
-            Vertical: "Center",
-          },
-        }
-      })
-    });
-    return {
-      getDataView: () => {
-        const cardView: CardsGridDataView = {
-          Type: 'CardsGrid',
-          Fields: tableFields,
-          Columns: [
-            {
-              Width: 0
-            },
-            {
-              Width: 0
-            }
-          ]
-        }
-        return of(cardView);
-      }
-    };
-  }
-
-  drawList(configuration) {
+  drawTable(configuration: any) {
     this.loaderService.show();
-    this.dataSet = [];
-    // sending variable names and values as body
-    let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
-    const body = {"VariableValues" : values} ?? {}
-    this.pluginService.executeQuery(configuration.query, body).then((data) => {
-      try {
-        // flat the series & groups
-        const series = data.DataQueries.map((data) => data.Series).reduce((x, value) => x.concat(value), []);
-        const groups = data.DataQueries.map((data) => data.Groups).reduce((x, value) => x.concat(value), []);
-
-        const distinctSeries = this.getDistinct(series);
-        const distinctgroups = this.getDistinct(groups);
-
-        data.DataSet.forEach(dataSet => {
-          this.dataSet.push(dataSet);
+    this.executeAllQueries(configuration.cards).then((data) => {
+      System.import(configuration.scorecardsConfig.chartCache).then((res) => {
+        const configuration = {label: "Sales"};
+        this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
+          this.chartInstance = new res.default(this.divView.nativeElement, configuration);
+          this.chartInstance.data = data;
+          this.chartInstance.update();
+          window.dispatchEvent(new Event("resize"));
+          this.loaderService.hide();
+        }).catch((err) => {
+          this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+          this.loaderService.hide();
         });
-        this.dataSet = this.dataSet.slice();
-        this.listDataSource = this.getListDataSource([...distinctgroups,...distinctSeries ]);
+      }).catch((err) => {
+        this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.scorecardsConfig.chartCache}, error: ${err}`;
         this.loaderService.hide();
-      }
-      catch (err) {
-        console.log(err);
-      }
+      });
     }).catch((err) => {
-      console.log(err);
-    })
-  }
-
-  getDistinct(arr) {
-    return arr.filter(function (elem, index, self) {
-      return index === self.indexOf(elem);
+      this.divView.nativeElement.innerHTML = `Failed to execute cards: ${JSON.stringify(configuration.scorecardsConfig.cards)}, error: ${err}`;
+      this.loaderService.hide();
     });
   }
 
-  convertToPepRowData(object: any, dataView: DataView) {
-    const row = new PepRowData();
-    row.Fields = [];
-    for (let i = 0; i < dataView.Fields.length; i++) {
-      let field = dataView.Fields[i] as GridDataViewField;
-      row.Fields.push({
-        ApiName: field.FieldID,
-        Title: this.translate.instant(field.Title),
-        XAlignment: 1,
-        FormattedValue: object[field.FieldID] || '',
-        Value: object[field.FieldID] || '',
-        ColumnWidth: dataView['Columns'][i]?.Width ? dataView['Columns'][i]?.Width : 10,
-        AdditionalValue: '',
-        OptionalValues: [],
-        FieldType: DataViewFieldTypes[field.Type],
-        ReadOnly: field.ReadOnly,
-        Enabled: !field.ReadOnly
-      })
+  drawRequired(value): boolean {
+    let isRequired = false;
+    if(this.configuration?.scorecardsConfig.chart != value.configuration.scorecardsConfig.chart ||
+      (this.configuration?.cards && this.configuration?.cards.length != value.configuration?.cards.length)) {
+      isRequired = true;
     }
-
-
-    return row;
+    else {
+      for(let i=0; i < this.configuration?.cards.length; i++) {
+        if(this.isDiff(this.configuration?.cards[i],value.configuration?.cards[i])) {
+          isRequired = true;
+          break;
+        }
+      }
+    }
+    return isRequired;
   }
 
-  deleteList() {
-    // if (this.divView) {
-    //   this.divView.nativeElement.innerHTML = "";
-    // }
+  isDiff(card1, card2) {
+    return (card1.query != card2.query || 
+      !this.pluginService.variableDatasEqual(card1.variablesData,card2.variablesData));
   }
 
-  drawRequired(value) {
-    return (
-      this.configuration?.query != value.configuration.query ||
-      !this.pluginService.variableDatasEqual(
-        this.configuration?.variablesData,
-        value.configuration.variablesData
-      )
-    );
+  async executeAllQueries(cards): Promise<any> {
+    return Promise.all(cards.map(card => {
+      const values = this.dataVisualizationService.buildVariableValues(card.variablesData, this.parameters);
+      return this.pluginService.executeQuery(card.query, { VariableValues: values })
+    }));
+  }
+
+  deleteChart() {
+    if (this.divView) this.divView.nativeElement.innerHTML = "";
   }
 
 }

@@ -6,22 +6,22 @@
                     [resetHostEvents]="hostEvents"
                     [groupType]="'sizes'" [subHeader]="'Gaps (rem)' | translate"
                     [btnKey]="configuration?.scorecardsConfig?.gap" [useNone]="true" [excludeKeys]="['xs','xl','xxl']"
-                    (btnkeyChange)="onFieldChange('gap',$event)">
+                    (btnkeyChange)="dvService.onFieldChange('scorecardsConfig.gap',$event,hostEvents,configuration)">
                 </pep-group-buttons-settings>
                 <div id="border">
-                    <pep-checkbox [value]="configuration?.scorecardsConfig.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useBorder',$event)"></pep-checkbox>
-                    <pep-color [value]="configuration?.scorecardsConfig.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.scorecardsConfig.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="onFieldChange('border.color',$event)">
+                    <pep-checkbox [value]="configuration?.scorecardsConfig.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="dvService.onFieldChange('scorecardsConfig.useBorder',$event,hostEvents,configuration)"></pep-checkbox>
+                    <pep-color [value]="configuration?.scorecardsConfig.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.scorecardsConfig.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="dvService.onFieldChange('border.color',$event,hostEvents,configuration)">
                     </pep-color>
-                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.scorecardsConfig.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.scorecardsConfig.useBorder" [value]="configuration?.scorecardsConfig.border?.opacity" [background]="getSliderBackground(configuration?.scorecardsConfig.border?.color)" (valueChange)="onFieldChange('border.opacity',$event)">
+                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.scorecardsConfig.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.scorecardsConfig.useBorder" [value]="configuration?.scorecardsConfig.border?.opacity" [background]="getSliderBackground(configuration?.scorecardsConfig.border?.color)" (valueChange)="dvService.onFieldChange('scorecardsConfig.border.opacity',$event,hostEvents,configuration)">
                     </pep-slider>
                 </div>
                 <div>
-                    <pep-checkbox [value]="configuration?.scorecardsConfig.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="onFieldChange('useDropShadow',$event)">
+                    <pep-checkbox [value]="configuration?.scorecardsConfig.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="dvService.onFieldChange('scorecardsConfig.useDropShadow',$event,hostEvents,configuration)">
                     </pep-checkbox>
                     <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
-                    <pep-group-buttons [buttons]="DropShadowStyle" [selectedButtonKey]=" this.configuration?.scorecardsConfig.dropShadow?.type" buttonsClass="md regular" (buttonClick)="onFieldChange('dropShadow.type',$event)" viewType="toggle" stretch="true">
+                    <pep-group-buttons [buttons]="DropShadowStyle" [selectedButtonKey]=" this.configuration?.scorecardsConfig.dropShadow?.type" buttonsClass="md regular" (buttonClick)="dvService.onFieldChange('scorecardsConfig.dropShadow.type',$event,hostEvents,configuration)" viewType="toggle" stretch="true">
                     </pep-group-buttons>
-                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.scorecardsConfig.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.scorecardsConfig.useDropShadow" [value]="configuration?.scorecardsConfig.dropShadow?.intensity" (valueChange)="onFieldChange('dropShadow.intensity',$event)">
+                    <pep-slider [label]="'ShadowIntensity' | translate" [hint]="configuration?.scorecardsConfig.dropShadow?.intensity?.toString()" [background]="'RGBA(0,0,0,50%)'" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.scorecardsConfig.useDropShadow" [value]="configuration?.scorecardsConfig.dropShadow?.intensity" (valueChange)="dvService.onFieldChange('scorecardsConfig.dropShadow.intensity',$event,hostEvents,configuration)">
                     </pep-slider>
                 </div>
             </div>
@@ -29,17 +29,18 @@
         <mat-tab id="2" label="{{'Content' | translate}}">
             <h2>{{'Cards' | translate}}
             </h2>
-            <div *ngIf="charts" (cdkDropListDropped)="drop($event)"  cdkDropList>
+            <div *ngIf="charts" (cdkDropListDropped)="dvService.drop($event, hostEvents, configuration)"  cdkDropList>
                 <card-editor *ngFor="let currentCard of configuration?.cards;"
                     [id]="currentCard?.id" [charts]="charts" [chartsOptions]="chartsOptions" [pageParametersOptions]="pageParametersOptions" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
-                    [isDraggable]="true" (editClick)='onCardEditClick($event);' (removeClick)='onCardRemoveClick($event);'
+                    [isDraggable]="true" [isScorecard]="true" (editClick)='onCardEditClick($event);' (removeClick)='dvService.onCardRemoveClick($event, hostEvents, configuration);'
                     [configuration]="configuration"
-                    cdkDrag [cdkDragDisabled]="currentCard?.id == configuration?.scorecardsConfig?.editSlideIndex" style="cursor: grab;" (cdkDragStarted)="onDragStart($event)" (cdkDragEnded)="onDragEnd($event)">
+                    cdkDrag [cdkDragDisabled]="currentCard?.id == configuration?.scorecardsConfig?.editSlideIndex" style="cursor: grab;" (cdkDragStarted)="dvService.onDragStart($event)" (cdkDragEnded)="dvService.onDragEnd($event)">
                     <!-- NOT IN USE [pageParameters]="pageParameters" -->
                 </card-editor>
             </div>
             <pep-button class="add-content-button" value="{{ 'Add' | translate}}" styleType="regular" iconName="number_plus" iconPosition="end"
-                    (buttonClick)="addNewCardClick()"></pep-button>
+                    (buttonClick)="dvService.addNewCardClick(hostEvents, configuration, true)">
+            </pep-button>
         </mat-tab>
     </mat-tab-group>
 </div>

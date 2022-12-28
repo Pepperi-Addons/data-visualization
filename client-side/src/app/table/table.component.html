@@ -1,9 +1,11 @@
-<div class="list-wrapper" #listContainer id="listContainer" [ngStyle]="{'border': dataVisualizationService.getChartBorder(this.configuration?.useBorder, this.configuration?.border),
-'box-shadow': configuration?.useDropShadow === true ? dataVisualizationService.getCardShadow(this.configuration?.dropShadow?.intensity/100,configuration?.dropShadow?.type) : 'unset'}">
-    <generic-list style="overflow: auto; height: 100%;" [viewType]="'table'" [allowMultipleSelection]="true" [inline]="true" 
-    [dataSource]="listDataSource" [listData]="dataSet">
-    <div right-buttons>
+<div class="minHeight" [ngStyle]="{'border': dataVisualizationService.getChartBorder(this.configuration?.scorecardsConfig.useBorder, this.configuration?.scorecardsConfig.border),
+                'box-shadow': configuration?.scorecardsConfig.useDropShadow === true ? dataVisualizationService.getCardShadow(this.configuration?.scorecardsConfig.dropShadow?.intensity/100,configuration?.scorecardsConfig.dropShadow?.type) : 'unset',
+                'overflow': 'hidden',
+                'margin': configuration?.scorecardsConfig.useDropShadow === true ? '1rem' : '0rem'}">
+    <div class="pep-border-bottom" [ngStyle]="{'text-align':configuration?.scorecardsConfig.horizontalAlign}">
+        <label class="body-xl bold ellipsis">{{configuration?.scorecardsConfig.label}}</label>
     </div>
-</generic-list>
+    <div #previewArea [ngStyle]="{'height.rem': this.configuration?.scorecardsConfig.height}">
+    </div>
 </div>
 

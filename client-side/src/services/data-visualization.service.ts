@@ -1,8 +1,12 @@
-import { Injectable } from "@angular/core";
+import { CdkDragDrop, CdkDragEnd, CdkDragStart, moveItemInArray } from "@angular/cdk/drag-drop";
+import { EventEmitter, Injectable } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
+import { TranslateService } from "@ngx-translate/core";
 import { PepColorService } from "@pepperi-addons/ngx-lib";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
+import { ICardEditor } from "src/app/card.model";
 import { Color } from "src/app/models/color";
+import { Overlay } from "src/app/models/overlay ";
 
 
 @Injectable({
@@ -11,7 +15,9 @@ import { Color } from "src/app/models/color";
 export class DataVisualizationService {
     dialogRef: MatDialogRef<any>;
     constructor(private pepColorService: PepColorService,
-        private dialogService: PepDialogService) { };
+        private dialogService: PepDialogService,
+        protected translate: TranslateService,
+        ) { };
 
     getRGBAcolor(colObj: Color, opac = null) {
         let rgba = 'rgba(255,255,255,0';
@@ -28,6 +34,28 @@ export class DataVisualizationService {
             rgba = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + opacity + ')';
         }
         return rgba;
+    }
+
+    getSliderBackground(color) {
+        if (!color) return;
+        let alignTo = 'right';
+    
+        let col: Overlay = new Overlay();
+    
+        col.color = color;
+        col.opacity = '100';
+    
+        let gradStr = this.getRGBAcolor(col, 0) + ' , ' + this.getRGBAcolor(col);
+    
+        return 'linear-gradient(to ' + alignTo + ', ' + gradStr + ')';
+      }
+
+    onDragStart(event: CdkDragStart) {
+        this.changeCursorOnDragStart();
+    }
+
+    onDragEnd(event: CdkDragEnd) {
+        this.changeCursorOnDragEnd();
     }
 
     changeCursorOnDragStart() {
@@ -131,4 +159,112 @@ export class DataVisualizationService {
         }
         return values;
     }
+
+    getShadowStyles() {
+        return [
+            { key: 'Soft', value: this.translate.instant('Soft') },
+            { key: 'Regular', value: this.translate.instant('Regular') }
+          ];
+    }
+
+    onFieldChange(key, event, hostEvents: EventEmitter<any>, configuration) {
+        const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value : event;
+    
+        if (key.indexOf('.') > -1) {
+            let keyObj = key.split('.');
+            configuration[keyObj[0]][keyObj[1]] = value;
+        }
+        else {
+            configuration[key] = value;
+        }
+        this.updateHostObject(hostEvents,configuration);
+    }
+
+    updateHostObject(hostEvents: EventEmitter<any>, configuration) {
+        hostEvents.emit({
+            action: 'set-configuration',
+            configuration: configuration,
+        });
+    }
+
+    onValueChanged(type, event, hostEvents: EventEmitter<any>, configuration, charts) {
+        let originalConf = null;
+        // to support the structure of scorecards and table configurations
+        if(configuration.scorecardsConfig) {
+            originalConf = configuration;
+            configuration = configuration.scorecardsConfig;
+        }
+        switch (type) {
+            case 'Chart':
+                if (event) {
+                    const selectedChart = charts.filter(c => c.Key == event)[0];
+                    configuration.chart = selectedChart.Key;
+                    configuration.chartCache = selectedChart.ScriptURI;
+                }
+                else {
+                    configuration.chart = null;
+                    configuration.chartCache = null;
+                }
+                break;
+    
+            case 'Label':
+                configuration.label = event;
+                break;
+    
+            case 'useLabel':
+                configuration.useLabel=event;
+                if(!event)
+                    configuration.label="";
+                break;
+    
+            case 'Height':
+                if(event == ""){
+                    configuration.height = 22; //default value
+                }
+                else
+                    configuration.height = event;
+    
+                break;
+        }
+        if(originalConf) {
+            originalConf.scorecardsConfig = configuration;
+            this.updateHostObject(hostEvents,originalConf);
+        }
+        else {
+            this.updateHostObject(hostEvents,configuration);
+        }
+      }
+
+      addNewCardClick(hostEvents, configuration, isTable = false) {
+        let card = new ICardEditor();
+        card.id = (configuration?.cards.length);
+        if(isTable) card.title = "Query" + (card.id+1).toString();
+        configuration?.cards.push(card);
+        this.updateHostObject(hostEvents,configuration);
+      }
+    
+      onCardRemoveClick(event, hostEvents, configuration) {
+          configuration?.cards.splice(event.id, 1);
+          configuration?.cards.forEach(function(card, index, arr) {card.id = index; });
+          this.updateHostObject(hostEvents,configuration);
+      }
+    
+      drop(event: CdkDragDrop<string[]>, hostEvents, configuration) {
+          if (event.previousContainer === event.container) {
+          moveItemInArray(configuration.cards, event.previousIndex, event.currentIndex);
+          for(let index = 0 ; index < configuration.cards.length; index++){
+              configuration.cards[index].id = index;
+          }
+              this.updateHostObject(hostEvents,configuration);
+          } 
+      }
+
+      setDefaultChart(configuration, charts) {
+        if (!configuration.chart) {
+            // set the first chart to be default
+            const firstChart = charts[0];
+            configuration.chart = firstChart.Key;
+            configuration.chartCache = firstChart.ScriptURI;
+        }
+      }
 }

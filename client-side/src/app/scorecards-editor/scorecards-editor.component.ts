@@ -43,7 +43,7 @@ export class ScorecardsEditorComponent implements OnInit {
         }
 
         this.pageParameters = value?.pageParameters || {};
-        this.pageParametersOptions = []
+        this.pageParametersOptions = [];
         // Object.keys(this.pageParameters).forEach(paramKey => {
         // this.pageParametersOptions.push({key: paramKey, value: paramKey})
         // });
@@ -61,47 +61,22 @@ export class ScorecardsEditorComponent implements OnInit {
     public TextPositionStyling: Array<PepButton> = [];
     public GroupTitleAndDescription: Array<PepButton> = [];
     DropShadowStyle: Array<PepButton> = [];
-    PepSizes: Array<PepButton> = [];
 
     constructor(protected addonService: PepAddonService,
       public routeParams: ActivatedRoute,
       public router: Router,
       public route: ActivatedRoute,
       protected translate: TranslateService,
-      protected dataVisualizationService: DataVisualizationService,
+      protected dvService: DataVisualizationService,
       public pluginService: AddonService) {}
 
     async ngOnInit(): Promise<void> {
         if (!this.configuration || Object.keys(this.configuration).length == 0) {
           this.loadDefaultConfiguration();
-        };
+        }
         this.configuration.scorecardsConfig.editSlideIndex = -1;
-        this.PepSizes = [
-          { key: 'sm', value: this.translate.instant('SM') },
-          { key: 'md', value: this.translate.instant('MD') },
-          { key: 'lg', value: this.translate.instant('LG') },
-          { key: 'xl', value: this.translate.instant('XL') }
-        ];
     
-        this.DropShadowStyle = [
-          { key: 'Soft', value: this.translate.instant('Soft') },
-          { key: 'Regular', value: this.translate.instant('Regular') }
-        ];
-
-        this.textColor = [
-            { key: 'system-primary', value:this.translate.instant('GALLERY_EDITOR.TEXT_COLOR.SYSTEM'), callback: (event: any) => this.onGalleryFieldChange('cardTextColor',event) },
-            { key: 'invert', value:this.translate.instant('GALLERY_EDITOR.TEXT_COLOR.INVERT'), callback: (event: any) => this.onGalleryFieldChange('cardTextColor',event) }
-        ]
-
-        this.TextPositionStyling =  [
-            { key: 'overlyed', value: this.translate.instant('GALLERY_EDITOR.TEXT_POSITION.OVERLYED'), callback: (event: any) => this.onGalleryFieldChange('textPosition',event) },
-            { key: 'separated', value: this.translate.instant('GALLERY_EDITOR.TEXT_POSITION.SEPARATED'), callback: (event: any) => this.onGalleryFieldChange('textPosition',event) }
-        ];
-
-        this.GroupTitleAndDescription = [
-            { key: 'grouped', value: this.translate.instant('GALLERY_EDITOR.GROUP.GROUPED'), callback: (event: any) => this.onGalleryFieldChange('groupTitleAndDescription',event) },
-            { key: 'ungrouped', value: this.translate.instant('GALLERY_EDITOR.GROUP.UNGROUPED'), callback: (event: any) => this.onGalleryFieldChange('groupTitleAndDescription',event) }
-        ]
+        this.DropShadowStyle = this.dvService.getShadowStyles();
         
         Promise.all([
             this.pluginService.fillChartsOptions(this.chartsOptions,'Value scorecard'),
@@ -113,22 +88,6 @@ export class ScorecardsEditorComponent implements OnInit {
             this.blockLoaded = true;
             this.hostEvents.emit({ action: 'block-editor-loaded' });
         })
-    }
-
-    ngOnChanges(e: any): void {
-
-    }
-
-    onFieldChange(key, event) {
-        const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value : event;
-        if (key.indexOf('.') > -1) {
-            let keyObj = key.split('.');
-            this.configuration.scorecardsConfig[keyObj[0]][keyObj[1]] = value;
-        }
-        else {
-            this.configuration.scorecardsConfig[key] = value;
-        }
-        this.updateHostObject();
     }
     
     public onHostObjectChange(event) {
@@ -154,7 +113,7 @@ export class ScorecardsEditorComponent implements OnInit {
       col.color = color;
       col.opacity = '100';
   
-      let gradStr = this.dataVisualizationService.getRGBAcolor(col, 0) + ' , ' + this.dataVisualizationService.getRGBAcolor(col);
+      let gradStr = this.dvService.getRGBAcolor(col, 0) + ' , ' + this.dvService.getRGBAcolor(col);
   
       return 'linear-gradient(to ' + alignTo + ', ' + gradStr + ')';
     }
@@ -210,25 +169,6 @@ export class ScorecardsEditorComponent implements OnInit {
         });
     }
 
-
-    onGalleryFieldChange(key, event) {
-        const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value :  event;
-
-        if(key.indexOf('.') > -1){
-            let keyObj = key.split('.');
-            this.configuration.scorecardsConfig[keyObj[0]][keyObj[1]] = value;
-        }
-        else{
-            this.configuration.scorecardsConfig[key] = value;
-        }
-  
-        this.updateHostObjectField(`scorecardsConfig.${key}`, value);
-
-        if(key === 'groupTitleAndDescription' || key === 'textPosition'){
-               
-        }
-    }
-
     protected loadDefaultConfiguration() {
         this._configuration = this.getDefaultHostObject();
         this.updateHostObject();
@@ -245,26 +185,6 @@ export class ScorecardsEditorComponent implements OnInit {
         return { scorecardsConfig: new IScorecardsEditor(), cards: [this.getDefaultCard()] };
     }
 
-    async getQueryOptions(){
-        let queries = await this.pluginService.getAllQueries();
-        queries = queries.filter(query =>{
-        for(let s of query.Series)
-            if(s.BreakBy.FieldID!='' || s.GroupBy[0].FieldID!='') return false;
-        
-        return true;
-        })
-
-        return queries;
-    }
-
-    addNewCardClick() {
-        let card = new ICardEditor();
-        card.id = (this.configuration?.cards.length);
-
-        this.configuration?.cards.push( card);
-        this.updateHostObject();
-    }
-
     onCardEditClick(event) {
         
         if(this.configuration?.scorecardsConfig?.editSlideIndex === event.id){ //close the editor
@@ -274,40 +194,4 @@ export class ScorecardsEditorComponent implements OnInit {
             this.currentCardindex = this.configuration.scorecardsConfig.editSlideIndex = parseInt(event.id);
         }
     }
-  
-    onCardRemoveClick(event) {
-        this.configuration?.cards.splice(event.id, 1);
-        this.configuration?.cards.forEach(function(card, index, arr) {card.id = index; });
-        this.updateHostObject();
-    }
-
-    drop(event: CdkDragDrop<string[]>) {
-        if (event.previousContainer === event.container) {
-        moveItemInArray(this.configuration.cards, event.previousIndex, event.currentIndex);
-        for(let index = 0 ; index < this.configuration.cards.length; index++){
-            this.configuration.cards[index].id = index;
-        }
-            this.updateHostObject();
-        } 
-    }
-
-    onDragStart(event: CdkDragStart) {
-        this.changeCursorOnDragStart();
-    }
-
-    onDragEnd(event: CdkDragEnd) {
-        this.changeCursorOnDragEnd();
-    }
-
-    changeCursorOnDragStart() {
-        document.body.classList.add('inheritCursors');
-        document.body.style.cursor = 'grabbing';
-    }
-
-    changeCursorOnDragEnd() {
-        document.body.classList.remove('inheritCursors');
-        document.body.style.cursor = 'unset';
-    }
-
-
 }

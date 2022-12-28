@@ -13,10 +13,11 @@
     </div>
     <div class="editorCont" *ngIf="id == configuration?.scorecardsConfig?.editSlideIndex">
         <pep-textbox 
-            [label]="'Title' | translate" 
-            type="string" 
+            [label]="'Title' | translate"
+            type="string"
             [value]="configuration?.cards[id].title"
             (valueChange)="onCardFieldChange('title',$event)"
+            *ngIf="isScorecard"
         ></pep-textbox>
         <pep-select
             [label] = "'Design' | translate"
@@ -28,7 +29,7 @@
             [showTitle]="true"
             [emptyOption]="false"
             (valueChange)="designChanged($event)"
-            *ngIf="blockLoaded"
+            *ngIf="blockLoaded && isScorecard"
         ></pep-select>
         <pep-select
             [label] = "'Data query' | translate"
@@ -58,7 +59,7 @@
             [showTitle]="true"
             [emptyOption]="false"
             (valueChange)="secondQueryChanged($event)"
-            *ngIf="blockLoaded"
+            *ngIf="blockLoaded && isScorecard"
         ></pep-select>
         <addon-query-select
             [inputVars]="benchmarkInputVars"

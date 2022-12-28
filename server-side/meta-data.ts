@@ -130,6 +130,14 @@ export const charts: Chart[] = [
         Type: 'Value scorecard',
         Hidden: false,
         System: true
+    },
+    {
+        Name: "Table",
+        Description: "Default table",
+        ScriptURI: '',
+        Type: 'Table chart',
+        Hidden: false,
+        System: true
     }
 ]
 
