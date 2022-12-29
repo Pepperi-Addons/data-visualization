@@ -20,7 +20,7 @@
                 [subHeader]="'Alignment' | translate"
                 [disabled]="!configuration?.scorecardsConfig.useLabel"
                 [btnKey]="configuration?.scorecardsConfig.horizontalAlign"
-                (btnkeyChange)="dvService.onFieldChange('horizontalAlign',$event,hostEvents,configuration)"
+                (btnkeyChange)="dvService.onFieldChange('scorecardsConfig.horizontalAlign',$event,hostEvents,configuration)"
                 ></pep-group-buttons-settings>
                 <h2>{{ "ChartDesign" | translate }}</h2>
                 <pep-select
@@ -40,10 +40,31 @@
                     (valueChange)="dvService.onValueChanged('Height',$event,hostEvents,configuration,charts)"
                     ></pep-textbox>
                 <div id="border">
-                    <pep-checkbox [value]="configuration?.scorecardsConfig.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="dvService.onFieldChange('useBorder',$event,hostEvents,configuration)"></pep-checkbox>
-                    <pep-color [value]="configuration?.scorecardsConfig.border?.color" [label]="'BorderColor' | translate" [disabled]="!configuration?.scorecardsConfig.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="dvService.onFieldChange('border.color',$event,hostEvents,configuration)">
+                    <pep-checkbox
+                        [value]="configuration?.scorecardsConfig.useBorder"
+                        [label]="'Border' | translate"
+                        [renderTitle]="false"
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.useBorder',$event,hostEvents,configuration)">
+                    </pep-checkbox>
+                    <pep-color
+                        [value]="configuration?.scorecardsConfig.border?.color"
+                        [label]="'BorderColor' | translate"
+                        [disabled]="!configuration?.scorecardsConfig.useBorder"
+                        xAlignment="left"
+                        type="any"
+                        [showTitle]="true"
+                        [showAAComplient]="true"
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.border.color',$event,hostEvents,configuration)">
                     </pep-color>
-                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="configuration?.scorecardsConfig.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!configuration?.scorecardsConfig.useBorder" [value]="configuration?.scorecardsConfig.border?.opacity" [background]="dvService.getSliderBackground(configuration?.scorecardsConfig.configuration?.border?.color)" (valueChange)="dvService.onFieldChange('border.opacity',$event,hostEvents,configuration)">
+                    <pep-slider
+                        [label]="'BorderOpacity' | translate"
+                        [hint]="configuration?.scorecardsConfig.border?.opacity?.toString()"
+                        [minValue]="0"
+                        [maxValue]="100"
+                        [disabled]="!configuration?.scorecardsConfig.useBorder"
+                        [value]="configuration?.scorecardsConfig.border?.opacity"
+                        [background]="dvService.getSliderBackground(configuration?.scorecardsConfig.configuration?.border?.color)"
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.border.opacity',$event,hostEvents,configuration)">
                     </pep-slider>
                 </div>
                 <div>
@@ -51,7 +72,7 @@
                         [value]="configuration?.scorecardsConfig.useDropShadow"
                         [label]="'DropShadow' | translate"
                         [renderTitle]="false" 
-                        (valueChange)="dvService.onFieldChange('useDropShadow',$event,hostEvents,configuration)">
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.useDropShadow',$event,hostEvents,configuration)">
                     </pep-checkbox>
                     <label
                     class="body-xs normal ellipsis">{{'ShadowType' | translate}}
@@ -61,7 +82,7 @@
                         [selectedButtonKey]="configuration?.scorecardsConfig.dropShadow?.type"
                         buttonsClass="md regular"
                         [buttonsDisabled]="!configuration?.scorecardsConfig.useDropShadow"
-                        (buttonClick)="dvService.onFieldChange('dropShadow.type', $event,hostEvents,configuration)"
+                        (buttonClick)="dvService.onFieldChange('scorecardsConfig.dropShadow.type', $event,hostEvents,configuration)"
                         viewType="toggle"
                         stretch="true">
                     </pep-group-buttons>
@@ -73,7 +94,7 @@
                         [maxValue]="100"
                         [disabled]="!configuration?.scorecardsConfig.useDropShadow"
                         [value]="configuration?.scorecardsConfig.dropShadow?.intensity"
-                        (valueChange)="dvService.onFieldChange('dropShadow.intensity', $event,hostEvents,configuration)">
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.dropShadow.intensity', $event,hostEvents,configuration)">
                     </pep-slider>
                 </div>
             </div>
