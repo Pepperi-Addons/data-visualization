@@ -49,15 +49,23 @@
             [pageParametersOptions]="pageParametersOptions"
             (variablesDataChange)="onVariablesDataChanged($event)"
         ></addon-query-select>
+        <pep-checkbox
+            [value]="configuration.cards[id].useBenchmark"
+            [label]="'Benchmark query' | translate"
+            [renderTitle]="false"
+            *ngIf="blockLoaded && isScorecard"
+            (valueChange)="useBenchmark($event)"
+        ></pep-checkbox>
         <pep-select
+            class="benchmark-select"
             [label] = "'Benchmark query' | translate"
             [value]="configuration?.cards[id].secondQuery"
             [mandatory]="false"
-            [disabled]="false"
+            [disabled]="!configuration.cards[id].useBenchmark"
             xAlignment="left"
             [options]="benchmarkQueryOptions"
-            [showTitle]="true"
-            [emptyOption]="false"
+            [showTitle]="false"
+            [emptyOption]="true"
             (valueChange)="secondQueryChanged($event)"
             *ngIf="blockLoaded && isScorecard"
         ></pep-select>
@@ -66,6 +74,7 @@
             [variablesData]="configuration?.cards[id].benchmarkVariablesData"
             [pageParametersOptions]="pageParametersOptions"
             (variablesDataChange)="onBenchmarkVariablesDataChanged($event)"
+            *ngIf="configuration.cards[id].useBenchmark"
         ></addon-query-select>
     </div>
     
