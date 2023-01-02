@@ -170,7 +170,11 @@ export class DataVisualizationService {
     onFieldChange(key, event, hostEvents: EventEmitter<any>, configuration) {
         const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value : event;
     
-        if (key.indexOf('.') > -1) {
+        if (key.split('.').length == 3) {
+            let keyObj = key.split('.');
+            configuration[keyObj[0]][keyObj[1]][keyObj[2]] = value;
+        }
+        else if (key.indexOf('.') > -1) {
             let keyObj = key.split('.');
             configuration[keyObj[0]][keyObj[1]] = value;
         }

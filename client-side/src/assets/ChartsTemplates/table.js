@@ -57,8 +57,10 @@ this.data = [{
         // Create a table.
 		const table = document.createElement("table");
 		
+		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
 		const fontFamily = getComputedStyle(this.canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
-		table.setAttribute('style', 'font-family:'+fontFamily+'; font-size:14px; width:100%; border:solid 1px #ddd; margin:10px 0px');
+		table.setAttribute('style', 'font-family:'+fontFamily+'; font-size:14px; width:100%; border:solid 1px #ddd; margin:10px 0px;  border-collapse: collapse;');
+		const cellStyle = 'padding:4px 6px; border:solid 1px #ddd'
 		
         // the data has multiple group by DataSet -> show them as rows
         if (uniqueGroups.length > 0) {
@@ -68,37 +70,36 @@ this.data = [{
 			let tr = table.insertRow(-1);                   // table row.
 			for (let i = 0; i < col.length; i++) {
 				let th = document.createElement("th");      // table header.
-				th.setAttribute('style', 'padding:4px 6px; border:solid 1px #ddd; background-color: #E0E0E0;');
+				th.setAttribute('style', 'padding:4px 6px; border:solid 1px #ddd; background-color: '+colors[0]+';');
 				th.innerHTML = col[i];
 				tr.appendChild(th);
 			}
 
 			// create merge data set
-			var key = uniqueGroups[0];
-			let arr1 = this.data[0].DataSet;
+			let dataSets = this.data.map((x) => x.DataSet).flat();
+			let key = uniqueGroups[0];					
 			let dataSet = [];
-			for(let i=0; i<arr1.length; i++) {
-				let line = {...arr1[i]};
-				for (let j=1; j<this.data.length; j++) {
-					let arrJ = this.data[j].DataSet;
-					line = {...line,...(arrJ.find((itmInner) => itmInner[key] === line[key]))};
+			dataSets.forEach(el => {
+				if(!this[el[key]]) {
+					this[el[key]] = {};
+					dataSet.push(this[el[key]]);
 				}
-				dataSet.push(line);
-			}
+				this[el[key]] = Object.assign(this[el[key]], el);
+			});
 
 			// add json data to the table as rows.
 			for (let i = 0; i < dataSet.length; i++) {
 				tr = table.insertRow(-1);
 				for (let j = 0; j < col.length; j++) {
 					let tabCell = tr.insertCell(-1);
-					tabCell.setAttribute('style', 'padding:4px 6px; border:solid 1px #ddd');
+					tabCell.setAttribute('style', cellStyle);
 					let val = dataSet[i][col[j]] || 0;
 					if (val >= 10 ** 6) {
-						val = Math.trunc(val / 100000)/10 + ' M';
+						val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
 					} else if (val >= 10 ** 3) {
-						val = Math.trunc(val / 100)/10 + ' K';
+						val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
 					} else if (val >= 1) {
-						val = Math.trunc(val*10)/10;
+						val = (Math.trunc(val*10)/10).toLocaleString();
 					}
 					tabCell.innerHTML = val;
 				}
@@ -108,23 +109,27 @@ this.data = [{
             // the data has no group by -> show the Series as rows
 			
 			// create merge data set
-			let dataSet = this.data.map((x) => x.DataSet).flat();
+			let dataSets = this.data.map((x) => x.DataSet).flat();
+			let dataSet = dataSets.reduce(function(acc, x) {
+				for (let key in x) acc[key] = x[key];
+					return acc;
+			}, {});
 			
 			// add json data to the table as rows.
 			for (let i = 0; i < uniqueSeries.length; i++) {
 				let tr = table.insertRow(-1);
 				let tabCell = tr.insertCell(-1);
-				tabCell.setAttribute('style', 'padding:4px 6px; border:solid 1px #ddd');
+				tabCell.setAttribute('style', cellStyle);
 				tabCell.innerHTML = uniqueSeries[i];
 				tabCell = tr.insertCell(-1);
-				tabCell.setAttribute('style', 'padding:4px 6px; border:solid 1px #ddd');
-				let val = dataSet[0][uniqueSeries[i]];
+				tabCell.setAttribute('style', cellStyle);
+				let val = dataSet[uniqueSeries[i]];
 				if (val >= 10 ** 6) {
-					val = Math.trunc(val / 100000)/10 + ' M';
+					val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
 				} else if (val >= 10 ** 3) {
-					val = Math.trunc(val / 100)/10 + ' K';
+					val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
 				} else if (val >= 1) {
-					val = Math.trunc(val*10)/10;
+					val = (Math.trunc(val*10)/10).toLocaleString();
 				}
 				tabCell.innerHTML = val;
 			}
