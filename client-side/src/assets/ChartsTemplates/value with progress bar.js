@@ -75,7 +75,16 @@ export default class MyChart {
 						"value": total2
 					}
 					data["goals"] = [goal];
-					valueMsg = data['y'] +'%';
+					// round the value for the subtitle
+					if (total1 >= 10 ** 9) {
+						valueMsg = (Math.trunc(total1 / 100000)/10).toLocaleString() + ' M';
+					} else if (total1 >= 10 ** 6) {
+						valueMsg = (Math.trunc(total1 / 100)/10).toLocaleString() + ' K';
+					} else if (total1 >= 10 ** 3) {
+						valueMsg = Math.trunc(total1).toLocaleString();
+					} else {
+						valueMsg = total1.toLocaleString();
+					}
 				} else {
 					valueMsg = total1.toLocaleString();
 				}

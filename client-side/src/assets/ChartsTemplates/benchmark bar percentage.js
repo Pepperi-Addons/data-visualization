@@ -82,7 +82,13 @@ export default class MyChart {
         const dataSet = this.data.DataSet;
 		const benchmarkSet = this.data.BenchmarkSet;
 
-        let ser = [];
+		const benchmarkObj = {
+			"name": this.data.BenchmarkQueries[0].Name,
+			"strokeHeight": 0,
+			"strokeColor": "#775DD0"
+		}
+		
+		let ser = [];
         // the data has multiple group by DataSet -> show them in the y-axis
         if (uniqueGroups.length > 0) {
             ser = uniqueSeries.map(seriesName => {
@@ -93,7 +99,7 @@ export default class MyChart {
                             dataSet.map(ds => {
 								let data = {
                                     "x": ds[groupName],
-                                    "y": ds[seriesName] || null
+                                    "y": Math.trunc((ds[seriesName] || 0)*10)/10
                                 };
 								// join the benchmark data to the actuals
 								if (benchmarkSet.length>0) {
@@ -103,12 +109,17 @@ export default class MyChart {
 									let compValue = 0;
 									if (compData) {
 										compValue = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
+										compValue = Math.trunc((compValue || 0)*10)/10;
 									}
 									// store the original value and benchmark value and calculate the new data to be percentage
 									data["origin"] = data["y"];
 									data["benchmark"] = compValue;
 									if (compValue > 0) {	
-										data["y"] = (data["y"]/compValue)*100;
+										data["y"] = Math.trunc((data["y"]/compValue)*100*10)/10;
+										// add the benchmark as goal so it will be seen in the tooltip
+										let goal = Object.assign({}, benchmarkObj);
+										goal.value = compValue;
+										data["goals"] = [goal];
 									} else {
 										//no comparison data, treat is as 0
 										data["y"] = 0;
@@ -126,7 +137,7 @@ export default class MyChart {
 				data: uniqueSeries.map(seriesName => {
 					let data = {
 						"x": seriesName,
-						"y": dataSet[0][seriesName] || null
+						"y": Math.trunc(dataSet[0][seriesName]*10)/10 || null
 					};
 					// join the benchmark data to the actuals
 					if (benchmarkSet.length>0) {
@@ -134,12 +145,17 @@ export default class MyChart {
 						// check that the benchmark is not per group. if there is only one benchmark series then use it always.
 						if ((uniqueBenchmarkGroups.length == 0) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
 							compValue = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
+							compValue = Math.trunc((compValue || 0)*10)/10;
 						}
 						// store the original value and benchmark value and calculate the new data to be percentage
 						data["origin"] = data["y"];
 						data["benchmark"] = compValue;
 						if (compValue > 0) {
-							data["y"] = (data["y"]/compValue)*100;
+							data["y"] = Math.trunc((data["y"]/compValue)*100*10)/10;
+							// add the benchmark as goal so it will be seen in the tooltip
+							let goal = Object.assign({}, benchmarkObj);
+							goal.value = compValue;
+							data["goals"] = [goal];
 						} else {
 							//no comparison data, treat is as 0
 							data["y"] = 0;
@@ -264,69 +280,39 @@ export default class MyChart {
                     }
                 }
             },
-			yaxis:{
-				hideOverlappingLabels:true
-			},
 			xaxis:{
 				labels: {
 					formatter: function (value) {
-						let val = value;
-						if (val >= 10 ** 6) {
-							val = Math.trunc(val / 1000000) + ' M';
-						} else if (val >= 10 ** 3) {
-							val = Math.trunc(val / 1000) + ' K';
-						} 
-						return val;
+						return (Math.trunc(value*10)/10).toLocaleString() + '%';
 					}
 				}
 			},
-            dataLabels: {
-                formatter: function (value, { series, seriesIndex, dataPointIndex, w }) {
-					let val = value;
-					// comparison value - show the origin value)
-					if (w.config.series[seriesIndex].data[dataPointIndex].origin) {
-						val = Math.trunc(val*100)/100 + '%';
-					} else {
-						// regular value
-						if (val >= 10 ** 6) {
-							val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
-							//val = (val / 1000000).toFixed(1) + ' M';
-						} else if (val >= 10 ** 3) {
-							val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
-							//val = (val / 1000).toFixed(1) + ' K';
-						} else if (val >= 1) {
-							val = (Math.trunc(val*10)/10).toLocaleString();
-							//val = Math.floor(val);
-						} else if (val == null) {
-							val = '';
-						}
-					}
- 					return val;
-				},
-				style: {
-              //      colors: ['#000000']
-                }
-            },
+			yaxis:{
+				max: 100,
+				hideOverlappingLabels:true
+			},
 			tooltip: {
 				y: {
 					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
 						let val = value;
-						// comparison value - show the origin value)
-						if (w.config.series[seriesIndex].data[dataPointIndex].origin) {
-							let origin = w.config.series[seriesIndex].data[dataPointIndex].origin;
-							if (origin >= 10 ** 3) {
-								origin = Math.trunc(origin);
-							} 
-							let benchmark = w.config.series[seriesIndex].data[dataPointIndex].benchmark;
-							if (benchmark >= 10 ** 3) {
-								benchmark = Math.trunc(benchmark);
-							} 
-							val = origin.toLocaleString() + ' / ' + benchmark.toLocaleString() + ' (' + Math.trunc(value*100)/100 + '%)';
+						// real series value
+						if (series) {
+							// comparison value - show the value and percentage
+							if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
+								let origin = w.config.series[seriesIndex].data[dataPointIndex].origin;
+								if (origin >= 10 ** 3) {
+									origin = Math.trunc(origin);
+								} 
+								val = origin.toLocaleString() + ' (' + Math.trunc(value*100)/100 + '%)';
+							} else {
+								// no comparison value - show the value as percentage
+								val = Math.trunc(val*100)/100 + '%';
+							}
 						} else {
-							// regular value
+							//goal value
 							if (val >= 10 ** 3) {
 								val = Math.trunc(val);
-							} 
+							}
 							val = val.toLocaleString();
 						}
 						return val;

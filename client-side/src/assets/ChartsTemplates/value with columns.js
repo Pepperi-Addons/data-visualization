@@ -99,7 +99,7 @@ export default class MyChart {
                             dataSet.map(ds => {
                                 return {
                                     "x": ds[groupName],
-                                    "y": ds[seriesName] || 0
+                                    "y": Math.trunc((ds[seriesName] || 0)*10)/10
                                 }
                             })
                         ]
@@ -135,7 +135,7 @@ export default class MyChart {
 			}
         } else {
            	// the data has no group by -> show the Series in the y-axis
-			const flattened = uniqueSeries.map(seriesName => dataSet[0][seriesName]);
+			const flattened = uniqueSeries.map(seriesName => Math.trunc((dataSet[0][seriesName]||0)*10)/10);
 			actualSer = [{
 				"type": "bar",
 				"data": flattened
@@ -206,7 +206,7 @@ export default class MyChart {
 		
         return {
             chart: {
-                type: 'line',
+                type: 'bar',
                 height: height,
                 width: '100%',
 				fontFamily: fontFamily,
@@ -214,18 +214,20 @@ export default class MyChart {
 					enabled: true
 				}
             },
+			colors: colors,
+			fill: {
+				type: "solid",
+				opacity: 1
+			},
 			stroke: {
-                show: true,
-                width: 2,
-                colors: ['transparent']
-            },
+				width: 5
+			},
 			plotOptions: {
 				bar: {
 					columnWidth: '80%',
 					borderRadius: 4
 				}
 			},
-			colors: colors,
 			subtitle: {
 				floating: true,
 				text: '',

@@ -29,7 +29,7 @@ export default class MyChart {
          * The embedder of this chart will insert the chart data to this property
          * @type {ChartData}
          */
-		 
+
         this.data = {};
 
         // first we create a div on the HTML element
@@ -45,31 +45,51 @@ export default class MyChart {
         this.chart = new ApexCharts(canvas, conf);
         this.chart.render();
     }
-	
+
     /**
      * This function must be implemented by the chart
      * the embedder calls this function when there are changes to the chart data
      */
     update() {
+		// if there is no benchmark data, then create empty object
+		if (!this.data.BenchmarkQueries || this.data.BenchmarkQueries.length==0) {
+			this.data.BenchmarkQueries = [{
+				Name: '',
+				Groups: [],
+				Series: []
+			}];
+			this.data.BenchmarkSet = [];
+		}
+		
         const groups = this.data.DataQueries.map((data) => data.Groups).flat();
         const series = this.data.DataQueries.map((data) => data.Series).flat();
-
+		const benchmarkGroups = this.data.BenchmarkQueries.map((data) => data.Groups).flat();
+		const benchmarkSeries = this.data.BenchmarkQueries.map((data) => data.Series).flat();
+        
         const uniqueGroups = groups.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
-
+			return index === self.indexOf(elem);
+		});
         const uniqueSeries = series.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
+			return index === self.indexOf(elem);
+		});
+        const uniqueBenchmarkGroups = benchmarkGroups.filter(function (elem, index, self) {
+			return index === self.indexOf(elem);
+		});
+		const uniqueBenchmarkSeries = benchmarkSeries.filter(function (elem, index, self) {
+			return index === self.indexOf(elem);
+		});
 
         const dataSet = this.data.DataSet;
+		const benchmarkSet = this.data.BenchmarkSet;
 
         let ser = [];
-		
+		let actualSer = [];
+		let benchmarkSer = [];
         // the data has multiple group by DataSet -> show them in the y-axis
         if (uniqueGroups.length > 0) {
-            ser = uniqueSeries.map(seriesName => {
+            actualSer = uniqueSeries.map(seriesName => {
                 return {
+					"type": "bar",
                     "name": seriesName,
                     "data": uniqueGroups.map(groupName => {
                         return [
@@ -83,13 +103,46 @@ export default class MyChart {
                     }).flat(2)
                 }
             });
+			// add the benchmark group series
+			benchmarkSer = uniqueBenchmarkSeries.map(seriesName => {
+				return {
+					"type": "line",
+					"name": seriesName,
+					"data": uniqueGroups.map(groupName => {
+						return [
+							dataSet.map(ds => {
+								let compData = benchmarkSet.find(comp => ((uniqueBenchmarkGroups.length == 0 || comp[groupName] === ds[groupName]) && (uniqueBenchmarkSeries.length == 1 || comp[seriesName])))
+								let compY = 0;
+								if (compData) {
+									compY = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
+								}
+								return {
+									"x": ds[groupName],
+									"y": compY
+								}
+							})
+						]
+					}).flat(2)
+				}
+			});
+			ser = actualSer.concat(benchmarkSer);
         } else {
-            // the data has no group by -> show the Series in the y-axis
-            const flattened = uniqueSeries.map(seriesName => Math.trunc((dataSet[0][seriesName]||0)*10)/10);
-            ser = [{
-                    "data": flattened
-                }
-            ];
+           	// the data has no group by -> show the Series in the y-axis
+			const flattened = uniqueSeries.map(seriesName => Math.trunc((dataSet[0][seriesName]||0)*10)/10);
+			actualSer = [{
+				"type": "bar",
+				"data": flattened
+			}];
+			// add the benchmark group series
+			// check that the benchmark is not per group
+			if (uniqueBenchmarkGroups.length == 0 && benchmarkSet.length > 0) {
+				benchmarkSer = [{
+					"type": "line",
+					"data": uniqueSeries.map(seriesName => (uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName]) || 0)
+				}];
+			}
+			ser = actualSer.concat(benchmarkSer);
+			
             this.chart.updateOptions({
                 labels: uniqueSeries
             });
@@ -97,7 +150,7 @@ export default class MyChart {
             this.chart.updateOptions({
                 plotOptions: {
                     bar: {
-                        distributed: true
+            //            distributed: true
                     }
                 }
             });
@@ -119,27 +172,66 @@ export default class MyChart {
 		
         // update the chart data
         this.chart.updateSeries(ser);
-
-        // calculate the optimal bar height (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
-        // 20: minimum should be close to 20 (when only one item)
-        // 20+60: maximum should be close 80
-        // 10 and 2: the a and b from the function
-        const seriesLength = ser.reduce((sum, curr) => sum + (curr.data.length || 0), 0);
-        const optimalPercent = 20 + (60 / (1 + 10 * Math.exp(-seriesLength / 2)));
+		
+		// calculate the optimal column width (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
+		// 20: minimum should be close to 20 (when only one item)
+		// 20+60: maximum should be close 80
+		// 10 and 2: the a and b from the function
+		const seriesLength = ser.reduce((sum, curr) => sum + (curr.data.length ||0),0);
+		const optimalPercent = 20 + (60 / (1 + 10*Math.exp(-seriesLength /2)));
         this.chart.updateOptions({
             plotOptions: {
-                bar: {
-                    barHeight: optimalPercent + "%"
-                }
-            }
+				bar: {
+					columnWidth: optimalPercent + "%"
+				}
+			}
         });
-
-        // update the initial message to be seen if there is no data
-        this.chart.updateOptions({
+		
+		// update the initial message to be seen if there is no data
+		this.chart.updateOptions({
             noData: {
                 text: 'No data'
             }
         });
+
+		// define the series which should show labels
+		let labelSeriesArray = [];
+		for (let i=0 ; i<actualSer.length ; i++) {
+			labelSeriesArray.push(i);
+		}
+		this.chart.updateOptions({
+			dataLabels: {enabledOnSeries: labelSeriesArray}
+		});
+		
+		// build the Y-Axis
+		// each series needs to have a Y-Axis representation. All the actual series will use the left axis and all the benchmark series will use the right axis
+		let labelsTemplate = {
+			formatter: function (value) {
+				let val = value;
+				if (val >= 10 ** 6) {
+					val = Math.trunc(val / 100000)/10 + ' M';
+				} else if (val >= 10 ** 3) {
+					val = Math.trunc(val / 100)/10 + ' K';
+				} 
+				return val;
+			}
+		}
+		let yAxis = [];
+        yAxis.push({labels: labelsTemplate, seriesName: uniqueSeries[0]});
+		// add hidden axis which refer to the first axis
+		for (let i=1 ; i<actualSer.length ; i++) {
+			yAxis.push({labels: labelsTemplate, seriesName: uniqueSeries[0], show:false});
+		}
+		if (benchmarkSer.length>0) {
+			yAxis.push({labels: labelsTemplate, seriesName: uniqueBenchmarkSeries[0],opposite: true});
+      		for (let i=1 ; i<benchmarkSer.length ; i++) {
+				yAxis.push({labels: labelsTemplate, seriesName: uniqueBenchmarkSeries[0],opposite: true, show:false});
+			}
+		}
+		this.chart.updateOptions({
+			yaxis: yAxis
+		});
+		
     }
 
     /**
@@ -160,7 +252,7 @@ export default class MyChart {
 		
         return {
             chart: {
-                type: 'bar',
+                type: 'line',
                 height: height,
                 width: "100%",
                 toolbar: {
@@ -169,14 +261,13 @@ export default class MyChart {
 				fontFamily: fontFamily
             },
 			colors: colors,
-            stroke: {
-                show: true,
-                width: 2,
-                colors: ['transparent']
-            },
+			fill: {
+				type: "solid",
+				opacity: 1
+			},
             plotOptions: {
                 bar: {
-                    horizontal: true,
+                    horizontal: false,
                     dataLabels: {
                         position: 'top',
                     },
@@ -192,35 +283,11 @@ export default class MyChart {
                     useSeriesColors: true
                 }
             },
-            grid: {
-                xaxis: {
-                    lines: {
-                        show: true
-                    }
-                },
-                yaxis: {
-                    lines: {
-                        show: false
-                    }
-                }
-            },
-			yaxis:{
+			xaxis:{
 				hideOverlappingLabels:true
 			},
-			xaxis:{
-				labels: {
-					formatter: function (value) {
-						let val = value;
-						if (val >= 10 ** 6) {
-							val = Math.trunc(val / 100000)/10 + ' M';
-						} else if (val >= 10 ** 3) {
-							val = Math.trunc(val / 100)/10 + ' K';
-						} 
-						return val;
-					}
-				}
-			},
-			dataLabels: {
+			yaxis:{},
+            dataLabels: {
 				formatter: function (value, opt) {
 					let val = value;
 					if (val >= 10 ** 6) {
@@ -235,8 +302,10 @@ export default class MyChart {
 					return val;
 				},
                 style: {
-                    //colors: ['#000000']
-                }
+            //        colors: ['#000000']
+                },
+                offsetY: -10,
+				enabledOnSeries: [0]
             },
 			tooltip: {
 				y: {

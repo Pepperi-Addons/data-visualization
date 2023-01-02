@@ -75,7 +75,7 @@ export default class MyChart {
                             dataSet.map(ds => {
                                 return {
                                     "x": ds[groupName],
-                                    "y": ds[seriesName] || 0
+                                    "y": Math.trunc((ds[seriesName] || 0)*10)/10
                                 }
                             })
                         ]
@@ -84,7 +84,7 @@ export default class MyChart {
             });
         } else {
             // the data has no group by -> show the Series in the y-axis
-            const flattened = uniqueSeries.map(seriesName => dataSet[0][seriesName]);
+            const flattened = uniqueSeries.map(seriesName => Math.trunc((dataSet[0][seriesName]||0)*10)/10);
             ser = [{
                     "data": flattened
                 }
@@ -177,9 +177,9 @@ export default class MyChart {
 					formatter: function (value) {
 						let val = value;
 						if (val >= 10 ** 6) {
-							val = Math.trunc(val / 1000000) + ' M';
+							val = Math.trunc(val / 100000)/10 + ' M';
 						} else if (val >= 10 ** 3) {
-							val = Math.trunc(val / 1000) + ' K';
+							val = Math.trunc(val / 100)/10 + ' K';
 						} 
 						return val;
 					}
@@ -191,13 +191,10 @@ export default class MyChart {
 					let val = value;
 					if (val >= 10 ** 6) {
 						val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
-						//val = (val / 1000000).toFixed(1) + ' M';
 					} else if (val >= 10 ** 3) {
 						val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
-						//val = (val / 1000).toFixed(1) + ' K';
 					} else if (val >= 1) {
 						val = (Math.trunc(val*10)/10).toLocaleString();
-						//val = Math.floor(val);
 					} else if (val == null) {
 						val = '';
 					}

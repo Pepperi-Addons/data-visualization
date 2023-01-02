@@ -94,7 +94,7 @@ export default class MyChart {
         });
         } else {
         // the data has no group by -> show the Series in the y-axis
-        const flattened = uniqueSeries.map(seriesName => dataSet[0][seriesName]);
+        const flattened = uniqueSeries.map(seriesName => Math.trunc((dataSet[0][seriesName]||0)*10)/10);
         ser = [{"data":	flattened}];
         this.chart.updateOptions({labels: uniqueSeries});
         // set the colors to be distributed

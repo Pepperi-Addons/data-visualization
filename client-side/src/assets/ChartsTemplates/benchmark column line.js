@@ -67,18 +67,18 @@ export default class MyChart {
 		const benchmarkSeries = this.data.BenchmarkQueries.map((data) => data.Series).flat();
         
         const uniqueGroups = groups.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
+			return index === self.indexOf(elem);
+		});
         const uniqueSeries = series.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
-		const uniqueBenchmarkGroups = benchmarkGroups.filter(function (elem, index, self) {
+			return index === self.indexOf(elem);
+		});
+        const uniqueBenchmarkGroups = benchmarkGroups.filter(function (elem, index, self) {
 			return index === self.indexOf(elem);
 		});
 		const uniqueBenchmarkSeries = benchmarkSeries.filter(function (elem, index, self) {
 			return index === self.indexOf(elem);
 		});
-		
+
         const dataSet = this.data.DataSet;
 		const benchmarkSet = this.data.BenchmarkSet;
 
@@ -96,7 +96,7 @@ export default class MyChart {
                             dataSet.map(ds => {
                                 return {
                                     "x": ds[groupName],
-                                    "y": ds[seriesName] || 0
+                                    "y": Math.trunc((ds[seriesName] || 0)*10)/10
                                 }
                             })
                         ]
@@ -128,7 +128,7 @@ export default class MyChart {
 			ser = actualSer.concat(benchmarkSer);
         } else {
            	// the data has no group by -> show the Series in the y-axis
-			const flattened = uniqueSeries.map(seriesName => dataSet[0][seriesName]);
+			const flattened = uniqueSeries.map(seriesName => Math.trunc((dataSet[0][seriesName]||0)*10)/10);
 			actualSer = [{
 				"type": "bar",
 				"data": flattened
@@ -193,6 +193,16 @@ export default class MyChart {
                 text: 'No data'
             }
         });
+		
+		// define the series which should show labels
+		let labelSeriesArray = [];
+		for (let i=0 ; i<actualSer.length ; i++) {
+			labelSeriesArray.push(i);
+		}
+		this.chart.updateOptions({
+			dataLabels: {enabledOnSeries: labelSeriesArray}
+		});
+		
     }
 
     /**
@@ -215,7 +225,7 @@ export default class MyChart {
             chart: {
                 type: 'line',
                 height: height,
-                width: "100%",
+                width: '100%',
                 toolbar: {
                     show: true
                 },
@@ -252,9 +262,9 @@ export default class MyChart {
 					formatter: function (value) {
 						let val = value;
 						if (val >= 10 ** 6) {
-							val = Math.trunc(val / 1000000) + ' M';
+							val = Math.trunc(val / 100000)/10 + ' M';
 						} else if (val >= 10 ** 3) {
-							val = Math.trunc(val / 1000) + ' K';
+							val = Math.trunc(val / 100)/10 + ' K';
 						} 
 						return val;
 					}
@@ -265,13 +275,10 @@ export default class MyChart {
 					let val = value;
 					if (val >= 10 ** 6) {
 						val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
-						//val = (val / 1000000).toFixed(1) + ' M';
 					} else if (val >= 10 ** 3) {
 						val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
-						//val = (val / 1000).toFixed(1) + ' K';
 					} else if (val >= 1) {
 						val = (Math.trunc(val*10)/10).toLocaleString();
-						//val = Math.floor(val);
 					} else if (val == null) {
 						val = '';
 					}

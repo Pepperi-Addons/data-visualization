@@ -99,16 +99,18 @@ export default class MyChart {
                             dataSet.map(ds => {
                                 let data = {
                                     "x": ds[groupName],
-                                    "y": ds[seriesName] || null
+                                    "y": Math.trunc((ds[seriesName] || 0)*10)/10
                                 };
 								// join the benchmark data to the actuals
-								// if there are no groups in the benchmark groups then use the single record value always, otherwise find the value of the same group
-								// if there is only one benchmark series then use it always, otherwise check if there is a value to the series
-								let compData = benchmarkSet.find(comp => ((uniqueBenchmarkGroups.length == 0 || comp[groupName] === ds[groupName]) && (uniqueBenchmarkSeries.length == 1 || comp[seriesName])))
-								if (compData) {
-									let goal = Object.assign({}, benchmarkObj);
-									goal.value = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
-									data["goals"] = [goal];
+								if (benchmarkSet.length>0) {
+									// if there are no groups in the benchmark groups then use the single record value always, otherwise find the value of the same group
+									// if there is only one benchmark series then use it always, otherwise check if there is a value to the series
+									let compData = benchmarkSet.find(comp => ((uniqueBenchmarkGroups.length == 0 || comp[groupName] === ds[groupName]) && (uniqueBenchmarkSeries.length == 1 || comp[seriesName])))
+									if (compData) {
+										let goal = Object.assign({}, benchmarkObj);
+										goal.value = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
+										data["goals"] = [goal];
+									}
 								}
 								return data;
                             })
@@ -122,14 +124,16 @@ export default class MyChart {
 				data: uniqueSeries.map(seriesName => {
 					let data = {
 						"x": seriesName,
-						"y": dataSet[0][seriesName] || null
+						"y": Math.trunc(dataSet[0][seriesName]*10)/10 || null
 					};
 					// join the benchmark data to the actuals
-					// check that the benchmark is not per group. if there is only one benchmark series then use it always.
-					if ((uniqueBenchmarkGroups.length == 0) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
-						let goal = Object.assign({}, benchmarkObj);
-						goal.value = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
-						data["goals"] = [goal];
+					if (benchmarkSet.length>0) {
+						// check that the benchmark is not per group. if there is only one benchmark series then use it always.
+						if ((uniqueBenchmarkGroups.length == 0) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
+							let goal = Object.assign({}, benchmarkObj);
+							goal.value = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
+							data["goals"] = [goal];
+						}
 					}
 					return data;
 				})
@@ -245,9 +249,9 @@ export default class MyChart {
 					formatter: function (value) {
 						let val = value;
 						if (val >= 10 ** 6) {
-							val = Math.trunc(val / 1000000) + ' M';
+							val = Math.trunc(val / 100000)/10 + ' M';
 						} else if (val >= 10 ** 3) {
-							val = Math.trunc(val / 1000) + ' K';
+							val = Math.trunc(val / 100)/10 + ' K';
 						} 
 						return val;
 					}
@@ -258,13 +262,10 @@ export default class MyChart {
 					let val = value;
 					if (val >= 10 ** 6) {
 						val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
-						//val = (val / 1000000).toFixed(1) + ' M';
 					} else if (val >= 10 ** 3) {
 						val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
-						//val = (val / 1000).toFixed(1) + ' K';
 					} else if (val >= 1) {
 						val = (Math.trunc(val*10)/10).toLocaleString();
-						//val = Math.floor(val);
 					} else if (val == null) {
 						val = '';
 					}

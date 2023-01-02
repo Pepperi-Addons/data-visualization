@@ -138,7 +138,23 @@ export const charts: Chart[] = [
         Type: 'Table chart',
         Hidden: false,
         System: true
-    }
+    },
+    {
+        Name: "Benchmark two axis",
+        Description: "Default benchmark column and line with two axis",
+        ScriptURI: '',
+        Type: 'Benchmark chart',
+        Hidden: false,
+        System: true
+    },
+    {
+        Name: "Value with progress bar",
+        Description: "Default value with progress bar",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        System: true
+    },
 ]
 
 export const chartBlockScheme: AddonDataScheme = {
