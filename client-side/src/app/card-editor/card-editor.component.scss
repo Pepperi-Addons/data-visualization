@@ -35,31 +35,11 @@
             display: block;
         }
     }
-
-
 }
 
 .actions {
     display: inline-flex;
     gap: ngx-variables.$spacing-xs;
-}
-
-pep-checkbox{
-
-  ::ng-deep .pep-checkbox-container {
-      background: transparent !important;
-      padding-inline: 0;
-
-      label{
-          &.mat-checkbox-layout{
-              font-size: .75rem;
-
-              .mat-checkbox-inner-container{
-                  margin-inline-start: 0 !important;
-              }
-          }
-      }
-  }
 }
 
 mat-slider{
@@ -74,9 +54,5 @@ pep-group-buttons{
 
 pep-slider{
     margin-bottom: 1rem;
-}
-
-.benchmark-select{
-    margin-top: -1.5rem;
 }
 

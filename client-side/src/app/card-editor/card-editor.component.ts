@@ -185,9 +185,4 @@ export class CardEditorComponent implements OnInit {
     onBenchmarkVariablesDataChanged(data: any) {
         this.variablesDataChanged(data.event, data.name, data.field, true);
     }
-
-    useBenchmark(event) {
-        this.configuration.cards[this.id].useBenchmark = event;
-        if(event == false) this.secondQueryChanged('');
-    }
 }
