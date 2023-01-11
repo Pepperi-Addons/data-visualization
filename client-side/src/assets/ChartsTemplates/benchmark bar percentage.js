@@ -39,7 +39,7 @@ export default class MyChart {
         const canvas = element.querySelector('#canvas');
 		
         // retrieve the chart configuration
-        const conf = this.getConfiguration(canvas);
+        const conf = this.getConfiguration(canvas, configuration);
 
         // create a chart element on the canvas with the configuration
         this.chart = new ApexCharts(canvas, conf);
@@ -52,45 +52,37 @@ export default class MyChart {
      */
     update() {
 		// if there is no benchmark data, then create empty object
-		if (!this.data.BenchmarkQueries || this.data.BenchmarkQueries.length==0) {
-			this.data.BenchmarkQueries = [{
+		if (!this.data.Benchmark)
+			this.data.Benchmark = {}
+		if (!this.data.Benchmark.DataQueries || this.data.Benchmark.DataQueries.length==0) {
+			this.data.Benchmark.DataQueries = [{
 				Name: '',
 				Groups: [],
 				Series: []
 			}];
-			this.data.BenchmarkSet = [];
 		}
 		
-        const groups = this.data.DataQueries.map((data) => data.Groups).flat();
-        const series = this.data.DataQueries.map((data) => data.Series).flat();
-		const benchmarkGroups = this.data.BenchmarkQueries.map((data) => data.Groups).flat();
-		const benchmarkSeries = this.data.BenchmarkQueries.map((data) => data.Series).flat();
-
-        const uniqueGroups = groups.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
-        const uniqueSeries = series.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
-        const uniqueBenchmarkGroups = benchmarkGroups.filter(function (elem, index, self) {
-			return index === self.indexOf(elem);
-		});
-		const uniqueBenchmarkSeries = benchmarkSeries.filter(function (elem, index, self) {
-			return index === self.indexOf(elem);
-		});
+        const uniqueGroups = this.data.DataQueries.map((data) => data.Groups).flat().filter((elem,index,self) => self.indexOf(elem) === index);
+        const uniqueSeries = this.data.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
+		const dataSet = this.data.DataSet;
+		const benchmarkName = this.data.Benchmark.DataQueries[0].Name;
+		const benchmarkGroups = this.data.Benchmark.DataQueries.map((data) => data.Groups).flat();
+		const uniqueBenchmarkSeries = this.data.Benchmark.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
+		const benchmarkSet = this.data.Benchmark.DataSet || [];
+		const hasMultipleRecords = uniqueGroups.length > 0;
+		const hasBenchmarkGroups = benchmarkGroups.length > 0;
+		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
+		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
 		
-        const dataSet = this.data.DataSet;
-		const benchmarkSet = this.data.BenchmarkSet;
-
 		const benchmarkObj = {
-			"name": this.data.BenchmarkQueries[0].Name,
+			"name": benchmarkName,
 			"strokeHeight": 0,
 			"strokeColor": "#775DD0"
 		}
 		
 		let ser = [];
         // the data has multiple group by DataSet -> show them in the y-axis
-        if (uniqueGroups.length > 0) {
+        if (hasMultipleRecords) {
             ser = uniqueSeries.map(seriesName => {
                 return {
                     "name": seriesName,
@@ -99,23 +91,23 @@ export default class MyChart {
                             dataSet.map(ds => {
 								let data = {
                                     "x": ds[groupName],
-                                    "y": Math.trunc((ds[seriesName] || 0)*10)/10
+                                    "y": Math.trunc((ds[seriesName] || 0)*100)/100
                                 };
 								// join the benchmark data to the actuals
 								if (benchmarkSet.length>0) {
 									// if there are no groups in the benchmark groups then use the single record value always, otherwise find the value of the same group
 									// if there is only one benchmark series then use it always, otherwise check if there is a value to the series
-									let compData = benchmarkSet.find(comp => ((uniqueBenchmarkGroups.length == 0 || comp[groupName] === ds[groupName]) && (uniqueBenchmarkSeries.length == 1 || comp[seriesName])));
+									let compData = benchmarkSet.find(comp => ((!hasBenchmarkGroups || comp[groupName] === ds[groupName]) && (uniqueBenchmarkSeries.length == 1 || comp[seriesName])));
 									let compValue = 0;
 									if (compData) {
 										compValue = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
-										compValue = Math.trunc((compValue || 0)*10)/10;
+										compValue = Math.trunc((compValue || 0)*100)/100;
 									}
 									// store the original value and benchmark value and calculate the new data to be percentage
 									data["origin"] = data["y"];
 									data["benchmark"] = compValue;
 									if (compValue > 0) {	
-										data["y"] = Math.trunc((data["y"]/compValue)*100*10)/10;
+										data["y"] = Math.trunc((data["y"]/compValue)*100*100)/100;
 										// add the benchmark as goal so it will be seen in the tooltip
 										let goal = Object.assign({}, benchmarkObj);
 										goal.value = compValue;
@@ -137,21 +129,21 @@ export default class MyChart {
 				data: uniqueSeries.map(seriesName => {
 					let data = {
 						"x": seriesName,
-						"y": Math.trunc(dataSet[0][seriesName]*10)/10 || null
+						"y": Math.trunc(dataSet[0][seriesName]*100)/100 || null
 					};
 					// join the benchmark data to the actuals
 					if (benchmarkSet.length>0) {
 						let compValue = 0;
 						// check that the benchmark is not per group. if there is only one benchmark series then use it always.
-						if ((uniqueBenchmarkGroups.length == 0) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
+						if ((!hasBenchmarkGroups) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
 							compValue = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
-							compValue = Math.trunc((compValue || 0)*10)/10;
+							compValue = Math.trunc((compValue || 0)*100)/100;
 						}
 						// store the original value and benchmark value and calculate the new data to be percentage
 						data["origin"] = data["y"];
 						data["benchmark"] = compValue;
 						if (compValue > 0) {
-							data["y"] = Math.trunc((data["y"]/compValue)*100*10)/10;
+							data["y"] = Math.trunc((data["y"]/compValue)*100*100)/100;
 							// add the benchmark as goal so it will be seen in the tooltip
 							let goal = Object.assign({}, benchmarkObj);
 							goal.value = compValue;
@@ -164,58 +156,63 @@ export default class MyChart {
 					return data;
 				})
 			}];
-			
+		}	
 
-            this.chart.updateOptions({
-                labels: uniqueSeries
-            });
-            // set the colors to be distributed
-            this.chart.updateOptions({
-                plotOptions: {
-                    bar: {
-                        distributed: true
-                    }
-                }
-            });
-            // hide the legend (since the series name is on the x axis)
-            this.chart.updateOptions({
-                legend: {
-                    show: false
-                }
-            });
-        }
-
-		// hide the data labels if there are too many labels
-		const showLabels = ser.length > 0 && ser.length * ser[0].data.length < 30;
-		this.chart.updateOptions({
-			dataLabels: {
-				enabled: showLabels
-			}
-		});
-		
-        // update the chart data
-        this.chart.updateSeries(ser);
-
-		// calculate the optimal bar height (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
+		// calculate the optimal column width (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
 		// 20: minimum should be close to 20 (when only one item)
 		// 20+60: maximum should be close 80
 		// 10 and 2: the a and b from the function
 		const seriesLength = ser.reduce((sum, curr) => sum + (curr.data.length ||0),0);
 		const optimalPercent = 20 + (60 / (1 + 10*Math.exp(-seriesLength /2)));
-        this.chart.updateOptions({
-            plotOptions: {
+		
+		let optionsToSet = {
+			plotOptions: {
 				bar: {
-					barHeight: optimalPercent + "%"
+					distributed: !hasMultipleRecords,	// set the colors to be distributed
+					columnWidth: optimalPercent + "%"	// set the column width
 				}
+			},
+			legend: {
+				show: hasMultipleRecords	// hide the legend (since the series name is on the x axis)
+			},
+			dataLabels: {
+				enabled: ser.length > 0 && ser.length * ser[0].data.length < 30	// hide the data labels if there are too many labels
+			},
+			tooltip: {
+				y: {
+					title: {
+						formatter: seriesName => hasMultipleRecords ? seriesName+':' : null
+					},
+					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+						let val = value;
+						// real series value
+						if (series) {
+							// comparison value - show the value and percentage
+							if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
+								let origin = w.config.series[seriesIndex].data[dataPointIndex].origin;
+								val = origin.toLocaleString(undefined, numberFormatter) + ' (' + Math.trunc(value*100)/100 + '%)';
+							} else {
+								// no comparison value - show the value as percentage
+								val = Math.trunc(val*100)/100 + '%';
+							}
+						} else {
+							//goal value
+							val = val.toLocaleString(undefined, numberFormatter);
+						}
+						return val;
+					}
+				}
+			},
+			noData: {
+				text: 'No data'		// update the initial message to be seen if there is no data
 			}
-        });
-
-        // update the initial message to be seen if there is no data
-        this.chart.updateOptions({
-            noData: {
-                text: 'No data'
-            }
-        });
+		};
+		
+		// update the chart options
+		this.chart.updateOptions(optionsToSet);
+		
+        // update the chart data
+        this.chart.updateSeries(ser);
     }
 
     /**
@@ -228,8 +225,11 @@ export default class MyChart {
     /**
      * This function returns a chart configuration object.
      */
-    getConfiguration(canvas) {
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+    getConfiguration(canvas, configuration) {
+		const defaultColors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const defaultDataLabelsColors = ['#000000'];
+		const seriesColors = (configuration.SeriesColors && configuration.SeriesColors !== '') ? configuration.SeriesColors : defaultColors;
+		const dataLabelsColors = (configuration.DataLabelsColors && configuration.DataLabelsColors !== '') ? configuration.DataLabelsColors : defaultDataLabelsColors;
 		const fontFamily = getComputedStyle(canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
 		// set the height to the canvas height (or to min value for hidden canvas) (setting the chart height to 100% throws errors in the console log)
 		const height = canvas.clientHeight>0 ?  canvas.clientHeight : '352';
@@ -244,7 +244,7 @@ export default class MyChart {
                 },
 				fontFamily: fontFamily
             },
-			colors: colors,
+			colors: seriesColors,
             stroke: {
                 show: true,
                 width: 2,
@@ -254,7 +254,7 @@ export default class MyChart {
                 bar: {
                     horizontal: true,
                     dataLabels: {
-                        position: 'top',
+                        position: 'center',
                     },
                     borderRadius: 4
                 }
@@ -276,14 +276,14 @@ export default class MyChart {
                 },
                 yaxis: {
                     lines: {
-                        show: false
+    				show: false
                     }
                 }
             },
 			xaxis:{
 				labels: {
 					formatter: function (value) {
-						return (Math.trunc(value*10)/10).toLocaleString() + '%';
+						return (Math.trunc(value*100)/100).toLocaleString() + '%';
 					}
 				}
 			},
@@ -291,32 +291,12 @@ export default class MyChart {
 				max: 100,
 				hideOverlappingLabels:true
 			},
-			tooltip: {
-				y: {
-					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
-						let val = value;
-						// real series value
-						if (series) {
-							// comparison value - show the value and percentage
-							if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
-								let origin = w.config.series[seriesIndex].data[dataPointIndex].origin;
-								if (origin >= 10 ** 3) {
-									origin = Math.trunc(origin);
-								} 
-								val = origin.toLocaleString() + ' (' + Math.trunc(value*100)/100 + '%)';
-							} else {
-								// no comparison value - show the value as percentage
-								val = Math.trunc(val*100)/100 + '%';
-							}
-						} else {
-							//goal value
-							if (val >= 10 ** 3) {
-								val = Math.trunc(val);
-							}
-							val = val.toLocaleString();
-						}
-						return val;
-					}
+			dataLabels: {
+				style: {
+                    colors: dataLabelsColors
+                },
+				formatter: function (value) {
+					return (value ==0) ? '' : (Math.trunc(value*100)/100).toLocaleString() + '%';
 				}
 			},
             noData: {

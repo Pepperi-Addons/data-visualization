@@ -35,40 +35,54 @@ export default class MyChart {
      * the embedder calls this function when there are changes to the chart data
      */
     update() {
+		// if there is no benchmark data, then create empty object
+		if (!this.data.Benchmark)
+			this.data.Benchmark = {}
+		if (!this.data.Benchmark.DataQueries || this.data.Benchmark.DataQueries.length==0) {
+			this.data.Benchmark.DataQueries = [{
+				Name: '',
+				Groups: [],
+				Series: []
+			}]
+		}
+		
+		const dataSet = this.data.DataSet;
+		const benchmarkSet = this.data.Benchmark.DataSet || [];
+		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
+		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+		
 		let valueMsg = 'No data';
 		let changeMsg = '';
 		let color = '#000000';
 		
-		if (this.data.DataSet && this.data.DataSet.length > 0) {
+		if (this.data.DataQueries && this.data.DataQueries[0].Series[0]) {
 			// calculate the totals of the first query
 			let series1 = this.data.DataQueries[0].Series[0];
-			let total1 = this.data.DataSet[0][series1];
+			let total1 = dataSet[0][series1];	// curr value
 			
 			// round the value 
-			if (total1 >= 10 ** 9) {
-				valueMsg = (Math.trunc(total1 / 100000)/10).toLocaleString() + ' M';
-			} else if (total1 >= 10 ** 6) {
-				valueMsg = (Math.trunc(total1 / 100)/10).toLocaleString() + ' K';
-			} else if (total1 >= 10 ** 3) {
-				valueMsg = Math.trunc(total1).toLocaleString();
-			} else {
-				valueMsg = total1.toLocaleString();
-			}
+			valueMsg = (Math.trunc(total1*100)/100).toLocaleString(undefined, numberFormatter);
 		
 			// find the change
-			if (this.data.BenchmarkSet && this.data.BenchmarkSet.length > 0) {
+			if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {
 				// calculate the totals of the second query
-				let series2 = this.data.BenchmarkQueries[0].Series[0];
-				let total2 = this.data.BenchmarkSet[0][series2];
+				let series2 = this.data.Benchmark.DataQueries[0].Series[0];
+				let total2 = benchmarkSet[0][series2];	// prev value
 				let change = 0;
-				if (total2 == 0) {
-					if (total1 > 0) {
-						change = -100;
+				if (total1 != 0) {
+					if (total2 != 0) {
+						change = Math.trunc(100*((total1-total2)/total2)*100)/100;
+					} else {
+						change = 100; 
 					}
 				} else {
-					change = Math.trunc(100*((total2-total1)/total2)*10)/10;	
+					if (total2 != 0) {
+						change = -100;
+					} else {
+						change = 0;
+					}
 				}
-				changeMsg = change + '%';
+				changeMsg = change.toString() + '%';
 				if (change > 0) {
 					changeMsg = '+' + changeMsg;
 					color = '#83B30C';

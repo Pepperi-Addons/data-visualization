@@ -51,42 +51,54 @@ export default class MyChart {
      * the embedder calls this function when there are changes to the chart data
      */
     update() {
-		if (this.data.DataSet && this.data.DataSet.length > 0) {
+		// if there is no benchmark data, then create empty object
+		if (!this.data.Benchmark)
+			this.data.Benchmark = {};
+		if (!this.data.Benchmark.DataQueries || this.data.Benchmark.DataQueries.length==0) {
+			this.data.Benchmark.DataQueries = [{
+				Name: '',
+				Groups: [],
+				Series: []
+			}];
+		}
+		
+		const dataSet = this.data.DataSet;
+		const benchmarkName = this.data.Benchmark.DataQueries[0].Name;
+		const benchmarkSet = this.data.Benchmark.DataSet || [];
+		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
+		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+		
+		let ser = [];
+		let valueMsg = '';
+		if (this.data.DataQueries && this.data.DataQueries[0].Series[0]) {
 			// calculate the totals of the first query
 			let series1 = this.data.DataQueries[0].Series[0];
-			let total1 = this.data.DataSet[0][series1];
-			total1 = Math.trunc((total1 || 0)*10)/10;
+			let total1 = dataSet[0][series1];
+			total1 = Math.trunc((total1 || 0)*100)/100;
 			
 			let data = { 'x': "" };
-			let valueMsg = '';
-			if (this.data.BenchmarkSet && this.data.BenchmarkSet.length > 0) {
+			if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {
 				// calculate the totals of the second query
-				let series2 = this.data.BenchmarkQueries[0].Series[0];
-				let total2 = this.data.BenchmarkSet[0][series2];
+				let series2 = this.data.Benchmark.DataQueries[0].Series[0];
+				let total2 = benchmarkSet[0][series2];
 				if (total2>0) {
-					total2 = Math.trunc((total2 || 0)*10)/10;
-					data['y'] = Math.trunc(100*total1/total2*10)/10;
+					total2 = Math.trunc((total2 || 0)*100)/100;
+					let percentage = Math.trunc(100*total1/total2*10)/10;
+					data['y'] = percentage>100 ? 100 : percentage;
 					data["origin"] = total1;
+					data["percentage"] = percentage;
 					// add the benchmark as goal so it will be seen in the tooltip
 					let goal = {
-						"name": this.data.BenchmarkQueries[0].Name,
+						"name": benchmarkName,
 						"strokeHeight": 0,
 						"strokeColor": "#775DD0",
 						"value": total2
 					}
 					data["goals"] = [goal];
 					// round the value for the subtitle
-					if (total1 >= 10 ** 9) {
-						valueMsg = (Math.trunc(total1 / 100000)/10).toLocaleString() + ' M';
-					} else if (total1 >= 10 ** 6) {
-						valueMsg = (Math.trunc(total1 / 100)/10).toLocaleString() + ' K';
-					} else if (total1 >= 10 ** 3) {
-						valueMsg = Math.trunc(total1).toLocaleString();
-					} else {
-						valueMsg = total1.toLocaleString();
-					}
+					valueMsg = total1.toLocaleString(undefined, numberFormatter);
 				} else {
-					valueMsg = total1.toLocaleString();
+					valueMsg = total1.toLocaleString(undefined, numberFormatter);
 				}
 			} else {
 				// no second query - use the 1st series as the percentage value
@@ -94,27 +106,51 @@ export default class MyChart {
 				data["origin"] = total1;
 				valueMsg = total1 + '%';
 			}
-
-			// update the subtitle text with the value
-			this.chart.updateOptions({
-				subtitle: {
-					text: valueMsg
-				}
-			});
 			
-			// update the chart data
-			this.chart.updateSeries([{
+			// build the series data
+			ser = [{
 				name:series1,
 				data:[data]
-			}]);
+			}];
 		}		
 		
-		// update the initial message to be seen if there is no data
-		this.chart.updateOptions({
-            noData: {
-                text: 'No data'
-            }
-        });
+		let optionsToSet = {
+			subtitle: {
+				text: valueMsg		// update the subtitle text with the value
+			},
+			tooltip: {
+				y: {
+					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+						let val = value;
+						// real series value
+						if (series) {
+							// comparison value - show the value and percentage
+							if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
+								let origin = w.config.series[seriesIndex].data[dataPointIndex].origin;
+								let percentage = w.config.series[seriesIndex].data[dataPointIndex].percentage;
+								val = origin.toLocaleString(undefined, numberFormatter) + ' (' + Math.trunc(percentage*10)/10 + '%)';
+							} else {
+								// no comparison value - show the value as percentage
+								val = Math.trunc(val*10)/10 + '%';
+							}
+						} else {
+							//goal value
+							val = val.toLocaleString(undefined, numberFormatter);
+						}
+						return val;
+					}
+				}
+			},
+			noData: {
+				text: 'No data'		// update the initial message to be seen if there is no data
+			}
+		}
+		
+		// update the chart options
+		this.chart.updateOptions(optionsToSet);
+		
+        // update the chart data
+        this.chart.updateSeries(ser);
     }
 
     /**
@@ -128,7 +164,10 @@ export default class MyChart {
      * This function returns a chart configuration object.
      */
     getConfiguration(canvas, configuration) {
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const defaultColors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		//const defaultDataLabelsColors = ['#000000'];
+		const seriesColors = (configuration.SeriesColors && configuration.SeriesColors !== '') ? configuration.SeriesColors : defaultColors;
+		//const dataLabelsColors = (configuration.DataLabelsColors && configuration.DataLabelsColors !== '') ? configuration.DataLabelsColors : defaultDataLabelsColors;
 		const fontFamily = getComputedStyle(canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
 		const title = configuration.Title || '';
 		// set the height to the canvas height (or to min value for hidden canvas) (setting the chart height to 100% throws errors in the console log)
@@ -146,19 +185,19 @@ export default class MyChart {
 				fontFamily: fontFamily
             },
 			plotOptions: {
-				bar: {
+			bar: {
 					horizontal: true,
 					barHeight: '100%',
 					distributed: true,
 					borderRadius: 4,
 					colors: {
-						backgroundBarColors: colors,
+						backgroundBarColors: seriesColors,
 						backgroundBarOpacity: 0.16,
 						backgroundBarRadius: 4
 					}
 				}
 			},
-			colors: colors,
+			colors: seriesColors,
 			subtitle: {
 				floating: true,
 				text: '',
@@ -192,33 +231,7 @@ export default class MyChart {
 				}
 			},
 			tooltip: {
-				enabled: true,
-				y: {
-					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
-						let val = value;
-						// real series value
-						if (series) {
-							// comparison value - show the value and percentage
-							if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
-								let origin = w.config.series[seriesIndex].data[dataPointIndex].origin;
-								if (origin >= 10 ** 3) {
-									origin = Math.trunc(origin);
-								} 
-								val = origin.toLocaleString() + ' (' + Math.trunc(value*100)/100 + '%)';
-							} else {
-								// no comparison value - show the value as percentage
-								val = Math.trunc(val*100)/100 + '%';
-							}
-						} else {
-							//goal value
-							if (val >= 10 ** 3) {
-								val = Math.trunc(val);
-							} 
-							val = val.toLocaleString();
-						}
-						return val;
-					}
-				}
+				enabled: true
 			},
 			yaxis: {
 				max: 100

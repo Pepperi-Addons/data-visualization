@@ -27,6 +27,7 @@ export default class MyChart {
     constructor(element, configuration) {
         this.data = {};
         this.canvas = element;
+		this.configuration = configuration;
     }
 
     /**
@@ -42,28 +43,48 @@ this.data = [{
 	"DataQueries":[{"Name":"Data1a","Groups":["ActionDate"],"Series":["Series 1a","Series 2a"]},{"Name":"Data2","Groups":["ActionDate"],"Series":["Series 3a"]}],
 	"DataSet":[{"ActionDate":"Jan","Series 1a":93,"Series 2a":19,"Series 3a":77},{"ActionDate":"Feb","Series 1a":81,"Series 2a":59,"Series 3a":83},{"ActionDate":"Mar","Series 1a":14,"Series 2a":93,"Series 3a":58},{"ActionDate":"Apr","Series 1a":58,"Series 2a":36,"Series 3a":91}]
 }];
-*/	
-        const groups = this.data.map((x) => x.DataQueries.map((data) => data.Groups).flat()).flat();
-        const series = this.data.map((x) => x.DataQueries.map((data) => data.Series).flat()).flat();
-
-        const uniqueGroups = groups.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
-
-        const uniqueSeries = series.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
-
+*/
+		// check if the data is an array
+		if (!Array.isArray(this.data)) {
+			//if the data is a single object, use it.
+			if (this.data !== null && typeof (this.data) === 'object') {
+				this.data = [this.data];
+			} else {
+				this.data = [];
+			}
+		}
+  
+        const uniqueGroups = this.data.map((x) => x.DataQueries.map((data) => data.Groups).flat()).flat().filter((elem,index,self) => self.indexOf(elem) === index);
+        const uniqueSeries = this.data.map((x) => x.DataQueries.map((data) => data.Series).flat()).flat().filter((elem,index,self) => self.indexOf(elem) === index);
+		const hasMultipleRecords = uniqueGroups.length > 0;
+		// map of the formatter per each series
+		const seriesFormatter = {};
+		this.data.forEach(obj => {
+			const series = obj.DataQueries.map(query => query.Series).flat();
+			series.forEach(s => {
+				seriesFormatter[s] = obj.NumberFormatter || {};
+			});
+		});
+		
         // Create a table.
 		const table = document.createElement("table");
 		
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const defaultColors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		//const defaultDataLabelsColors = ['#000000'];
+		const colors = (this.configuration.SeriesColors && this.configuration.SeriesColors !== '') ? this.configuration.SeriesColors : defaultColors;
 		const fontFamily = getComputedStyle(this.canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
 		table.setAttribute('style', 'font-family:'+fontFamily+'; font-size:14px; width:100%; border:solid 1px #ddd; margin:10px 0px;  border-collapse: collapse;');
 		const cellStyle = 'padding:4px 6px; border:solid 1px #ddd'
 		
+		// build the value formatter for the series considering the query number formatter
+		const valueFormatter = function (value, series) {
+			const numberFormatter = seriesFormatter[series] ? seriesFormatter[series] : {};
+			const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+			return (isNaN(value)) ? value : (Math.trunc(value*100)/100).toLocaleString(undefined, numberFormatter);
+		}
+		
         // the data has multiple group by DataSet -> show them as rows
-        if (uniqueGroups.length > 0) {
+        if (hasMultipleRecords) {
 			
 			let col = uniqueGroups.concat(uniqueSeries);
 			// Create table header row using the extracted headers above.
@@ -94,14 +115,7 @@ this.data = [{
 					let tabCell = tr.insertCell(-1);
 					tabCell.setAttribute('style', cellStyle);
 					let val = dataSet[i][col[j]] || 0;
-					if (val >= 10 ** 6) {
-						val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
-					} else if (val >= 10 ** 3) {
-						val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
-					} else if (val >= 1) {
-						val = (Math.trunc(val*10)/10).toLocaleString();
-					}
-					tabCell.innerHTML = val;
+					tabCell.innerHTML = valueFormatter(val, col[j]);
 				}
 			}
 		
@@ -124,14 +138,7 @@ this.data = [{
 				tabCell = tr.insertCell(-1);
 				tabCell.setAttribute('style', cellStyle);
 				let val = dataSet[uniqueSeries[i]];
-				if (val >= 10 ** 6) {
-					val = (Math.trunc(val / 100000)/10).toLocaleString() + ' M';
-				} else if (val >= 10 ** 3) {
-					val = (Math.trunc(val / 100)/10).toLocaleString() + ' K';
-				} else if (val >= 1) {
-					val = (Math.trunc(val*10)/10).toLocaleString();
-				}
-				tabCell.innerHTML = val;
+				tabCell.innerHTML = valueFormatter(val, uniqueSeries[i]);
 			}
         }
 		
