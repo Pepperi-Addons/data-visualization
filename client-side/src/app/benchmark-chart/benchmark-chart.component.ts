@@ -69,12 +69,7 @@ export class BenchmarkChartComponent implements OnInit {
                 this.pluginService.executeQuery(configuration.query, body).then((firstQueryData) => {
                     this.pluginService.executeQuery(configuration.secondQuery, benchmarkBody).then((secondQueryData) => {
                         this.chartInstance.data = firstQueryData;
-                        this.chartInstance.data["BenchmarkQueries"] = []
-                        this.chartInstance.data["BenchmarkSet"] = []
-                        if(secondQueryData) {
-                            this.chartInstance.data["BenchmarkQueries"] = secondQueryData["DataQueries"]
-                            this.chartInstance.data["BenchmarkSet"] = secondQueryData["DataSet"]
-                        }
+                        this.chartInstance.data["Benchmark"] = secondQueryData;
                         this.chartInstance.update();
                         window.dispatchEvent(new Event('resize'));
                         this.loaderService.hide();

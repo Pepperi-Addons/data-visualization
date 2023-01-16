@@ -52,12 +52,7 @@ export class CardComponent implements OnInit {
             await this.pluginService.executeQuery(card.query, body).then(async (data) => {
               await this.pluginService.executeQuery(card.secondQuery, benchmarkBody).then(async (benchmarkData) => {
                 this.chartInstance.data = data;
-                this.chartInstance.data["BenchmarkQueries"] = [];
-                this.chartInstance.data["BenchmarkSet"] = [];
-                if(benchmarkData) {
-                    this.chartInstance.data["BenchmarkQueries"] = benchmarkData["DataQueries"];
-                    this.chartInstance.data["BenchmarkSet"] = benchmarkData["DataSet"];
-                }
+                this.chartInstance.data["Benchmark"] = benchmarkData;
                 this.chartInstance.update();
                 window.dispatchEvent(new Event('resize'));
                 this.loaderService.hide();
