@@ -3,4 +3,11 @@
     padding: 0.5rem;
     // margin: 1.5rem;
     border-radius: 0.5rem;
-  }
+    overflow-x: scroll !important;
+
+}
+
+  // ::ng-deep .apexcharts-canvas{
+  //   width: 100% !important;
+  // }
+
