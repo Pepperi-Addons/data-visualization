@@ -101,7 +101,7 @@ export default class MyChart {
 			yaxis: {
 				labels: {
 					formatter: function (value, opt) {		// sets the formatter
-						return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter);
+						return (value == null) ? '' : value.toLocaleString(undefined, compactNumberFormatter);
 					}
 				}
 			},

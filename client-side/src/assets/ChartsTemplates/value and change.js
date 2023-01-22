@@ -61,7 +61,7 @@ export default class MyChart {
 			let total1 = dataSet[0][series1];	// curr value
 			
 			// round the value 
-			valueMsg = (Math.trunc(total1*100)/100).toLocaleString(undefined, numberFormatter);
+			valueMsg = (Math.trunc(total1*100)/100).toLocaleString(undefined, compactNumberFormatter);
 		
 			// find the change
 			if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {

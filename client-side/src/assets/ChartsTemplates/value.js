@@ -87,7 +87,7 @@ export default class MyChart {
 				}
 			} else {
 				// single query - show the value
-				valueMsg = (Math.trunc(total1*100)/100).toLocaleString(undefined, numberFormatter);
+				valueMsg = (Math.trunc(total1*100)/100).toLocaleString(undefined, compactNumberFormatter);
 			}
 		}
 		

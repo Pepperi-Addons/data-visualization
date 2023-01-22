@@ -96,9 +96,9 @@ export default class MyChart {
 					}
 					data["goals"] = [goal];
 					// round the value for the subtitle
-					valueMsg = total1.toLocaleString(undefined, numberFormatter);
+					valueMsg = total1.toLocaleString(undefined, compactNumberFormatter);
 				} else {
-					valueMsg = total1.toLocaleString(undefined, numberFormatter);
+					valueMsg = total1.toLocaleString(undefined, compactNumberFormatter);
 				}
 			} else {
 				// no second query - use the 1st series as the percentage value

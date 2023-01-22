@@ -156,13 +156,13 @@ export default class MyChart {
 			dataLabels: {
 				enabled: ser.length > 0 && ser.length * ser[0].data.length < 30,	// hide the data labels if there are too many labels
 				formatter: function (value, opt) {		// sets the formatter
-					return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter);
+					return (value == null) ? '' : value.toLocaleString(undefined, compactNumberFormatter);
 				}
 			},
 			yaxis: {
 				labels: {
 					formatter: function (value, opt) {		// sets the formatter
-						return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter);
+						return (value == null) ? '' : value.toLocaleString(undefined, compactNumberFormatter);
 					}
 				}
 			},
