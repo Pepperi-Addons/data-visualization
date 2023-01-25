@@ -41,9 +41,24 @@ export default class MyChart {
 		// retrieve the chart configuration
 		const conf = this.getConfiguration(canvas, configuration);
 		
-		// create a chart element on the canvas with the configuration
-		this.chart = new ApexCharts(canvas, conf);
-		this.chart.render();
+		// add style to the chart to solve an issue of chart is not resized in the page builder when switching to mobile view
+		let style = document.createElement('style');
+		style.innerHTML = '.apexcharts-canvas {width: 100% !important; min-width: 100px; min-height: 100px;}';
+		document.head.appendChild(style);
+
+        // create a chart element on the canvas with the configuration
+        this.chart = new ApexCharts(canvas, conf);
+        this.chart.render();
+		
+		const ro = new ResizeObserver(entries => {
+			if (entries[0].contentRect.width==0) {
+				this.chart.updateOptions({chart: {width: 100}});
+			}
+			if (entries[0].contentRect.height==0) {
+				this.chart.updateOptions({chart: {height:100}});
+			}
+		});
+		ro.observe(canvas);
 	}
 
 	/**

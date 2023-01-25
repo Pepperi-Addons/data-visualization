@@ -44,6 +44,19 @@ this.data = [{
 	"DataSet":[{"ActionDate":"Jan","Series 1a":93,"Series 2a":19,"Series 3a":77},{"ActionDate":"Feb","Series 1a":81,"Series 2a":59,"Series 3a":83},{"ActionDate":"Mar","Series 1a":14,"Series 2a":93,"Series 3a":58},{"ActionDate":"Apr","Series 1a":58,"Series 2a":36,"Series 3a":91}]
 }];
 */
+		
+		// define the styles
+		const style = getComputedStyle(this.canvas);
+		const colorWeakh = style.getPropertyValue('--pep-color-weak-h') || "0";
+		const colorWeaks = style.getPropertyValue('--pep-color-weak-s') || "0%";
+		const colorPrimaryh = style.getPropertyValue('--pep-color-system-primary-h') || "0";
+		const colorPrimarys = style.getPropertyValue('--pep-color-system-primary-s') || "0%";
+		const colorPrimaryl = style.getPropertyValue('--pep-color-system-primary-l') || "10%";
+		const fontFamily = style.fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
+		const tableStyle = `font-family: ${fontFamily}; font-size:14px; width:100%; border:solid 1px #ddd; margin:10px 0px;  border-collapse: collapse;`;
+		const headerStyle = `padding:0.5rem; border:solid 1px #ddd; font-weight: 600; background-color: hsl(${colorWeakh},${colorWeaks},88%); border-color: hsla(${colorPrimaryh},${colorPrimarys},${colorPrimaryl},0.24);`;
+		const cellStyle = `padding:0.5rem; border:solid 1px; border-color: hsla(${colorPrimaryh},${colorPrimarys},${colorPrimaryl},.24)`;
+
 		// check if the data is an array
 		if (!Array.isArray(this.data)) {
 			//if the data is a single object, use it.
@@ -65,35 +78,29 @@ this.data = [{
 				seriesFormatter[s] = obj.NumberFormatter || {};
 			});
 		});
-		
-        // Create a table.
-		const table = document.createElement("table");
-		
-		const defaultColors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
-		//const defaultDataLabelsColors = ['#000000'];
-		const colors = (this.configuration.SeriesColors && this.configuration.SeriesColors !== '') ? this.configuration.SeriesColors : defaultColors;
-		const fontFamily = getComputedStyle(this.canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
-		table.setAttribute('style', 'font-family:'+fontFamily+'; font-size:14px; width:100%; border:solid 1px #ddd; margin:10px 0px;  border-collapse: collapse;');
-		const cellStyle = 'padding:4px 6px; border:solid 1px #ddd'
-		
+	
 		// build the value formatter for the series considering the query number formatter
 		const valueFormatter = function (value, series) {
 			const numberFormatter = seriesFormatter[series] ? seriesFormatter[series] : {};
-			const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+			const compactNumberFormatter = {...numberFormatter,'notation':'compact'};
 			return (isNaN(value)) ? value : (Math.trunc(value*100)/100).toLocaleString(undefined, numberFormatter);
 		}
+		
+        // Create a table.
+		const table = document.createElement("table");
+		table.setAttribute('style', tableStyle);
 		
         // the data has multiple group by DataSet -> show them as rows
         if (hasMultipleRecords) {
 			
+			let header = table.createTHead();
 			let col = uniqueGroups.concat(uniqueSeries);
 			// Create table header row using the extracted headers above.
-			let tr = table.insertRow(-1);                   // table row.
+			let row = header.insertRow(-1);
 			for (let i = 0; i < col.length; i++) {
-				let th = document.createElement("th");      // table header.
-				th.setAttribute('style', 'padding:4px 6px; border:solid 1px #ddd; background-color: '+colors[0]+';');
-				th.innerHTML = col[i];
-				tr.appendChild(th);
+				let cell = row.insertCell(-1);
+				cell.setAttribute('style', headerStyle);
+				cell.innerHTML = col[i];
 			}
 
 			// create merge data set
@@ -109,13 +116,14 @@ this.data = [{
 			});
 
 			// add json data to the table as rows.
+			let body = table.createTBody();
 			for (let i = 0; i < dataSet.length; i++) {
-				tr = table.insertRow(-1);
+				row = body.insertRow(-1);
 				for (let j = 0; j < col.length; j++) {
-					let tabCell = tr.insertCell(-1);
-					tabCell.setAttribute('style', cellStyle);
+					let cell = row.insertCell(-1);
+					cell.setAttribute('style', cellStyle);
 					let val = dataSet[i][col[j]] || 0;
-					tabCell.innerHTML = valueFormatter(val, col[j]);
+					cell.innerHTML = valueFormatter(val, col[j]);
 				}
 			}
 		
@@ -131,14 +139,14 @@ this.data = [{
 			
 			// add json data to the table as rows.
 			for (let i = 0; i < uniqueSeries.length; i++) {
-				let tr = table.insertRow(-1);
-				let tabCell = tr.insertCell(-1);
-				tabCell.setAttribute('style', cellStyle);
-				tabCell.innerHTML = uniqueSeries[i];
-				tabCell = tr.insertCell(-1);
-				tabCell.setAttribute('style', cellStyle);
+				let row = table.insertRow(-1);
+				let cell = row.insertCell(-1);
+				cell.setAttribute('style', cellStyle);
+				cell.innerHTML = uniqueSeries[i];
+				cell = row.insertCell(-1);
+				cell.setAttribute('style', cellStyle);
 				let val = dataSet[uniqueSeries[i]];
-				tabCell.innerHTML = valueFormatter(val, uniqueSeries[i]);
+				cell.innerHTML = valueFormatter(val, uniqueSeries[i]);
 			}
         }
 		
