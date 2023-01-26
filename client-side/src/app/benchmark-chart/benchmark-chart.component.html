@@ -2,7 +2,9 @@
                  'box-shadow': configuration?.useDropShadow === true ? dataVisualizationService.getCardShadow(this.configuration?.dropShadow?.intensity/100,configuration?.dropShadow?.type) : 'unset',
                  'overflow': 'hidden'}">
 <div class="pep-border-bottom" [ngStyle]="{'text-align':configuration?.horizontalAlign}">
-    <label class="body-xl bold ellipsis">{{configuration?.label}}</label>
+    <label class="body-xl bold" style="word-break: break-all;">
+        {{configuration?.label}}
+    </label>
 </div>
         <div #previewArea [ngStyle]="{'height.rem': this.configuration?.height}">
         </div>
