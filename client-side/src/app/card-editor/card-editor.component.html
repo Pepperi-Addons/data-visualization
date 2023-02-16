@@ -67,7 +67,6 @@
             [variablesData]="configuration?.cards[id].benchmarkVariablesData"
             [pageParametersOptions]="pageParametersOptions"
             (variablesDataChange)="onBenchmarkVariablesDataChanged($event)"
-            *ngIf="configuration.cards[id].useBenchmark"
         ></addon-query-select>
     </div>
     
