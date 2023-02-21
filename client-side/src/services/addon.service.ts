@@ -40,25 +40,18 @@ export class AddonService {
         return await this.papiClient.post(endpoint, body);
     }
 
-    async executeQuery(queryID,body = {}) {
-        //return this.papiClient.post(`/data_queries/${queryID}/execute`, null)
-        if(!queryID || queryID=='None') return undefined
-        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('elastic').func('execute').post({key: queryID},body)
+    async executeQuery(queryID, body = {}) {
+        if(!queryID || queryID=='None') return undefined;
+        return this.papiClient.post(`/data_queries/${queryID}/execute`, body);
 
     }
 
     async getDataQueryByKey(Key: string) {
-        //return this.papiClient.get(`/data_queries?where=Key='${Key}'`);
-        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('api').func('queries').get({where: `Key='${Key}'`})
+        return this.papiClient.get(`/data_queries?where=Key='${Key}'`);
     }
 
     async getAllQueries(){
-        //return this.papiClient.get(`/data_queries`);
-        return this.papiClient.addons.api.uuid("c7544a9d-7908-40f9-9814-78dc9c03ae77").file('api').func('queries').get()
-    }
-
-    async upsertDataQuery(body) {
-        return this.papiClient.post(`/data_queries`, body);
+        return this.papiClient.get(`/data_queries`);
     }
 
     async getCharts() {
