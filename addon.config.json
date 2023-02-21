@@ -6,7 +6,6 @@
   "DefaultEditor": "main",
   "Endpoints": [
     "installation.ts",
-    "elastic.ts",
     "monitor.ts",
     "api.ts"
   ],
