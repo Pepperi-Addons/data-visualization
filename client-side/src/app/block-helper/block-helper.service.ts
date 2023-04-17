@@ -1,7 +1,6 @@
 import { EventEmitter, Injectable, Input, OnInit, Output } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { TranslateService } from "@ngx-translate/core";
-import { PepAddonService } from "@pepperi-addons/ngx-lib";
 import { PepButton } from "@pepperi-addons/ngx-lib/button";
 import { PageConfiguration } from "@pepperi-addons/papi-sdk";
 import { AddonService } from "src/services/addon.service";
@@ -25,7 +24,6 @@ export class BlockHelperService {
   chartsOptions: { key: string, value: string }[] = [];
   seriesButtons: Array<Array<PepButton>> = [];
   DropShadowStyle: Array<PepButton> = [];
-  PepSizes: Array<PepButton> = [];
   queryOptions = [];
   benchmarkQueryOptions = [];
   inputVars;
@@ -33,22 +31,13 @@ export class BlockHelperService {
 
   constructor(
     protected translate: TranslateService,
-    protected dataVisualizationService: DataVisualizationService,
+    protected dvService: DataVisualizationService,
     public pluginService: AddonService) {
     this.pluginService.addonUUID = config.AddonUUID;
   }
 
   initData(hostEvents: EventEmitter<any>) {
-      this.PepSizes = [
-          { key: 'sm', value: this.translate.instant('SM') },
-          { key: 'md', value: this.translate.instant('MD') },
-          { key: 'lg', value: this.translate.instant('LG') },
-          { key: 'xl', value: this.translate.instant('XL') }
-      ];
-      this.DropShadowStyle = [
-          { key: 'Soft', value: this.translate.instant('Soft') },
-          { key: 'Regular', value: this.translate.instant('Regular') }
-      ];
+      this.DropShadowStyle = this.dvService.getShadowStyles()
       
       this.pluginService.getAllQueries().then(queries => {
         const sorted_queries = queries.sort((a, b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
@@ -90,34 +79,11 @@ export class BlockHelperService {
     });
   }
 
-  tabClick(event) {
-  }
-
-  onFieldChange(key, event, hostEvents: EventEmitter<any>) {
-    const value = event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value : event;
-
-    if (key.indexOf('.') > -1) {
-        let keyObj = key.split('.');
-        this.configuration[keyObj[0]][keyObj[1]] = value;
-    }
-    else {
-        this.configuration[key] = value;
-    }
-    this.updateHostObject(hostEvents);
-  }
-
-  getSliderBackground(color) {
-    if (!color) return;
-    let alignTo = 'right';
-
-    let col: Overlay = new Overlay();
-
-    col.color = color;
-    col.opacity = '100';
-
-    let gradStr = this.dataVisualizationService.getRGBAcolor(col, 0) + ' , ' + this.dataVisualizationService.getRGBAcolor(col);
-
-    return 'linear-gradient(to ' + alignTo + ', ' + gradStr + ')';
+  updateHostObjectWithGivenConf(hostEvents: EventEmitter<any>, configuration) {
+    hostEvents.emit({
+        action: 'set-configuration',
+        configuration: configuration,
+    });
   }
 
   async queryChanged(e, hostEvents: EventEmitter<any>) {
@@ -136,42 +102,6 @@ export class BlockHelperService {
     this.configuration.benchmarkVariablesData = {}
     for(let v of this.benchmarkInputVars) {
         this.configuration.benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
-    }
-    this.updateHostObject(hostEvents);
-}
-
-  onValueChanged(type, event, hostEvents: EventEmitter<any>) {
-    switch (type) {
-        case 'Chart':
-            if (event) {
-                const selectedChart = this.charts.filter(c => c.Key == event)[0];
-                this.configuration.chart = selectedChart.Key;
-                this.configuration.chartCache = selectedChart.ScriptURI;
-            }
-            else {
-                this.configuration.chart = null;
-                this.configuration.chartCache = null;
-            }
-            break;
-
-        case 'Label':
-            this.configuration.label = event;
-            break;
-
-        case 'useLabel':
-            this.configuration.useLabel=event;
-            if(!event)
-                this.configuration.label="";
-            break;
-
-        case 'Height':
-            if(event == ""){
-                this.configuration.height = 22; //default value
-            }
-            else
-                this.configuration.height = event;
-
-            break;
     }
     this.updateHostObject(hostEvents);
   }

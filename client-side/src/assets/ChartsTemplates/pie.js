@@ -39,20 +39,24 @@ export default class MyChart {
         const canvas = element.querySelector('#canvas');
 
         // retrieve the chart configuration
-        const conf = this.getConfiguration(canvas);
-		
+        const conf = this.getConfiguration(canvas, configuration);
+
+		// add style to the chart to solve an issue of chart is not resized in the page builder when switching to mobile view
+		let style = document.createElement('style');
+		style.innerHTML = '.apexcharts-canvas {width: 100% !important; min-width: 100px; min-height: 100px;}';
+		document.head.appendChild(style);
+
         // create a chart element on the canvas with the configuration
         this.chart = new ApexCharts(canvas, conf);
         this.chart.render();
 		
-		// add a resize observer, to change the chart width upon hiding parent div
 		const ro = new ResizeObserver(entries => {
-			// set the height to a fixed size upon div invisibility(otherwise there is an error) and to 100% upon visibility
-			this.chart.updateOptions({
-				chart: {
-					width: entries[0].contentRect.width==0 ? '300' : '100%'
-				}
-			});
+			if (entries[0].contentRect.width==0) {
+				this.chart.updateOptions({chart: {width: 100}});
+			}
+			if (entries[0].contentRect.height==0) {
+				this.chart.updateOptions({chart: {height:100}});
+			}
 		});
 		ro.observe(canvas);
     }
@@ -62,70 +66,35 @@ export default class MyChart {
      * the embedder calls this function when there are changes to the chart data
      */
     update() {
-        const groups = this.data.DataQueries.map((data) => data.Groups).flat();
-        const series = this.data.DataQueries.map((data) => data.Series).flat();
-
-        const uniqueGroups = groups.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
-
-        const uniqueSeries = series.filter(function (elem, index, self) {
-            return index === self.indexOf(elem);
-        });
-
+        
+        const uniqueGroups = this.data.DataQueries.map((data) => data.Groups).flat().filter((elem,index,self) => self.indexOf(elem) === index);
+        const uniqueSeries = this.data.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
         const dataSet = this.data.DataSet;
-
+		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
+		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+		
         // for pie - using the first data record
         const ser = uniqueSeries.map(seriesName => dataSet[0][seriesName] || 0);
-        /*
-        // the data has multiple group by DataSet -> show them in the y-axis
-        if (uniqueGroups.length > 0) {
-        ser = uniqueSeries.map(seriesName => {
-        return {
-        "name": seriesName,
-        "data":	uniqueGroups.map(groupName => {
-        return [
-        dataSet.map(ds => {
-        return {"x":ds[groupName], "y":ds[seriesName] || 0}
-        })
-        ]
-        }).flat(2)
-        }
-        });
-        } else {
-        // the data has no group by -> show the Series in the y-axis
-        const flattened = uniqueSeries.map(seriesName => dataSet[0][seriesName]);
-        ser = [{"data":	flattened}];
-        this.chart.updateOptions({labels: uniqueSeries});
-        // set the colors to be distributed
-        this.chart.updateOptions({plotOptions: {bar:{ distributed: true}}});
-        // hide the legend (since the series name is on the x axis)
-        this.chart.updateOptions({legend:{show:false}});
-        }
-         */
-		/*
-		// hide the data labels if there are too many labels
-		const showLabels = ser.length < 10;
-		this.chart.updateOptions({
-			dataLabels: {
-				enabled: showLabels
+
+		let optionsToSet = {
+			labels: uniqueSeries,		// set the labels
+			tooltip: {
+				y: {
+					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {		// sets the formatter
+						return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter);
+					}
+				}
+			},
+			noData: {
+				text: 'No data'		// update the initial message to be seen if there is no data
 			}
-		});
-		*/
+		}
+		
+		// update the chart options
+		this.chart.updateOptions(optionsToSet);
 		
         // update the chart data
         this.chart.updateSeries(ser);
-        this.chart.updateOptions({
-            labels: uniqueSeries
-        });
-		
-		// update the initial message to be seen if there is no data
-        this.chart.updateOptions({
-            noData: {
-                text: 'No data'
-            }
-        });
-		
     }
 
     /**
@@ -138,8 +107,11 @@ export default class MyChart {
     /**
      * This function returns a chart configuration object.
      */
-    getConfiguration(canvas) {
-		const colors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+    getConfiguration(canvas, configuration) {
+		const defaultColors = ['#83B30C', '#FF9800', '#FE5000', '#1766A6', '#333333', '#0CB3A9', '#FFD100', '#FF5281', '#3A22F2', '#666666'];
+		const defaultDataLabelsColors = ['#000000'];
+		const seriesColors = (configuration.SeriesColors && configuration.SeriesColors !== '') ? configuration.SeriesColors : defaultColors;
+		const dataLabelsColors = (configuration.DataLabelsColors && configuration.DataLabelsColors !== '') ? configuration.DataLabelsColors : defaultDataLabelsColors;
 		const fontFamily = getComputedStyle(canvas).fontFamily || '"Inter", "Segoe UI", "Helvetica Neue", sans-serif';
 		// set the height to the canvas height (or to min value for hidden canvas) (setting the chart height to 100% throws errors in the console log)
 		const height = canvas.clientHeight>0 ?  canvas.clientHeight : '352';
@@ -154,7 +126,7 @@ export default class MyChart {
                 },
 				fontFamily: fontFamily
             },
-			colors: colors,
+			colors: seriesColors,
             legend: {
                 position: 'bottom',
                 horizontalAlign: 'left',
@@ -163,24 +135,13 @@ export default class MyChart {
                 }
             },
             dataLabels: {
-                style: {
-                    //colors: ['#000000']
+				style: {
+                    colors: dataLabelsColors
                 },
 				dropShadow: {
 					enabled: false
 				}
             },
-			tooltip: {
-				y: {
-					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
-						let val = value;
-						if (val >= 10 ** 3) {
-							val = Math.trunc(val);
-						} 
-						return val.toLocaleString();
-					}
-				}
-			},
             noData: {
                 text: 'Loading...'
             },

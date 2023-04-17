@@ -40,7 +40,7 @@ export default class MyChart {
 
         // retrieve the chart configuration
         const conf = this.getConfiguration(canvas, configuration);
-
+		
 		// add style to the chart to solve an issue of chart is not resized in the page builder when switching to mobile view
 		let style = document.createElement('style');
 		style.innerHTML = '.apexcharts-canvas {width: 100% !important; min-width: 100px; min-height: 100px;}';
@@ -68,7 +68,7 @@ export default class MyChart {
     update() {
 		// if there is no benchmark data, then create empty object
 		if (!this.data.Benchmark)
-			this.data.Benchmark = {}
+			this.data.Benchmark = {};
 		if (!this.data.Benchmark.DataQueries || this.data.Benchmark.DataQueries.length==0) {
 			this.data.Benchmark.DataQueries = [{
 				Name: '',
@@ -76,11 +76,11 @@ export default class MyChart {
 				Series: []
 			}];
 		}
-
+		
         const uniqueGroups = this.data.DataQueries.map((data) => data.Groups).flat().filter((elem,index,self) => self.indexOf(elem) === index);
         const uniqueSeries = this.data.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
 		const dataSet = this.data.DataSet;
-		const benchmarkName = this.data.Benchmark.DataQueries[0].Name;
+		//const benchmarkName = this.data.Benchmark.DataQueries[0].Name;
 		const benchmarkGroups = this.data.Benchmark.DataQueries.map((data) => data.Groups).flat();
 		const uniqueBenchmarkSeries = this.data.Benchmark.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
 		const benchmarkSet = this.data.Benchmark.DataSet || [];
@@ -88,37 +88,34 @@ export default class MyChart {
 		const hasBenchmarkGroups = benchmarkGroups.length > 0;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
 		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
-		
-		const benchmarkObj = {
-			"name": benchmarkName,
-			"strokeHeight": 5,
-			"strokeColor": "#775DD0"
-		}
+		const benchmarkNumberFormatter = this.data.Benchmark.NumberFormatter ? this.data.Benchmark.NumberFormatter : {};
+		const compactBenchmarkNumberFormatter = { ...benchmarkNumberFormatter,'notation':'compact'};
 		
         let ser = [];
+		let actualSer = [];
+		let benchmarkSer = [];
         // the data has multiple group by DataSet -> show them in the y-axis
         if (hasMultipleRecords) {
-            ser = uniqueSeries.map(seriesName => {
+            actualSer = uniqueSeries.map(seriesName => {
                 return {
+					"type": "bar",
                     "name": seriesName,
                     "data": uniqueGroups.map(groupName => {
                         return [
                             dataSet.map(ds => {
                                 let data = {
                                     "x": ds[groupName],
-                                    "y": Math.trunc((ds[seriesName] || 0)*100)/100
+                                    "y": Math.trunc((ds[seriesName] || 0)*100)/100,
+									"benchmark": 0
                                 };
-								// join the benchmark data to the actuals
+								// join the benchmark data to the actuals (it will later be separated to a different chart
 								if (benchmarkSet.length>0) {
 									// if there are no groups in the benchmark groups then use the single record value always, otherwise find the value of the same group
 									// if there is only one benchmark series then use it always, otherwise check if there is a value to the series
 									let compData = benchmarkSet.find(comp => ((!hasBenchmarkGroups || comp[groupName] === ds[groupName]) && (uniqueBenchmarkSeries.length == 1 || comp[seriesName])))
 									if (compData) {
-										let goal = Object.assign({}, benchmarkObj);
-										goal.value = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
-										if (goal.value) {
-											data["goals"] = [goal];
-										}
+										let benchmark = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
+										data["benchmark"] = Math.trunc((benchmark || 0)*100)/100;
 									}
 								}
 								return data;
@@ -129,40 +126,88 @@ export default class MyChart {
             });
         } else {
 			// the data has no group by -> show the Series in the y-axis
-			ser = [{
+			actualSer = [{
+				"type": "bar",
 				"data": uniqueSeries.map(seriesName => {
 					let data = {
 						"x": seriesName,
-						"y": Math.trunc(dataSet[0][seriesName]*100)/100 || null
+						"y": Math.trunc((dataSet[0][seriesName]|| 0)*100)/100,
+						"benchmark": 0
 					};
-					// join the benchmark data to the actuals
+					// join the benchmark data to the actuals (it will later be separated to a different chart
 					if (benchmarkSet.length>0) {
 						// check that the benchmark is not per group. if there is only one benchmark series then use it always.
 						if ((!hasBenchmarkGroups) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
-							let goal = Object.assign({}, benchmarkObj);
-							goal.value = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
-							if (goal.value) {
-								data["goals"] = [goal];
-							}
+							let benchmark = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
+							data["benchmark"] = Math.trunc((benchmark || 0)*100)/100;
 						}
 					}
 					return data;
 				})
 			}];
 		}
-
-		// calculate the optimal bar height (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
+ 
+ 		// create the benchmark group series for the x values of the actual
+		if (benchmarkSet.length>0) {
+			benchmarkSer = [{
+				"type": "line",
+				"name": uniqueBenchmarkSeries[0],
+				"data": actualSer[0].data.map(x=> {
+					return {
+						"x": x["x"],
+						"y": x["benchmark"]
+					}
+				})
+			}];
+			// join the series
+			ser = actualSer.concat(benchmarkSer);
+		} else {
+			ser = actualSer;
+		}
+		
+ 		// calculate the optimal column width (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
 		// 20: minimum should be close to 20 (when only one item)
 		// 20+60: maximum should be close 80
 		// 10 and 2: the a and b from the function
 		const seriesLength = ser.reduce((sum, curr) => sum + (curr.data.length ||0),0);
 		const optimalPercent = 20 + (60 / (1 + 10*Math.exp(-seriesLength /2)));
 		
+		// define the series which should show labels
+		let labelSeriesArray = [];
+		for (let i=0 ; i<actualSer.length ; i++) {
+			labelSeriesArray.push(i);
+		}
+		
+		// build the Y-Axis
+		// each series needs to have a Y-Axis representation. All the actual series will use the left axis and all the benchmark series will use the right axis
+		let labelsTemplate = {
+			formatter: function (value, opt) {		// sets the formatter
+				return (value == null) ? '' : value.toLocaleString(undefined, compactNumberFormatter);
+			}
+		}
+		let benchmarkLabelsTemplate = {
+			formatter: function (value, opt) {
+				return (value == null) ? '' : value.toLocaleString(undefined, compactBenchmarkNumberFormatter);
+			}
+		}
+		let yAxis = [];
+        yAxis.push({labels: labelsTemplate, seriesName: uniqueSeries[0]});
+		// add hidden axis which refer to the first axis
+		for (let i=1 ; i<actualSer.length ; i++) {
+			yAxis.push({labels: labelsTemplate, seriesName: uniqueSeries[0], show:false});
+		}
+		if (benchmarkSer.length>0) {
+			yAxis.push({labels: benchmarkLabelsTemplate, seriesName: uniqueBenchmarkSeries[0],opposite: true});
+      		for (let i=1 ; i<benchmarkSer.length ; i++) {
+				yAxis.push({labels: benchmarkLabelsTemplate, seriesName: uniqueBenchmarkSeries[0],opposite: true, show:false});
+			}
+		}
+		
 		let optionsToSet = {
 			plotOptions: {
 				bar: {
-					distributed: !hasMultipleRecords,	// set the colors to be distributed
-					barHeight: optimalPercent + "%"	// set the bar height
+					//distributed: !hasMultipleRecords,	// set the colors to be distributed
+					columnWidth: optimalPercent + "%"	// set the column width
 				}
 			},
 			legend: {
@@ -170,24 +215,24 @@ export default class MyChart {
 			},
 			dataLabels: {
 				enabled: ser.length > 0 && ser.length * ser[0].data.length < 30,	// hide the data labels if there are too many labels
+				enabledOnSeries: labelSeriesArray,		// define the series which should show labels
 				formatter: function (value, opt) {		// sets the formatter
 					return (value == null) ? '' : value.toLocaleString(undefined, compactNumberFormatter);
 				}
 			},
-			xaxis: {
-				labels: {
-					formatter: function (value, opt) {		// sets the formatter
-						return (value == null) ? '' : value.toLocaleString(undefined, compactNumberFormatter);
-					}
-				}
-			},
+			yaxis: yAxis,
 			tooltip: {
 				y: {
 					title: {
 						formatter: seriesName => hasMultipleRecords ? seriesName+':' : null
 					},
-					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {		// sets the formatter
-						return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter);
+					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+						// set the formatter based on the series shown
+						let formatter = numberFormatter;
+						if (seriesIndex > actualSer.length-1) {
+							formatter = benchmarkNumberFormatter;
+						}
+						return (value == null) ? '' : value.toLocaleString(undefined, formatter);
 					}
 				}
 			},
@@ -224,25 +269,24 @@ export default class MyChart {
 		
         return {
             chart: {
-                type: 'bar',
+                type: 'line',
                 height: height,
-                width: '100%',
+                width: "100%",
                 toolbar: {
                     show: true
                 },
 				fontFamily: fontFamily
             },
 			colors: seriesColors,
-            stroke: {
-                show: true,
-                width: 2,
-                colors: ['transparent']
-            },
+			fill: {
+				type: "solid",
+				opacity: 1
+			},
             plotOptions: {
                 bar: {
-                    horizontal: true,
+                    horizontal: false,
                     dataLabels: {
-                        position: 'center',
+                        position: 'top',
                     },
                     borderRadius: 4
                 }
@@ -256,27 +300,21 @@ export default class MyChart {
                     useSeriesColors: true
                 }
             },
-            grid: {
-                xaxis: {
-                    lines: {
-                        show: true
-                    }
-                },
-                yaxis: {
-                    lines: {
-    				show: false
-                    }
-                }
-            },
-			yaxis:{
+			xaxis:{
 				hideOverlappingLabels:true
 			},
+			yaxis:{},
             dataLabels: {
 				style: {
                     colors: dataLabelsColors
-                }
-			},
-			noData: {
+                },
+				background: {
+					enabled: false
+				},
+                offsetY: -10,
+				enabledOnSeries: [0]
+            },
+            noData: {
                 text: 'Loading...'
             },
             series: []

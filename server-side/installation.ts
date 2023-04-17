@@ -64,6 +64,14 @@ export async function upgrade(client: Client, request: Request): Promise<any> {
     const res2 = await setUsageMonitorRelation(service);
     const res3 = await createBlockSchemes(service);
     const res4 = await upsertCharts(client,request, service, charts);
+
+    // remove gauge chart if exists
+    const gaugeChart = await service.getGaugeChart();
+    if(gaugeChart.length > 0) {
+        gaugeChart[0]["Hidden"] = true;
+        await service.upsertChart(gaugeChart[0]);
+    }
+
     let status = res.success && res2.success && res3.success && res4.success;
     let resultObject = {
         pageBlockRelation:res,
@@ -135,8 +143,7 @@ async function setPageBlockAndDimxRelations(service: MyService){
             EditorModuleName: `${blockName}EditorModule`,
             ElementsModule: 'WebComponents',
             ElementName: `table-element-${service.addonUUID}`,
-            EditorElementName: `table-editor-element-${service.addonUUID}`,
-            Hidden: true
+            EditorElementName: `table-editor-element-${service.addonUUID}`
         };
 
         blockName = 'BenchmarkChart';

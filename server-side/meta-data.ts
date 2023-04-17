@@ -76,6 +76,22 @@ export const charts: Chart[] = [
         System: true
     },
     {
+        Name: "Benchmark column percentage",
+        Description: "Default benchmark column with percentage values",
+        ScriptURI: '',
+        Type: 'Benchmark chart',
+        Hidden: false,
+        System: true
+    },
+    {
+        Name: "Benchmark bar percentage",
+        Description: "Default benchmark bar with percentage values",
+        ScriptURI: '',
+        Type: 'Benchmark chart',
+        Hidden: false,
+        System: true
+    },
+    {
         Name: "Value with area",
         Description: "Default value with area",
         ScriptURI: '',
@@ -100,14 +116,6 @@ export const charts: Chart[] = [
         System: true
     },
     {
-        Name: "Gauge",
-        Description: "Default gauge",
-        ScriptURI: '',
-        Type: 'Value scorecard',
-        Hidden: false,
-        System: true
-    },
-    {
         Name: "Value",
         Description: "Default value",
         ScriptURI: '',
@@ -122,7 +130,31 @@ export const charts: Chart[] = [
         Type: 'Value scorecard',
         Hidden: false,
         System: true
-    }
+    },
+    {
+        Name: "Table",
+        Description: "Default table",
+        ScriptURI: '',
+        Type: 'Table chart',
+        Hidden: false,
+        System: true
+    },
+    {
+        Name: "Benchmark two axis",
+        Description: "Default benchmark column and line with two axis",
+        ScriptURI: '',
+        Type: 'Benchmark chart',
+        Hidden: false,
+        System: true
+    },
+    {
+        Name: "Value with progress bar",
+        Description: "Default value with progress bar",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        System: true
+    },
 ]
 
 export const chartBlockScheme: AddonDataScheme = {

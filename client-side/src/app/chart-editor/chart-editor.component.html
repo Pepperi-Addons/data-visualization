@@ -3,7 +3,6 @@
     #tabGroup
     class="editor-tabs"
     [selectedIndex]="blockHelperService.activeTabIndex"
-    (selectedTabChange)="blockHelperService.tabClick($event)"
     animationDuration="0ms"
   >
     <mat-tab id="1" label="{{ 'General' | translate }}">
@@ -12,21 +11,21 @@
           [value]="blockHelperService.configuration.useLabel"
           [label]="'Title' | translate"
           [renderTitle]="false"
-          (valueChange)="blockHelperService.onValueChanged('useLabel', $event, hostEvents)"
+          (valueChange)="dvService.onValueChanged('useLabel', $event, hostEvents, blockHelperService.configuration, blockHelperService.charts)"
         ></pep-checkbox>
         <pep-textbox
           [label]="'TitleText' | translate"
           [type]="'text'"
           [disabled]="!blockHelperService.configuration.useLabel"
           [(value)]="blockHelperService.configuration.label"
-          (valueChange)="blockHelperService.onValueChanged('Label', $event, hostEvents)"
+          (valueChange)="dvService.onValueChanged('Label', $event, hostEvents, blockHelperService.configuration, blockHelperService.charts)"
         ></pep-textbox>
         <pep-group-buttons-settings
           [groupType]="'horizontal-align'"
           [subHeader]="'Alignment' | translate"
           [disabled]="!blockHelperService.configuration.useLabel"
           [btnKey]="blockHelperService.configuration?.horizontalAlign"
-          (btnkeyChange)="blockHelperService.onFieldChange('horizontalAlign', $event, hostEvents)"
+          (btnkeyChange)="dvService.onFieldChange('horizontalAlign', $event, hostEvents, blockHelperService.configuration)"
         >
         </pep-group-buttons-settings>
         <h2>{{ "ChartDesign" | translate }}</h2>
@@ -37,22 +36,22 @@
           [value]="blockHelperService.configuration.chart"
           [xAlignment]="'left'"
           [options]="blockHelperService.chartsOptions"
-          (valueChange)="blockHelperService.onValueChanged('Chart', $event, hostEvents)"
+          (valueChange)="dvService.onValueChanged('Chart', $event, hostEvents, blockHelperService.configuration, blockHelperService.charts)"
           *ngIf="blockHelperService.blockLoaded"
         >
         </pep-select>
         <pep-textbox
           [label]="'ChartHeight' | translate"
-          [type]="'decimal'"
+          [type]="'int'"
           [(value)]="blockHelperService.configuration.height"
-          (valueChange)="blockHelperService.onValueChanged('Height', $event, hostEvents)"
+          (valueChange)="dvService.onValueChanged('Height', $event, hostEvents, blockHelperService.configuration, blockHelperService.charts)"
         ></pep-textbox>
         <div id="border">
           <pep-checkbox
             [value]="blockHelperService.configuration?.useBorder"
             [label]="'Border' | translate"
             [renderTitle]="false"
-            (valueChange)="blockHelperService.onFieldChange('useBorder', $event, hostEvents)"
+            (valueChange)="dvService.onFieldChange('useBorder', $event, hostEvents, blockHelperService.configuration)"
           ></pep-checkbox>
           <pep-color
             [value]="blockHelperService.configuration?.border?.color"
@@ -62,7 +61,7 @@
             type="any"
             [showTitle]="true"
             [showAAComplient]="true"
-            (valueChange)="blockHelperService.onFieldChange('border.color', $event, hostEvents)"
+            (valueChange)="dvService.onFieldChange('border.color', $event, hostEvents, blockHelperService.configuration)"
           >
           </pep-color>
           <pep-slider
@@ -72,8 +71,8 @@
             [maxValue]="100"
             [disabled]="!blockHelperService.configuration?.useBorder"
             [value]="blockHelperService.configuration?.border?.opacity"
-            [background]="blockHelperService.getSliderBackground(blockHelperService.configuration?.border?.color)"
-            (valueChange)="blockHelperService.onFieldChange('border.opacity', $event, hostEvents)"
+            [background]="dvService.getSliderBackground(blockHelperService.configuration?.border?.color)"
+            (valueChange)="dvService.onFieldChange('border.opacity', $event, hostEvents, blockHelperService.configuration)"
           >
           </pep-slider>
         </div>
@@ -82,18 +81,18 @@
             [value]="blockHelperService.configuration?.useDropShadow"
             [label]="'DropShadow' | translate"
             [renderTitle]="false"
-            (valueChange)="blockHelperService.onFieldChange('useDropShadow', $event, hostEvents)"
+            (valueChange)="dvService.onFieldChange('useDropShadow', $event, hostEvents, blockHelperService.configuration)"
           >
           </pep-checkbox>
           <label class="body-xs normal ellipsis">{{
-            "ShadowIntensity" | translate
+            "ShadowType" | translate
           }}</label>
           <pep-group-buttons
             [buttons]="blockHelperService.DropShadowStyle"
             [selectedButtonKey]="blockHelperService.configuration?.dropShadow?.type"
             buttonsClass="md regular"
             [buttonsDisabled]="!blockHelperService.configuration?.useDropShadow"
-            (buttonClick)="blockHelperService.onFieldChange('dropShadow.type', $event, hostEvents)"
+            (buttonClick)="dvService.onFieldChange('dropShadow.type', $event, hostEvents, blockHelperService.configuration)"
             viewType="toggle"
             stretch="true"
           >
@@ -106,7 +105,7 @@
             [maxValue]="100"
             [disabled]="!blockHelperService.configuration?.useDropShadow"
             [value]="blockHelperService.configuration?.dropShadow?.intensity"
-            (valueChange)="blockHelperService.onFieldChange('dropShadow.intensity', $event, hostEvents)"
+            (valueChange)="dvService.onFieldChange('dropShadow.intensity', $event, hostEvents, blockHelperService.configuration)"
           >
           </pep-slider>
         </div>

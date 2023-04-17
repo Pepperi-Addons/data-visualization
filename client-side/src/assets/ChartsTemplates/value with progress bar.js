@@ -40,7 +40,7 @@ export default class MyChart {
 
         // retrieve the chart configuration
         const conf = this.getConfiguration(canvas, configuration);
-		
+
 		// add style to the chart to solve an issue of chart is not resized in the page builder when switching to mobile view
 		let style = document.createElement('style');
 		style.innerHTML = '.apexcharts-canvas {width: 100% !important; min-width: 100px; min-height: 100px;}';
@@ -68,120 +68,91 @@ export default class MyChart {
     update() {
 		// if there is no benchmark data, then create empty object
 		if (!this.data.Benchmark)
-			this.data.Benchmark = {}
+			this.data.Benchmark = {};
 		if (!this.data.Benchmark.DataQueries || this.data.Benchmark.DataQueries.length==0) {
 			this.data.Benchmark.DataQueries = [{
 				Name: '',
 				Groups: [],
 				Series: []
-			}]
+			}];
 		}
 		
-        const uniqueGroups = this.data.DataQueries.map((data) => data.Groups).flat().filter((elem,index,self) => self.indexOf(elem) === index);
-        const uniqueSeries = this.data.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
 		const dataSet = this.data.DataSet;
-		//const benchmarkName = this.data.Benchmark.DataQueries[0].Name;
-		const benchmarkGroups = this.data.Benchmark.DataQueries.map((data) => data.Groups).flat();
-		const uniqueBenchmarkSeries = this.data.Benchmark.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
+		const benchmarkName = this.data.Benchmark.DataQueries[0].Name;
 		const benchmarkSet = this.data.Benchmark.DataSet || [];
-		const hasMultipleRecords = uniqueGroups.length > 0;
-		const hasBenchmarkGroups = benchmarkGroups.length > 0;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
 		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
 		
-		let total = 0;
-        let ser = [];
-		let actualSer = [];
-		let benchmarkSer = [];
-        // the data has multiple group by DataSet -> show them in the y-axis
-        if (hasMultipleRecords) {
-            actualSer = uniqueSeries.map(seriesName => {
-                return {
-					"type": "bar",
-                    "name": seriesName,
-                    "data": uniqueGroups.map(groupName => {
-                        return [
-                            dataSet.map(ds => {
-                                let data = {
-                                    "x": ds[groupName],
-                                    "y": Math.trunc((ds[seriesName] || 0)*100)/100,
-									"benchmark": 0
-                                };
-								// join the benchmark data to the actuals (it will later be separated to a different chart
-								if (benchmarkSet.length>0) {
-									// if there are no groups in the benchmark groups then use the single record value always, otherwise find the value of the same group
-									// if there is only one benchmark series then use it always, otherwise check if there is a value to the series
-									let compData = benchmarkSet.find(comp => ((!hasBenchmarkGroups || comp[groupName] === ds[groupName]) && (uniqueBenchmarkSeries.length == 1 || comp[seriesName])))
-									if (compData) {
-										let benchmark = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
-										data["benchmark"] = Math.trunc((benchmark || 0)*100)/100;
-									}
-								}
-								return data;
-                            })
-                        ]
-                    }).flat(2)
-                }
-            });
-			// calculate the total
-			for (let ds of dataSet) {
-				total += ds[uniqueSeries[0]] || 0;
-			}
-        } else {
-           	// the data has no group by -> show the Series in the y-axis
-			actualSer = [{
-				"type": "bar",
-				"data": uniqueSeries.map(seriesName => {
-					let data = {
-						"x": seriesName,
-						"y": Math.trunc((dataSet[0][seriesName]|| 0)*100)/100,
-						"benchmark": 0
-					};
-					// join the benchmark data to the actuals (it will later be separated to a different chart
-					if (benchmarkSet.length>0) {
-						// check that the benchmark is not per group. if there is only one benchmark series then use it always.
-						if ((!hasBenchmarkGroups) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
-							let benchmark = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
-							data["benchmark"] = Math.trunc((benchmark || 0)*100)/100;
-						}
+		let ser = [];
+		let valueMsg = '';
+		if (this.data.DataQueries && this.data.DataQueries[0].Series[0]) {
+			// calculate the totals of the first query
+			let series1 = this.data.DataQueries[0].Series[0];
+			let total1 = dataSet[0][series1];
+			total1 = Math.trunc((total1 || 0)*100)/100;
+			
+			let data = { 'x': "" };
+			if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {
+				// calculate the totals of the second query
+				let series2 = this.data.Benchmark.DataQueries[0].Series[0];
+				let total2 = benchmarkSet[0][series2];
+				if (total2>0) {
+					total2 = Math.trunc((total2 || 0)*100)/100;
+					let percentage = Math.trunc(100*total1/total2*10)/10;
+					data['y'] = percentage>100 ? 100 : percentage;
+					data["origin"] = total1;
+					data["percentage"] = percentage;
+					// add the benchmark as goal so it will be seen in the tooltip
+					let goal = {
+						"name": benchmarkName,
+						"strokeHeight": 0,
+						"strokeColor": "#775DD0",
+						"value": total2
 					}
-					return data;
-				})
-			}];
-			// calculate the total
-			for (let seriesName of uniqueSeries) {
-				total += dataSet[0][seriesName] || 0;
+					data["goals"] = [goal];
+					// round the value for the subtitle
+					valueMsg = total1.toLocaleString(undefined, compactNumberFormatter);
+				} else {
+					valueMsg = total1.toLocaleString(undefined, compactNumberFormatter);
+				}
+			} else {
+				// no second query - use the 1st series as the percentage value
+				data['y'] = total1>100 ? 100 : total1;
+				data["origin"] = total1;
+				valueMsg = total1 + '%';
 			}
-		}
-		// create the benchmark group series for the x values of the actual
-		if (benchmarkSet.length>0) {
-			benchmarkSer = [{
-				"type": "line",
-				"name": uniqueBenchmarkSeries[0],
-				"data": actualSer[0].data.map(x=> {
-					return {
-						"x": x["x"],
-						"y": x["benchmark"]
-					}
-				})
+			
+			// build the series data
+			ser = [{
+				name:series1,
+				data:[data]
 			}];
-			// join the series
-			ser = actualSer.concat(benchmarkSer);
-		} else {
-			ser = actualSer;
-		}
+		}		
 		
 		let optionsToSet = {
 			subtitle: {
-				text: total.toLocaleString(undefined, compactNumberFormatter)		// update the subtitle text with the total
+				text: valueMsg		// update the subtitle text with the value
 			},
 			tooltip: {
 				y: {
-					title: {
-						formatter: seriesName => hasMultipleRecords ? seriesName+':' : null
-					},
-					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {		// sets the formatter
-						return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter);
+					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+						let val = value;
+						// real series value
+						if (series) {
+							// comparison value - show the value and percentage
+							if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
+								let origin = w.config.series[seriesIndex].data[dataPointIndex].origin;
+								let percentage = w.config.series[seriesIndex].data[dataPointIndex].percentage;
+								val = origin.toLocaleString(undefined, numberFormatter) + ' (' + Math.trunc(percentage*10)/10 + '%)';
+							} else {
+								// no comparison value - show the value as percentage
+								val = Math.trunc(val*10)/10 + '%';
+							}
+						} else {
+							//goal value
+							val = val.toLocaleString(undefined, numberFormatter);
+						}
+						return val;
 					}
 				}
 			},
@@ -201,7 +172,7 @@ export default class MyChart {
      * This function returns an html which will be created in the embedder.
      */
     getHTML() {
-        return `<div id="canvas" style="height: 11rem"></div>`;
+        return `<div id="canvas" style="height: 11rem; margin: 0;"></div>`;
     }
 
     /**
@@ -219,28 +190,29 @@ export default class MyChart {
 		
         return {
             chart: {
-                type: 'bar',
+				type: 'bar',
                 height: height,
                 width: '100%',
-				fontFamily: fontFamily,
+				stacked: true,
 				sparkline: {
 					enabled: true
-				}
+				},
+				fontFamily: fontFamily
             },
-			colors: seriesColors,
-			fill: {
-				type: "solid",
-				opacity: 1
-			},
-			stroke: {
-				width: 3
-			},
 			plotOptions: {
-				bar: {
-					columnWidth: '80%',
-					borderRadius: 4
+			bar: {
+					horizontal: true,
+					barHeight: '100%',
+					distributed: true,
+					borderRadius: 4,
+					colors: {
+						backgroundBarColors: seriesColors,
+						backgroundBarOpacity: 0.16,
+						backgroundBarRadius: 4
+					}
 				}
 			},
+			colors: seriesColors,
 			subtitle: {
 				floating: true,
 				text: '',
@@ -267,11 +239,17 @@ export default class MyChart {
 			},
 			grid: {
 				padding: {
-					top: 70,
-					bottom: 16,
-					right: 16,
-					left: 16
+					top: 94,
+					bottom: 32,
+					left: 32,
+					right: 32
 				}
+			},
+			tooltip: {
+				enabled: true
+			},
+			yaxis: {
+				max: 100
 			},
             noData: {
                 text: 'Loading...'

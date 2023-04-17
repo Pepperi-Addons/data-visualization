@@ -35,27 +35,21 @@ export class ChartEditorComponent implements OnInit {
         public router: Router,
         public route: ActivatedRoute,
         protected translate: TranslateService,
-        protected dataVisualizationService: DataVisualizationService,
+        protected dvService: DataVisualizationService,
         public pluginService: AddonService,
         protected blockHelperService: BlockHelperService) {
             this.pluginService.addonUUID = config.AddonUUID;
-            this.blockHelperService = new BlockHelperService(translate,dataVisualizationService,pluginService);
+            this.blockHelperService = new BlockHelperService(translate,dvService,pluginService);
     }
 
     async ngOnInit(): Promise<void> {
-
         if (!this.blockHelperService.configuration || Object.keys(this.blockHelperService.configuration).length == 0) {
             this.loadDefaultConfiguration();
         };
         if(!this.blockHelperService.blockLoaded) {
             this.pluginService.fillChartsOptions(this.blockHelperService.chartsOptions,'Chart').then(res => {           
                 this.blockHelperService.charts = res;
-                if (!this.blockHelperService.configuration.chart) {
-                    // set the first chart to be default
-                    const firstChart = res[0];
-                    this.blockHelperService.configuration.chart = firstChart.Key;
-                    this.blockHelperService.configuration.chartCache = firstChart.ScriptURI;
-                }
+                this.dvService.setDefaultChart(this.blockHelperService.configuration, res);
                 this.blockHelperService.initData(this.hostEvents);
             })
         }

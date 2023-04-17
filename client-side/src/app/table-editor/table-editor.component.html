@@ -1,49 +1,119 @@
 <div pep-main-area style="height: inherit">
-    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="blockHelperService.activeTabIndex" (selectedTabChange)="blockHelperService.tabClick($event)" animationDuration="0ms">
+    <mat-tab-group #tabGroup class="editor-tabs" [selectedIndex]="activeTabIndex" animationDuration="0ms">
         <mat-tab id="1" label="{{'General' | translate}}">
             <div>
+                <pep-checkbox
+                [value]="configuration?.scorecardsConfig.useLabel"
+                [label]="'Title' | translate"
+                [renderTitle]="false"
+                (valueChange)="dvService.onValueChanged('useLabel',$event,hostEvents,configuration,charts)"
+                ></pep-checkbox>
+                <pep-textbox
+                [label]="'TitleText' | translate"
+                [type]="'text'"
+                [disabled]="!configuration?.scorecardsConfig.useLabel"
+                [(value)]="configuration?.scorecardsConfig.label"
+                (valueChange)="dvService.onValueChanged('Label',$event,hostEvents,configuration,charts)"
+                ></pep-textbox>
+                <pep-group-buttons-settings
+                [groupType]="'horizontal-align'"
+                [subHeader]="'Alignment' | translate"
+                [disabled]="!configuration?.scorecardsConfig.useLabel"
+                [btnKey]="configuration?.scorecardsConfig.horizontalAlign"
+                (btnkeyChange)="dvService.onFieldChange('scorecardsConfig.horizontalAlign',$event,hostEvents,configuration)"
+                ></pep-group-buttons-settings>
+                <h2>{{ "ChartDesign" | translate }}</h2>
+                <pep-select
+                    [key]="'chartSelect'"
+                    [label]="'ChartDesign' | translate"
+                    [emptyOption]="false"
+                    [value]="configuration?.scorecardsConfig.chart"
+                    [xAlignment]="'left'"
+                    [options]="chartsOptions"
+                    (valueChange)="dvService.onValueChanged('Chart',$event,hostEvents,configuration,charts)"
+                    *ngIf="blockLoaded">
+                </pep-select>
+                <pep-textbox
+                    [label]="'ChartHeight' | translate"
+                    [type]="'int'"
+                    [(value)]="configuration?.scorecardsConfig.height"
+                    (valueChange)="dvService.onValueChanged('Height',$event,hostEvents,configuration,charts)"
+                    ></pep-textbox>
                 <div id="border">
-                    <pep-checkbox [value]="blockHelperService.configuration?.useBorder" [label]="'Border' | translate" [renderTitle]="false" (valueChange)="blockHelperService.onFieldChange('useBorder',$event, hostEvents)"></pep-checkbox>
-                    <pep-color [value]="blockHelperService.configuration?.border?.color" [label]="'BorderColor' | translate" [disabled]="!blockHelperService.configuration?.useBorder" xAlignment="left" type="any" [showTitle]="true" [showAAComplient]="true" (valueChange)="blockHelperService.onFieldChange('border.color',$event, hostEvents)">
+                    <pep-checkbox
+                        [value]="configuration?.scorecardsConfig.useBorder"
+                        [label]="'Border' | translate"
+                        [renderTitle]="false"
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.useBorder',$event,hostEvents,configuration)">
+                    </pep-checkbox>
+                    <pep-color
+                        [value]="configuration?.scorecardsConfig.border?.color"
+                        [label]="'BorderColor' | translate"
+                        [disabled]="!configuration?.scorecardsConfig.useBorder"
+                        xAlignment="left"
+                        type="any"
+                        [showTitle]="true"
+                        [showAAComplient]="true"
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.border.color',$event,hostEvents,configuration)">
                     </pep-color>
-                    <pep-slider [label]="'BorderOpacity' | translate" [hint]="blockHelperService.configuration?.border?.opacity?.toString()" [minValue]="0" [maxValue]="100" [disabled]="!blockHelperService.configuration?.useBorder" [value]="blockHelperService.configuration?.border?.opacity" [background]="blockHelperService.getSliderBackground(blockHelperService.configuration?.border?.color)" (valueChange)="blockHelperService.onFieldChange('border.opacity',$event, hostEvents)">
+                    <pep-slider
+                        [label]="'BorderOpacity' | translate"
+                        [hint]="configuration?.scorecardsConfig.border?.opacity?.toString()"
+                        [minValue]="0"
+                        [maxValue]="100"
+                        [disabled]="!configuration?.scorecardsConfig.useBorder"
+                        [value]="configuration?.scorecardsConfig.border?.opacity"
+                        [background]="dvService.getSliderBackground(configuration?.scorecardsConfig.configuration?.border?.color)"
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.border.opacity',$event,hostEvents,configuration)">
                     </pep-slider>
                 </div>
                 <div>
-                    <pep-checkbox [value]="blockHelperService.configuration?.useDropShadow" [label]="'DropShadow' | translate" [renderTitle]="false" (valueChange)="blockHelperService.onFieldChange('useDropShadow',$event, hostEvents)">
+                    <pep-checkbox 
+                        [value]="configuration?.scorecardsConfig.useDropShadow"
+                        [label]="'DropShadow' | translate"
+                        [renderTitle]="false" 
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.useDropShadow',$event,hostEvents,configuration)">
                     </pep-checkbox>
-                    <label class="body-xs normal ellipsis">{{'ShadowType' | translate}}</label>
-                    <pep-group-buttons [buttons]="blockHelperService.DropShadowStyle" buttonsClass="md regular" (buttonClick)="blockHelperService.onFieldChange('dropShadow.type',$event, hostEvents)" viewType="toggle" stretch="true">
+                    <label
+                    class="body-xs normal ellipsis">{{'ShadowType' | translate}}
+                    </label>
+                    <pep-group-buttons 
+                        [buttons]="DropShadowStyle"
+                        [selectedButtonKey]="configuration?.scorecardsConfig.dropShadow?.type"
+                        buttonsClass="md regular"
+                        [buttonsDisabled]="!configuration?.scorecardsConfig.useDropShadow"
+                        (buttonClick)="dvService.onFieldChange('scorecardsConfig.dropShadow.type', $event,hostEvents,configuration)"
+                        viewType="toggle"
+                        stretch="true">
                     </pep-group-buttons>
-                    <pep-slider [label]="'ShadowIntensity' | translate" [minValue]="0" [maxValue]="100" (valueChange)="blockHelperService.onFieldChange('dropShadow.intensity',$event, hostEvents)">
+                    <pep-slider
+                        [label]="'ShadowIntensity' | translate"
+                        [hint]="configuration?.scorecardsConfig.dropShadow?.intensity?.toString()"
+                        [background]="'RGBA(0,0,0,50%)'"
+                        [minValue]="0"
+                        [maxValue]="100"
+                        [disabled]="!configuration?.scorecardsConfig.useDropShadow"
+                        [value]="configuration?.scorecardsConfig.dropShadow?.intensity"
+                        (valueChange)="dvService.onFieldChange('scorecardsConfig.dropShadow.intensity', $event,hostEvents,configuration)">
                     </pep-slider>
                 </div>
             </div>
         </mat-tab>
         <mat-tab id="2" label="{{'Content' | translate}}">
-            <label class="body-md ellipsis pull-left flip">{{
-                "Data query" | translate
-            }}</label>
-            <pep-select
-                [label]="'select a query from defined queries'"
-                [value]="blockHelperService.configuration.query"
-                [mandatory]="false"
-                [disabled]="false"
-                xAlignment="left"
-                [options]="blockHelperService.queryOptions"
-                [showTitle]="true"
-                [emptyOption]="false"
-                (valueChange)="blockHelperService.queryChanged($event, hostEvents)"
-                *ngIf="blockHelperService.blockLoaded"
-            ></pep-select>
-
-            <addon-query-select
-                [inputVars]="blockHelperService.inputVars"
-                [variablesData]="blockHelperService.configuration?.variablesData"
-                [pageParametersOptions]="blockHelperService.pageParametersOptions"
-                (variablesDataChange)="blockHelperService.onVariablesDataChanged($event, hostEvents)"
-            ></addon-query-select>
-
+            <h2>{{'Cards' | translate}}
+            </h2>
+            <div *ngIf="charts" (cdkDropListDropped)="dvService.drop($event, hostEvents, configuration)"  cdkDropList>
+                <card-editor *ngFor="let currentCard of configuration?.cards;"
+                    [id]="currentCard?.id" [charts]="charts" [chartsOptions]="chartsOptions" [pageParametersOptions]="pageParametersOptions" [showActions]="true" (hostEvents)='onHostObjectChange($event)'
+                    [isDraggable]="true" [isScorecard]="false" (editClick)='onCardEditClick($event);' (removeClick)='dvService.onCardRemoveClick($event, hostEvents, configuration);'
+                    [configuration]="configuration"
+                    cdkDrag [cdkDragDisabled]="currentCard?.id == configuration?.scorecardsConfig?.editSlideIndex" style="cursor: grab;" (cdkDragStarted)="dvService.onDragStart($event)" (cdkDragEnded)="dvService.onDragEnd($event)">
+                    <!-- NOT IN USE [pageParameters]="pageParameters" -->
+                </card-editor>
+            </div>
+            <pep-button class="add-content-button" value="{{ 'Add' | translate}}" styleType="regular" iconName="number_plus" iconPosition="end"
+                    (buttonClick)="dvService.addNewCardClick(hostEvents, configuration, true)">
+            </pep-button>
         </mat-tab>
     </mat-tab-group>
 </div>

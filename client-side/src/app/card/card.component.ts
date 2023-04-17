@@ -45,34 +45,33 @@ export class CardComponent implements OnInit {
       let benchmarkValues = this.dataVisualizationService.buildVariableValues(card.benchmarkVariablesData, this.parameters);
       const body = { VariableValues: values } ?? {};
       const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
-        await this.pluginService.executeQuery(card.query, body).then(async (data) => {
-          await this.pluginService.executeQuery(card.secondQuery, benchmarkBody).then(async (benchmarkData) => {
-            await System.import(card.chartCache).then(async (res) => {
-              const configuration = {
-                  Title: card.title
-              }
-              await this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
-                  this.chartInstance = new res.default(this.divView.nativeElement, configuration);
-                  this.chartInstance.data = data;
-                  this.chartInstance.data["BenchmarkQueries"] = []
-                  this.chartInstance.data["BenchmarkSet"] = []
-                  if(benchmarkData) {
-                      this.chartInstance.data["BenchmarkQueries"] = benchmarkData["DataQueries"]
-                      this.chartInstance.data["BenchmarkSet"] = benchmarkData["DataSet"]
-                  }
-                  this.chartInstance.update();
-                  window.dispatchEvent(new Event('resize'));
-                  this.loaderService.hide();
-              }).catch(err => {
-                this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+      await System.import(card.chartCache).then(async (res) => {
+        const conf = {Title: card.title};
+        await this.dataVisualizationService.loadSrcJSFiles(res.deps).then(async () => {
+            this.chartInstance = new res.default(this.divView.nativeElement, conf);
+            await this.pluginService.executeQuery(card.query, body).then(async (data) => {
+              await this.pluginService.executeQuery(card.secondQuery, benchmarkBody).then(async (benchmarkData) => {
+                this.chartInstance.data = data;
+                this.chartInstance.data["Benchmark"] = benchmarkData;
+                this.chartInstance.update();
+                window.dispatchEvent(new Event('resize'));
+                this.loaderService.hide();
+              }).catch((err) => {
+                this.divView.nativeElement.innerHTML = `Failed to execute second query: ${card.secondQuery} , error: ${err}`;
+                this.loaderService.hide();
               })
-            }).catch(err => {
-                this.divView.nativeElement.innerHTML = `Failed to load chart file: ${card.chartCache}, error: ${err}`;
-            });
-          }).catch((err) => {
-            this.divView.nativeElement.innerHTML = `Failed to execute query: ${card.query} , error: ${err}`;;
-          })
+            }).catch((err) => {
+              this.divView.nativeElement.innerHTML = `Failed to execute query: ${card.query} , error: ${err}`;
+              this.loaderService.hide();
+            })
+        }).catch(err => {
+          this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+          this.loaderService.hide();
         })
-      }
+      }).catch(err => {
+          this.divView.nativeElement.innerHTML = `Failed to load chart file: ${card.chartCache}, error: ${err}`;
+          this.loaderService.hide();
+      });
+    }
 
 }

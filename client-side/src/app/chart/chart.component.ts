@@ -55,39 +55,32 @@ export class ChartComponent implements OnInit {
     // sending variable names and values as body
     let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
-    this.pluginService
-      .executeQuery(configuration.query, body)
-      .then((data) => {
-        System.import(configuration.chartCache)
-          .then((res) => {
-            const configuration = {
-              label: "Sales",
-            };
-            this.dataVisualizationService.loadSrcJSFiles(res.deps)
-              .then(() => {
-                this.chartInstance = new res.default(
-                  this.divView.nativeElement,
-                  configuration
-                );
-                this.chartInstance.data = data;
-                this.chartInstance.update();
-                window.dispatchEvent(new Event("resize"));
-                this.loaderService.hide();
-              })
-              .catch((err) => {
-                this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
-                this.loaderService.hide();
-              });
-          })
-          .catch((err) => {
-            this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
-            this.loaderService.hide();
-          });
+    System.import(configuration.chartCache).then((res) => {
+      const conf = {
+        label: "Sales",
+      };
+      this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
+        this.chartInstance = new res.default(this.divView.nativeElement,conf);
+        this.pluginService.executeQuery(configuration.query, body).then((data) => {
+          this.chartInstance.data = data;
+          this.chartInstance.update();
+          window.dispatchEvent(new Event("resize"));
+          this.loaderService.hide();
+        })
+        .catch((err) => {
+          this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
+          this.loaderService.hide();
+        });
       })
       .catch((err) => {
-        this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
+        this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
         this.loaderService.hide();
       });
+    })
+    .catch((err) => {
+      this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
+      this.loaderService.hide();
+    });      
   }
 
   getGalleryBorder() {
@@ -103,7 +96,7 @@ export class ChartComponent implements OnInit {
     if (this.divView) this.divView.nativeElement.innerHTML = "";
   }
 
-  drawRequired(value) {
+  drawRequired(value): boolean {
     return (
       this.configuration?.query != value.configuration.query ||
       this.configuration?.chart != value.configuration.chart ||

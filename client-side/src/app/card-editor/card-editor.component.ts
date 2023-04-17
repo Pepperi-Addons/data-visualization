@@ -19,14 +19,7 @@ export class CardEditorComponent implements OnInit {
     @Input() charts: any;
     @Input() chartsOptions: { key: string, value: string }[];
     @Input() pageParametersOptions;
-
-    // private _pageParameters: any = {};
-    // @Input()
-    // set pageParameters(value: any) {
-    //     this._pageParameters = value;
-    // }
-    
-
+    @Input() isScorecard: boolean;
     @Input() isDraggable = false;
     @Input() showActions = true;
 
@@ -138,8 +131,8 @@ export class CardEditorComponent implements OnInit {
 
     async secondQueryChanged(e) {
         this.configuration.cards[this.id].secondQuery = e;
-        this.benchmarkInputVars = (await this.pluginService.getDataQueryByKey(e))[0].Variables;
-        this.configuration.cards[this.id].benchmarkVariablesData = {}
+        this.benchmarkInputVars = (e == '') ? [] : (await this.pluginService.getDataQueryByKey(e))[0].Variables;
+        this.configuration.cards[this.id].benchmarkVariablesData = {};
         for(let v of this.benchmarkInputVars) {
             this.configuration.cards[this.id].benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
         }
