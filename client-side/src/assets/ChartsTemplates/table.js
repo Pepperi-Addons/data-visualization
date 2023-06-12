@@ -82,7 +82,7 @@ this.data = [{
 		// build the value formatter for the series considering the query number formatter
 		const valueFormatter = function (value, series) {
 			const numberFormatter = seriesFormatter[series] ? seriesFormatter[series] : {};
-			const compactNumberFormatter = {...numberFormatter,'notation':'compact'};
+			const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
 			return (isNaN(value)) ? value : (Math.trunc(value*100)/100).toLocaleString(undefined, numberFormatter);
 		}
 		

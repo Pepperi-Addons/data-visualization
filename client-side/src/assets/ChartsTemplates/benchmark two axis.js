@@ -87,7 +87,7 @@ export default class MyChart {
 		const hasMultipleRecords = uniqueGroups.length > 0;
 		const hasBenchmarkGroups = benchmarkGroups.length > 0;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
-		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
 		const benchmarkNumberFormatter = this.data.Benchmark.NumberFormatter ? this.data.Benchmark.NumberFormatter : {};
 		const compactBenchmarkNumberFormatter = { ...benchmarkNumberFormatter,'notation':'compact'};
 		

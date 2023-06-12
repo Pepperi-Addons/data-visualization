@@ -71,7 +71,7 @@ export default class MyChart {
         const uniqueSeries = this.data.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
         const dataSet = this.data.DataSet;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
-		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
 		
         // for pie - using the first data record
         const ser = uniqueSeries.map(seriesName => dataSet[0][seriesName] || 0);
