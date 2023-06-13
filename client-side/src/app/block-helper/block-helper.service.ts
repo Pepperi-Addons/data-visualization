@@ -94,6 +94,7 @@ export class BlockHelperService {
       this.configuration.variablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
     }
     this.updateHostObject(hostEvents);
+	this.UpdateParametersToConsume(hostEvents);
   }
 
   async secondQueryChanged(e, hostEvents: EventEmitter<any>) {
@@ -104,6 +105,7 @@ export class BlockHelperService {
         this.configuration.benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
     }
     this.updateHostObject(hostEvents);
+	this.UpdateParametersToConsume(hostEvents);
   }
 
   variablesDataChanged(e, varName, field, isBenchmark, hostEvents: EventEmitter<any>) {
@@ -128,6 +130,7 @@ export class BlockHelperService {
       }
     }
     this.updateHostObject(hostEvents);
+	this.UpdateParametersToConsume(hostEvents);
   }
 
   onVariablesDataChanged(data: any, hostEvents: EventEmitter<any>) {
@@ -148,6 +151,45 @@ export class BlockHelperService {
         Consume: true,
         Produce: false
     });
+    hostEvents.emit({
+        action: 'set-page-configuration',
+        pageConfiguration: this._pageConfiguration
+    });
+  }
+
+  public setPageParametersOptions(pageParameters) {
+	this.pageParametersOptions = [];
+	for(let paramName in pageParameters) {
+		this.pageParametersOptions.push({key: paramName, value: paramName});
+	};
+	if(!Object.keys(pageParameters).includes("AccountUUID")) {
+		this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"});
+	}
+  }
+
+  private UpdateParametersToConsume(hostEvents: EventEmitter<any>) {
+	let paramsToConsume = [];
+	for(let varData of Object.values(this.configuration.variablesData)) {
+		if(varData["source"] == "Variable" && varData["value"]) {
+			paramsToConsume.push(varData["value"]);
+		}
+	}
+	for(let varData of Object.values(this.configuration.benchmarkVariablesData)) {
+		if(varData["source"] == "Variable" && varData["value"]) {
+			paramsToConsume.push(varData["value"]);
+		}
+	}
+	debugger
+	this._pageConfiguration = this.defaultPageConfiguration;
+    //defining the page parameters we want to consume
+	paramsToConsume.forEach(paramName => {
+		this._pageConfiguration.Parameters.push({
+			Key: paramName,
+			Type: 'String',
+			Consume: true,
+			Produce: false
+		});
+	});
     hostEvents.emit({
         action: 'set-page-configuration',
         pageConfiguration: this._pageConfiguration

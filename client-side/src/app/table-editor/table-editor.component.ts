@@ -33,13 +33,8 @@ export class TableEditorComponent implements OnInit {
               this.loadDefaultConfiguration();
           }
       }
+	this.blockHelperService.setPageParametersOptions(value.pageParameters);
 
-    this.pageParameters = value?.pageParameters || {};
-    this.pageParametersOptions = [];
-    // Object.keys(this.pageParameters).forEach(paramKey => {
-    // this.pageParametersOptions.push({key: paramKey, value: paramKey})
-    // });
-    this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
@@ -55,7 +50,6 @@ export class TableEditorComponent implements OnInit {
   currentCardindex: number;
   private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
   private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
-  protected pageParameters: any;
   pageParametersOptions = [];
   public textColor: Array<PepButton> = [];
   public TextPositionStyling: Array<PepButton> = [];
