@@ -81,7 +81,7 @@ export default class MyChart {
 		const benchmarkName = this.data.Benchmark.DataQueries[0].Name;
 		const benchmarkSet = this.data.Benchmark.DataSet || [];
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
-		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
 		
 		let ser = [];
 		let valueMsg = '';

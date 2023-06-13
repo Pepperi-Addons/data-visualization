@@ -9,6 +9,7 @@ import { ICardEditor, IScorecards, IScorecardsEditor } from '../card.model';
 import { PageConfiguration } from '@pepperi-addons/papi-sdk';
 import { PepButton } from '@pepperi-addons/ngx-lib/button';
 import { Overlay } from '../models/overlay ';
+import { BlockHelperService } from '../block-helper/block-helper.service';
 
 @Component({
   selector: 'scorecards-editor',
@@ -26,6 +27,7 @@ export class ScorecardsEditorComponent implements OnInit {
     charts;
     protected pageParameters: any;
     pageParametersOptions = [];
+	private blockHelperService: BlockHelperService;
 
     @Input()
     set hostObject(value: any) {
@@ -41,13 +43,8 @@ export class ScorecardsEditorComponent implements OnInit {
                 this.loadDefaultConfiguration();
             }
         }
+		this.blockHelperService.setPageParametersOptions(value.pageParameters);
 
-        this.pageParameters = value?.pageParameters || {};
-        this.pageParametersOptions = [];
-        // Object.keys(this.pageParameters).forEach(paramKey => {
-        // this.pageParametersOptions.push({key: paramKey, value: paramKey})
-        // });
-        this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
     }
 
     activeTabIndex = 0;
@@ -68,7 +65,9 @@ export class ScorecardsEditorComponent implements OnInit {
       public route: ActivatedRoute,
       protected translate: TranslateService,
       protected dvService: DataVisualizationService,
-      public pluginService: AddonService) {}
+      public pluginService: AddonService) {
+		this.blockHelperService = new BlockHelperService(translate,dvService,pluginService);
+	  }
 
     async ngOnInit(): Promise<void> {
         if (!this.configuration || Object.keys(this.configuration).length == 0) {
