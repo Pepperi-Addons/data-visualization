@@ -9,3 +9,8 @@
     padding: 1.5rem;
     border-radius: 0.5rem;
   }
+
+  :host {
+    display: block;
+    overflow: hidden;
+  }
