@@ -179,7 +179,6 @@ export class BlockHelperService {
 			paramsToConsume.push(varData["value"]);
 		}
 	}
-	debugger
 	this._pageConfiguration = this.defaultPageConfiguration;
     //defining the page parameters we want to consume
 	paramsToConsume.forEach(paramName => {

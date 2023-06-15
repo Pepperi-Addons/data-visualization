@@ -44,6 +44,7 @@ export class ScorecardsEditorComponent implements OnInit {
             }
         }
 		this.blockHelperService.setPageParametersOptions(value.pageParameters);
+		this.pageParametersOptions = this.blockHelperService.pageParametersOptions;
 
     }
 
