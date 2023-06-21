@@ -31,13 +31,13 @@ export class TableComponent implements OnInit {
   @Input('hostObject')
   set hostObject(value) {
     console.log("AccountUUID from page = " + this.parameters?.AccountUUID);
-    if (value.configuration?.cards.length > 0 && !value.configuration?.cards.some(c => !c.query)) {
+    if (value.configuration?.cards?.length > 0 && !value.configuration?.cards.some(c => !c.query)) {
       if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
         this.parameters = value.pageParameters;
         this.drawTable(value.configuration);
       }
     }
-    else if(value.configuration?.cards.length == 0) {
+    else if(value.configuration?.cards?.length == 0) {
       this.deleteChart();
     }
     this.parameters = value.pageParameters;

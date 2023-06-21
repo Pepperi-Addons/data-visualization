@@ -6,6 +6,7 @@ import { AddonService } from 'src/services/addon.service';
 import { ActivatedRoute } from '@angular/router';
 import { config } from '../addon.config';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
+import { BlockHelperService } from '../block-helper/block-helper.service';
 
 @Component({
     selector: 'card-editor',
@@ -34,14 +35,16 @@ export class CardEditorComponent implements OnInit {
     inputVars;
     benchmarkInputVars;
     blockLoaded = false;
-
+	private blockHelperService: BlockHelperService;
+	
     constructor(
         public routeParams: ActivatedRoute,
         public pluginService: AddonService,
         protected translate: TranslateService,
-        protected dataVisualizationService: DataVisualizationService,
+        protected dvService: DataVisualizationService,
     ) {
         this.pluginService.addonUUID = config.AddonUUID;
+		this.blockHelperService = new BlockHelperService(translate,dvService,pluginService);
     }
 
     async ngOnInit(): Promise<void> {
@@ -77,7 +80,7 @@ export class CardEditorComponent implements OnInit {
             this.configuration.cards[this.id].chart = firstChart.Key;
             this.configuration.cards[this.id].chartCache = firstChart.ScriptURI;
         }
-        this.blockLoaded = true
+        this.blockLoaded = true;
         this.updateHostObject();
     }
 
@@ -89,7 +92,7 @@ export class CardEditorComponent implements OnInit {
         this.editClick.emit({id: this.id});
     }
 
-    onCardFieldChange(key, event){
+    onCardFieldChange(key, event) {
         const value = key.indexOf('image') > -1 && key.indexOf('src') > -1 ? event.fileStr :  event && event.source && event.source.key ? event.source.key : event && event.source && event.source.value ? event.source.value :  event;
   
         if(key.indexOf('.') > -1) {
@@ -109,14 +112,10 @@ export class CardEditorComponent implements OnInit {
         });
     }
 
-    onSlideshowFieldChange(key, event) {
-        if(event && event.source && event.source.key){
-            this.configuration.scorecardsConfig[key] = event.source.key;
-        }
-        else{
-            this.configuration.scorecardsConfig[key] = event;
-        }
-        this.updateHostObject();
+	private updatePageConfiguration() {
+        this.hostEvents.emit({
+            action: 'set-page-configuration'
+        });
     }
 
     async queryChanged(e) {
@@ -127,6 +126,7 @@ export class CardEditorComponent implements OnInit {
             this.configuration.cards[this.id].variablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
         }
         this.updateHostObject();
+		this.updatePageConfiguration();
     }
 
     async secondQueryChanged(e) {
@@ -137,6 +137,7 @@ export class CardEditorComponent implements OnInit {
             this.configuration.cards[this.id].benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
         }
         this.updateHostObject();
+		this.updatePageConfiguration();
     }
 
     designChanged(e){
@@ -172,6 +173,7 @@ export class CardEditorComponent implements OnInit {
           }
         }
         this.updateHostObject();
+		this.updatePageConfiguration();
     }
 
     getDefaultValue(varName) {
