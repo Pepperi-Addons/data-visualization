@@ -1,19 +1,16 @@
-import { EventEmitter, Injectable, Input, OnInit, Output } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
+import { EventEmitter, Injectable } from "@angular/core";
 import { TranslateService } from "@ngx-translate/core";
 import { PepButton } from "@pepperi-addons/ngx-lib/button";
 import { PageConfiguration } from "@pepperi-addons/papi-sdk";
 import { AddonService } from "src/services/addon.service";
 import { DataVisualizationService } from "src/services/data-visualization.service";
 import { Serie } from "../../../../server-side/models/data-query";
-import { Overlay } from "../models/overlay ";
 import { config } from '../addon.config';
 
 @Injectable()
 export class BlockHelperService {
   public configuration: any;
-  private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
-  private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
+  private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration();
   pageParametersOptions = [];
   
   label = false;
@@ -64,12 +61,16 @@ export class BlockHelperService {
             })
         }
         this.blockLoaded = true;
-        this.updatePageConfigurationObject(hostEvents);
+        this.updateParametersToConsume(hostEvents);
         this.updateHostObject(hostEvents);
       })
   }
 
   onEditClick() {
+  }
+
+  defaultPageConfiguration() {
+	return { "Parameters": [] };
   }
 
   updateHostObject(hostEvents: EventEmitter<any>) {
@@ -94,7 +95,7 @@ export class BlockHelperService {
       this.configuration.variablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
     }
     this.updateHostObject(hostEvents);
-	this.UpdateParametersToConsume(hostEvents);
+	this.updateParametersToConsume(hostEvents);
   }
 
   async secondQueryChanged(e, hostEvents: EventEmitter<any>) {
@@ -105,7 +106,7 @@ export class BlockHelperService {
         this.configuration.benchmarkVariablesData[v.Name] = { source: 'Default', value: v.DefaultValue }
     }
     this.updateHostObject(hostEvents);
-	this.UpdateParametersToConsume(hostEvents);
+	this.updateParametersToConsume(hostEvents);
   }
 
   variablesDataChanged(e, varName, field, isBenchmark, hostEvents: EventEmitter<any>) {
@@ -130,7 +131,7 @@ export class BlockHelperService {
       }
     }
     this.updateHostObject(hostEvents);
-	this.UpdateParametersToConsume(hostEvents);
+	this.updateParametersToConsume(hostEvents);
   }
 
   onVariablesDataChanged(data: any, hostEvents: EventEmitter<any>) {
@@ -139,22 +140,6 @@ export class BlockHelperService {
 
   onBenchmarkVariablesDataChanged(data: any, hostEvents: EventEmitter<any>) {
       this.variablesDataChanged(data.event, data.name, data.field, true, hostEvents);
-  }
-
-  private updatePageConfigurationObject(hostEvents: EventEmitter<any>) {
-    this._pageConfiguration = this.defaultPageConfiguration;
-    //defining the page parameters we want to consume
-    //currently the only page parameter consumed is AccountUUID
-    this._pageConfiguration.Parameters.push({
-        Key: 'AccountUUID',
-        Type: 'String',
-        Consume: true,
-        Produce: false
-    });
-    hostEvents.emit({
-        action: 'set-page-configuration',
-        pageConfiguration: this._pageConfiguration
-    });
   }
 
   public setPageParametersOptions(pageParameters) {
@@ -167,19 +152,51 @@ export class BlockHelperService {
 	}
   }
 
-  private UpdateParametersToConsume(hostEvents: EventEmitter<any>) {
-	let paramsToConsume = [];
-	for(let varData of Object.values(this.configuration.variablesData)) {
+  public updateParametersToConsume(hostEvents: EventEmitter<any>, configuration = this.configuration) {
+	let paramsToConsume = new Set<string>();
+	for(let varData of Object.values(configuration.variablesData ?? {})) {
 		if(varData["source"] == "Variable" && varData["value"]) {
-			paramsToConsume.push(varData["value"]);
+			paramsToConsume.add(varData["value"]);
 		}
 	}
-	for(let varData of Object.values(this.configuration.benchmarkVariablesData)) {
+	for(let varData of Object.values(configuration.benchmarkVariablesData ?? {})) {
 		if(varData["source"] == "Variable" && varData["value"]) {
-			paramsToConsume.push(varData["value"]);
+			paramsToConsume.add(varData["value"]);
 		}
 	}
-	this._pageConfiguration = this.defaultPageConfiguration;
+
+	this._pageConfiguration = this.defaultPageConfiguration();
+    //defining the page parameters we want to consume
+	paramsToConsume.forEach(paramName => {
+		this._pageConfiguration.Parameters.push({
+			Key: paramName,
+			Type: 'String',
+			Consume: true,
+			Produce: false
+		});
+	});
+    hostEvents.emit({
+        action: 'set-page-configuration',
+        pageConfiguration: this._pageConfiguration
+    });
+  }
+
+  public updateParametersToConsumeForCards(hostEvents: EventEmitter<any>, configuration) {
+	let paramsToConsume = new Set<string>();
+	for(const cardConfiguration of configuration.cards) {
+		for(let varData of Object.values(cardConfiguration.variablesData ?? {})) {
+			if(varData["source"] == "Variable" && varData["value"]) {
+				paramsToConsume.add(varData["value"]);
+			}
+		}
+		for(let varData of Object.values(cardConfiguration.benchmarkVariablesData ?? {})) {
+			if(varData["source"] == "Variable" && varData["value"]) {
+				paramsToConsume.add(varData["value"]);
+			}
+		}
+	}
+
+	this._pageConfiguration = this.defaultPageConfiguration();
     //defining the page parameters we want to consume
 	paramsToConsume.forEach(paramName => {
 		this._pageConfiguration.Parameters.push({

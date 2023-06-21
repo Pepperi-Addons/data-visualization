@@ -20,8 +20,7 @@ export class ScorecardsEditorComponent implements OnInit {
 
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
     currentCardindex: number;
-    private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
-    private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
+    private _pageConfiguration: PageConfiguration = { "Parameters": [] };
     blockLoaded = false;
     chartsOptions: { key: string, value: string }[] = [];
     charts;
@@ -83,7 +82,7 @@ export class ScorecardsEditorComponent implements OnInit {
             this.pluginService.fillChartsOptions(this.chartsOptions,'Series scorecard')
         ]).then(res => {
             this.charts = (Array.from(res[0])).concat(Array.from(res[1]));
-            this.updatePageConfigurationObject();
+            this.blockHelperService.updateParametersToConsumeForCards(this.hostEvents, this.configuration);
             this.updateHostObject();
             this.blockLoaded = true;
             this.hostEvents.emit({ action: 'block-editor-loaded' });
@@ -95,12 +94,10 @@ export class ScorecardsEditorComponent implements OnInit {
             if (event.action === 'set-configuration') {
                 this._configuration = event.configuration;
                 this.updateHostObject();
-
-                // Update page configuration only if updatePageConfiguration
-                if (event.updatePageConfiguration) {
-                    this.updatePageConfigurationObject();
-                }
             }
+			if (event.action === 'set-page-configuration') {
+				this.blockHelperService.updateParametersToConsumeForCards(this.hostEvents, this.configuration);
+			}
         }
     }
 
@@ -153,20 +150,6 @@ export class ScorecardsEditorComponent implements OnInit {
 
         // Return the parameters as array.
         return [...parameters];
-    }
-
-    private updatePageConfigurationObject() {
-        this._pageConfiguration = this.defaultPageConfiguration;
-        this._pageConfiguration.Parameters.push({
-            Key: 'AccountUUID',
-            Type: 'String',
-            Consume: true,
-            Produce: false
-        });
-        this.hostEvents.emit({
-            action: 'set-page-configuration',
-            pageConfiguration: this._pageConfiguration
-        });
     }
 
     protected loadDefaultConfiguration() {

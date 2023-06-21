@@ -81,7 +81,7 @@ export class TableEditorComponent implements OnInit {
       this.pluginService.fillChartsOptions(this.chartsOptions,'Table chart').then(res => {           
           this.charts = res;
           this.dvService.setDefaultChart(this.configuration.scorecardsConfig, res);
-          this.updatePageConfigurationObject();
+		  this.blockHelperService.updateParametersToConsumeForCards(this.hostEvents, this.configuration);
           this.updateHostObject();
           this.blockLoaded = true;
           this.hostEvents.emit({ action: 'block-editor-loaded' });
@@ -126,26 +126,10 @@ export class TableEditorComponent implements OnInit {
         if (event.action === 'set-configuration') {
             this._configuration = event.configuration;
             this.updateHostObject();
-
-            // Update page configuration only if updatePageConfiguration
-            if (event.updatePageConfiguration) {
-                this.updatePageConfigurationObject();
-            }
         }
+		if (event.action === 'set-page-configuration') {
+			this.blockHelperService.updateParametersToConsumeForCards(this.hostEvents, this.configuration);
+		}
     }
-  }
-
-  private updatePageConfigurationObject() {
-    this._pageConfiguration = this.defaultPageConfiguration;
-    this._pageConfiguration.Parameters.push({
-        Key: 'AccountUUID',
-        Type: 'String',
-        Consume: true,
-        Produce: false
-    });
-    this.hostEvents.emit({
-        action: 'set-page-configuration',
-        pageConfiguration: this._pageConfiguration
-    });
   }
 }
