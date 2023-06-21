@@ -152,20 +152,6 @@ export class ScorecardsEditorComponent implements OnInit {
         return [...parameters];
     }
 
-    // private updatePageConfigurationObject() {
-    //     this._pageConfiguration = this.defaultPageConfiguration;
-    //     this._pageConfiguration.Parameters.push({
-    //         Key: 'AccountUUID',
-    //         Type: 'String',
-    //         Consume: true,
-    //         Produce: false
-    //     });
-    //     this.hostEvents.emit({
-    //         action: 'set-page-configuration',
-    //         pageConfiguration: this._pageConfiguration
-    //     });
-    // }
-
     protected loadDefaultConfiguration() {
         this._configuration = this.getDefaultHostObject();
         this.updateHostObject();
