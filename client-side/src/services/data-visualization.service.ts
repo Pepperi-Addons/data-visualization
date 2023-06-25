@@ -271,4 +271,17 @@ export class DataVisualizationService {
             configuration.chartCache = firstChart.ScriptURI;
         }
       }
+
+	// returns true if the page parameters changed
+	pageParametersChanged(currentParameters, valueParameters): boolean {
+		let flag = false;
+		const paramsNames = [...Object.keys(currentParameters),...Object.keys(valueParameters)]
+		for(let paramName of paramsNames) {
+			if(currentParameters[paramName] != valueParameters[paramName]) {
+				flag = true;
+				break;
+			}
+		}
+		return flag;
+	}
 }

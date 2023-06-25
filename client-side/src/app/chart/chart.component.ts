@@ -17,7 +17,7 @@ export class ChartComponent implements OnInit {
   set hostObject(value) {
     console.log("AccountUUID from page = " + value.pageParameters?.AccountUUID)
     if (value.configuration?.chart && value.configuration?.query) {
-      if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
+      if (this.drawRequired(value) || this.dataVisualizationService.pageParametersChanged(this.parameters, value.pageParameters)) {
         this.parameters = value.pageParameters;
         this.drawChart(value.configuration);
       }

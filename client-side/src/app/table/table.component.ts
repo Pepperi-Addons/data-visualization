@@ -32,7 +32,7 @@ export class TableComponent implements OnInit {
   set hostObject(value) {
     console.log("AccountUUID from page = " + this.parameters?.AccountUUID);
     if (value.configuration?.cards?.length > 0 && !value.configuration?.cards.some(c => !c.query)) {
-      if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
+      if (this.drawRequired(value) || this.dataVisualizationService.pageParametersChanged(this.parameters, value.pageParameters)) {
         this.parameters = value.pageParameters;
         this.drawTable(value.configuration);
       }
