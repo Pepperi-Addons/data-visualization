@@ -24,6 +24,7 @@ export class CardComponent implements OnInit {
     isLibraryAlreadyLoaded = {};
     oldDefine: any;
     boxShadow: any;
+	drawCounter: number = 0;
 
     constructor (private translate: TranslateService,
         private pluginService: AddonService,
@@ -40,6 +41,10 @@ export class CardComponent implements OnInit {
 
     async drawScorecard(card: ICardEditor) {
       this.loaderService.show();
+	  
+	  this.drawCounter++;
+	  const currentDrawCounter = this.drawCounter;
+
       // sending variable names and values as body
       let values = this.dataVisualizationService.buildVariableValues(card.variablesData, this.parameters);
       let benchmarkValues = this.dataVisualizationService.buildVariableValues(card.benchmarkVariablesData, this.parameters);
@@ -51,10 +56,15 @@ export class CardComponent implements OnInit {
             this.chartInstance = new res.default(this.divView.nativeElement, conf);
             await this.pluginService.executeQuery(card.query, body).then(async (data) => {
               await this.pluginService.executeQuery(card.secondQuery, benchmarkBody).then(async (benchmarkData) => {
-                this.chartInstance.data = data;
-                this.chartInstance.data["Benchmark"] = benchmarkData;
-                this.chartInstance.update();
-                window.dispatchEvent(new Event('resize'));
+				if(currentDrawCounter == this.drawCounter) {
+					this.chartInstance.data = data;
+					this.chartInstance.data["Benchmark"] = benchmarkData;
+					this.chartInstance.update();
+					window.dispatchEvent(new Event('resize'));
+				}
+				else {
+					console.log("drawCounter changed, not updating chart");
+				}
                 this.loaderService.hide();
               }).catch((err) => {
                 this.divView.nativeElement.innerHTML = `Failed to execute second query: ${card.secondQuery} , error: ${err}`;
