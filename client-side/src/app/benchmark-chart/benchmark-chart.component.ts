@@ -41,6 +41,7 @@ export class BenchmarkChartComponent implements OnInit {
     isLibraryAlreadyLoaded = {};
     oldDefine: any;
     parameters;
+	drawCounter: number = 0;
 
     constructor(private translate: TranslateService,
         private pluginService: AddonService,
@@ -57,6 +58,10 @@ export class BenchmarkChartComponent implements OnInit {
 
     drawChart(configuration: any) {
         this.loaderService.show();
+
+		this.drawCounter++;
+		const currentDrawCounter = this.drawCounter;
+
         // sending variable names and values as body
         let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
         let benchmarkValues = this.dataVisualizationService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
@@ -68,11 +73,16 @@ export class BenchmarkChartComponent implements OnInit {
                 this.chartInstance = new res.default(this.divView.nativeElement, conf);
                 this.pluginService.executeQuery(configuration.query, body).then((firstQueryData) => {
                     this.pluginService.executeQuery(configuration.secondQuery, benchmarkBody).then((secondQueryData) => {
-                        this.chartInstance.data = firstQueryData;
-                        this.chartInstance.data["Benchmark"] = secondQueryData;
-                        this.chartInstance.update();
-                        window.dispatchEvent(new Event('resize'));
-                        this.loaderService.hide();
+						if(currentDrawCounter == this.drawCounter) {
+							this.chartInstance.data = firstQueryData;
+							this.chartInstance.data["Benchmark"] = secondQueryData;
+							this.chartInstance.update();
+							window.dispatchEvent(new Event('resize'));
+						}
+						else {
+							console.log("drawCounter changed, not updating chart");
+						}
+						this.loaderService.hide();
                     }).catch((err) => {
                         this.divView.nativeElement.innerHTML = `Failed to execute second query: ${configuration.secondQuery} , error: ${err}`;
                         this.loaderService.hide();

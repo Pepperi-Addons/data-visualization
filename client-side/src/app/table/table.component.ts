@@ -19,7 +19,7 @@ export class TableComponent implements OnInit {
   listDataSource: GenericListDataSource;
   parameters;
   chartInstance: any;
-
+  drawCounter: number = 0;
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   @ViewChild("previewArea") divView: ElementRef;
@@ -55,15 +55,24 @@ export class TableComponent implements OnInit {
 
   drawTable(configuration: any) {
     this.loaderService.show();
+
+	this.drawCounter++;
+	const currentDrawCounter = this.drawCounter;
+
     System.import(configuration.scorecardsConfig.chartCache).then((res) => {
       const conf = {label: "Sales"};
       this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
         this.chartInstance = new res.default(this.divView.nativeElement, conf);
         this.executeAllQueries(configuration.cards).then((data) => {
-          this.chartInstance.data = data;
-          this.chartInstance.update();
-          window.dispatchEvent(new Event("resize"));
-          this.loaderService.hide();
+			if(currentDrawCounter == this.drawCounter) {
+				this.chartInstance.data = data;
+				this.chartInstance.update();
+				window.dispatchEvent(new Event("resize"));
+			}
+			else {
+				console.log("drawCounter changed, not updating chart");
+			}
+			this.loaderService.hide();
         })
         .catch((err) => {
           this.divView.nativeElement.innerHTML = `Failed to execute cards: ${JSON.stringify(configuration.scorecardsConfig.cards)}, error: ${err}`;

@@ -38,6 +38,7 @@ export class ChartComponent implements OnInit {
   isLibraryAlreadyLoaded = {};
   oldDefine: any;
   parameters;
+  drawCounter: number = 0;
 
   constructor(
     private pluginService: AddonService,
@@ -52,6 +53,10 @@ export class ChartComponent implements OnInit {
 
   drawChart(configuration: any) {
     this.loaderService.show();
+
+	this.drawCounter++;
+	const currentDrawCounter = this.drawCounter;
+
     // sending variable names and values as body
     let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
@@ -62,10 +67,15 @@ export class ChartComponent implements OnInit {
       this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
         this.chartInstance = new res.default(this.divView.nativeElement,conf);
         this.pluginService.executeQuery(configuration.query, body).then((data) => {
-          this.chartInstance.data = data;
-          this.chartInstance.update();
-          window.dispatchEvent(new Event("resize"));
-          this.loaderService.hide();
+			if(currentDrawCounter == this.drawCounter) {
+				this.chartInstance.data = data;
+				this.chartInstance.update();
+				window.dispatchEvent(new Event("resize"));
+			}
+			else {
+				console.log("drawCounter changed, not updating chart");
+			}
+        	this.loaderService.hide();
         })
         .catch((err) => {
           this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
