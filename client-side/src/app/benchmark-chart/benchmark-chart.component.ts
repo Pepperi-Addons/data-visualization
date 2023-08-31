@@ -1,7 +1,5 @@
 import { TranslateService } from '@ngx-translate/core';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import 'systemjs'
-import 'systemjs-babel'
 import { PepAddonService, PepLoaderService } from '@pepperi-addons/ngx-lib';
 import { Color } from '../models/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
@@ -56,7 +54,7 @@ export class BenchmarkChartComponent implements OnInit {
     ngOnChanges(e: any): void {
     }
 
-    drawChart(configuration: any) {
+    async drawChart(configuration: any) {
         this.loaderService.show();
 
 		this.drawCounter++;
@@ -67,7 +65,9 @@ export class BenchmarkChartComponent implements OnInit {
         let benchmarkValues = this.dataVisualizationService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
         const body = { VariableValues: values } ?? {};
         const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
-        System.import(configuration.chartCache).then((res) => {
+        const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
+		const chartTextFile = await chartFileBuffer.text();
+    	this.dataVisualizationService.importTextAsModule(chartTextFile).then((res) => {
             const conf = {label: 'Sales'};
             this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
                 this.chartInstance = new res.default(this.divView.nativeElement, conf);

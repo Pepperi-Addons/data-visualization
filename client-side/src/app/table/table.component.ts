@@ -53,13 +53,15 @@ export class TableComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  drawTable(configuration: any) {
+  async drawTable(configuration: any) {
     this.loaderService.show();
 
 	this.drawCounter++;
 	const currentDrawCounter = this.drawCounter;
 
-    System.import(configuration.scorecardsConfig.chartCache).then((res) => {
+    const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
+	const chartTextFile = await chartFileBuffer.text();
+    this.dataVisualizationService.importTextAsModule(chartTextFile).then((res) => {
       const conf = {label: "Sales"};
       this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
         this.chartInstance = new res.default(this.divView.nativeElement, conf);
