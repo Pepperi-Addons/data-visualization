@@ -1,6 +1,4 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import 'systemjs'
-import 'systemjs-babel'
 import { Color } from '../models/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { ChartConfiguration } from '../models/chart-configuration';
@@ -51,7 +49,7 @@ export class ChartComponent implements OnInit {
 
   ngOnChanges(e: any): void {}
 
-  drawChart(configuration: any) {
+  async drawChart(configuration: any) {
     this.loaderService.show();
 
 	this.drawCounter++;
@@ -60,7 +58,9 @@ export class ChartComponent implements OnInit {
     // sending variable names and values as body
     let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
-    System.import(configuration.chartCache).then((res) => {
+	const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
+	const chartTextFile = await chartFileBuffer.text();
+    this.dataVisualizationService.importTextAsModule(chartTextFile).then((res) => {
       const conf = {
         label: "Sales",
       };

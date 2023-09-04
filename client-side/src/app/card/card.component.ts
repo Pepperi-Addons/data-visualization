@@ -50,7 +50,9 @@ export class CardComponent implements OnInit {
       let benchmarkValues = this.dataVisualizationService.buildVariableValues(card.benchmarkVariablesData, this.parameters);
       const body = { VariableValues: values } ?? {};
       const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
-      await System.import(card.chartCache).then(async (res) => {
+      const chartFileBuffer = await fetch(card.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
+	  const chartTextFile = await chartFileBuffer.text();
+      this.dataVisualizationService.importTextAsModule(chartTextFile).then(async (res) => {
         const conf = {Title: card.title};
         await this.dataVisualizationService.loadSrcJSFiles(res.deps).then(async () => {
             this.chartInstance = new res.default(this.divView.nativeElement, conf);

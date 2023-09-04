@@ -284,4 +284,9 @@ export class DataVisualizationService {
 		}
 		return flag;
 	}
+
+	async importTextAsModule(moduleData) {
+		const url = "data:text/javascript;base64," + btoa(moduleData);
+		return import(/* webpackIgnore: true */ url);
+	  }
 }
