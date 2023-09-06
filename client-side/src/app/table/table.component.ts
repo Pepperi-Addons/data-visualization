@@ -59,7 +59,7 @@ export class TableComponent implements OnInit {
 	this.drawCounter++;
 	const currentDrawCounter = this.drawCounter;
 
-    const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
+    const chartFileBuffer = await fetch(configuration.scorecardsConfig.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
 	const chartTextFile = await chartFileBuffer.text();
     this.dataVisualizationService.importTextAsModule(chartTextFile).then((res) => {
       const conf = {label: "Sales"};
