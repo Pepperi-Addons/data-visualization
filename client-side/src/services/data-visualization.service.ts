@@ -286,7 +286,14 @@ export class DataVisualizationService {
 	}
 
 	async importTextAsModule(moduleData) {
-		const url = "data:text/javascript;base64," + btoa(moduleData);
+		const url = "data:text/javascript;base64," + this.convertToBase64(moduleData);
 		return import(/* webpackIgnore: true */ url);
-	  }
+	}
+
+	// replacing non-latin1 characters and encoding to base64
+	convertToBase64(str) {
+		return btoa(str.replace(/[\u00A0-\u2666]/g, function(c) {
+			return '&#' + c.charCodeAt(0) + ';';
+		}));
+	}
 }
