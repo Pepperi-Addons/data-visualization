@@ -290,10 +290,12 @@ export class DataVisualizationService {
 		return import(/* webpackIgnore: true */ url);
 	}
 
-	// replacing non-latin1 characters and encoding to base64
-	convertToBase64(str) {
-		return btoa(str.replace(/[\u00A0-\u2666]/g, function(c) {
-			return '&#' + c.charCodeAt(0) + ';';
-		}));
+	convertToBase64(moduleData) {
+		return this.bytesToBase64(new TextEncoder().encode(moduleData));
+	}
+
+	bytesToBase64(bytes) {
+		const binString = String.fromCodePoint(...bytes);
+		return btoa(binString);
 	}
 }
