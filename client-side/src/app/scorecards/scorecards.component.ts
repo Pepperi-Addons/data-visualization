@@ -1,7 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { IScorecards } from '../card.model';
-import 'systemjs'
-import 'systemjs-babel'
 
 @Component({
   selector: 'scorecards',

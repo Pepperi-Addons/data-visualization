@@ -19,7 +19,7 @@ export class TableComponent implements OnInit {
   listDataSource: GenericListDataSource;
   parameters;
   chartInstance: any;
-
+  drawCounter: number = 0;
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
   @ViewChild("previewArea") divView: ElementRef;
@@ -31,13 +31,13 @@ export class TableComponent implements OnInit {
   @Input('hostObject')
   set hostObject(value) {
     console.log("AccountUUID from page = " + this.parameters?.AccountUUID);
-    if (value.configuration?.cards.length > 0 && !value.configuration?.cards.some(c => !c.query)) {
-      if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
+    if (value.configuration?.cards?.length > 0 && !value.configuration?.cards.some(c => !c.query)) {
+      if (this.drawRequired(value) || this.dataVisualizationService.pageParametersChanged(this.parameters, value.pageParameters)) {
         this.parameters = value.pageParameters;
         this.drawTable(value.configuration);
       }
     }
-    else if(value.configuration?.cards.length == 0) {
+    else if(value.configuration?.cards?.length == 0) {
       this.deleteChart();
     }
     this.parameters = value.pageParameters;
@@ -53,17 +53,28 @@ export class TableComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  drawTable(configuration: any) {
+  async drawTable(configuration: any) {
     this.loaderService.show();
-    System.import(configuration.scorecardsConfig.chartCache).then((res) => {
+
+	this.drawCounter++;
+	const currentDrawCounter = this.drawCounter;
+
+    const chartFileBuffer = await fetch(configuration.scorecardsConfig.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
+	const chartTextFile = await chartFileBuffer.text();
+    this.dataVisualizationService.importTextAsModule(chartTextFile).then((res) => {
       const conf = {label: "Sales"};
       this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
         this.chartInstance = new res.default(this.divView.nativeElement, conf);
         this.executeAllQueries(configuration.cards).then((data) => {
-          this.chartInstance.data = data;
-          this.chartInstance.update();
-          window.dispatchEvent(new Event("resize"));
-          this.loaderService.hide();
+			if(currentDrawCounter == this.drawCounter) {
+				this.chartInstance.data = data;
+				this.chartInstance.update();
+				window.dispatchEvent(new Event("resize"));
+			}
+			else {
+				console.log("drawCounter changed, not updating chart");
+			}
+			this.loaderService.hide();
         })
         .catch((err) => {
           this.divView.nativeElement.innerHTML = `Failed to execute cards: ${JSON.stringify(configuration.scorecardsConfig.cards)}, error: ${err}`;

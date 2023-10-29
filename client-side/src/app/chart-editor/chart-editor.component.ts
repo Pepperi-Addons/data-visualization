@@ -24,8 +24,7 @@ export class ChartEditorComponent implements OnInit {
                 this.loadDefaultConfiguration();
             }
         }
-        this.blockHelperService.pageParametersOptions = []
-        this.blockHelperService.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
+		this.blockHelperService.setPageParametersOptions(value.pageParameters);
     }
 
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();

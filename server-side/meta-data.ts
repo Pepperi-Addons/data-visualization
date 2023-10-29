@@ -155,6 +155,46 @@ export const charts: Chart[] = [
         Hidden: false,
         System: true
     },
+	{
+        Name: "Value and ratio",
+        Description: "Default value and ratio",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        System: true
+    },
+	{
+        Name: "Value and difference",
+        Description: "Default value and difference",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        System: true
+    },
+	{
+        Name: "Ratio",
+        Description: "Default ratio value",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        System: true
+    },
+	{
+        Name: "Difference",
+        Description: "Default difference value",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        System: true
+    },
+	{
+        Name: "Change",
+        Description: "Default change value",
+        ScriptURI: '',
+        Type: 'Value scorecard',
+        Hidden: false,
+        System: true
+    }
 ]
 
 export const chartBlockScheme: AddonDataScheme = {

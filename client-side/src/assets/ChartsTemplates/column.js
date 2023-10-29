@@ -73,7 +73,7 @@ export default class MyChart {
         const dataSet = this.data.DataSet;
 		const hasMultipleRecords = uniqueGroups.length > 0;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
-		const compactNumberFormatter = { ...numberFormatter,'notation':'compact'};
+		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
 
         let ser = [];
         // the data has multiple group by DataSet -> show them in the y-axis

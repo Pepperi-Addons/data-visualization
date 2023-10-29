@@ -271,4 +271,31 @@ export class DataVisualizationService {
             configuration.chartCache = firstChart.ScriptURI;
         }
       }
+
+	// returns true if the page parameters changed
+	pageParametersChanged(currentParameters, valueParameters): boolean {
+		let flag = false;
+		const paramsNames = [...Object.keys(currentParameters),...Object.keys(valueParameters)]
+		for(let paramName of paramsNames) {
+			if(currentParameters[paramName] != valueParameters[paramName]) {
+				flag = true;
+				break;
+			}
+		}
+		return flag;
+	}
+
+	async importTextAsModule(moduleData) {
+		const url = "data:text/javascript;base64," + this.convertToBase64(moduleData);
+		return import(/* webpackIgnore: true */ url);
+	}
+
+	convertToBase64(moduleData) {
+		return this.bytesToBase64(new TextEncoder().encode(moduleData));
+	}
+
+	bytesToBase64(bytes) {
+		const binString = String.fromCodePoint(...bytes);
+		return btoa(binString);
+	}
 }

@@ -7,6 +7,10 @@
   .minHeight{
     min-height: 150px;
     padding: 1.5rem;
-    // margin: 1.5rem;
     border-radius: 0.5rem;
+  }
+
+  :host {
+    display: block;
+    overflow: hidden;
   }

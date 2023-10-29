@@ -33,13 +33,9 @@ export class TableEditorComponent implements OnInit {
               this.loadDefaultConfiguration();
           }
       }
+	this.blockHelperService.setPageParametersOptions(value.pageParameters);
+	this.pageParametersOptions = this.blockHelperService.pageParametersOptions;
 
-    this.pageParameters = value?.pageParameters || {};
-    this.pageParametersOptions = [];
-    // Object.keys(this.pageParameters).forEach(paramKey => {
-    // this.pageParametersOptions.push({key: paramKey, value: paramKey})
-    // });
-    this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"})
   }
 
   @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
@@ -55,7 +51,6 @@ export class TableEditorComponent implements OnInit {
   currentCardindex: number;
   private defaultPageConfiguration: PageConfiguration = { "Parameters": [] };
   private _pageConfiguration: PageConfiguration = this.defaultPageConfiguration;
-  protected pageParameters: any;
   pageParametersOptions = [];
   public textColor: Array<PepButton> = [];
   public TextPositionStyling: Array<PepButton> = [];
@@ -86,7 +81,7 @@ export class TableEditorComponent implements OnInit {
       this.pluginService.fillChartsOptions(this.chartsOptions,'Table chart').then(res => {           
           this.charts = res;
           this.dvService.setDefaultChart(this.configuration.scorecardsConfig, res);
-          this.updatePageConfigurationObject();
+		  this.blockHelperService.updateParametersToConsumeForCards(this.hostEvents, this.configuration);
           this.updateHostObject();
           this.blockLoaded = true;
           this.hostEvents.emit({ action: 'block-editor-loaded' });
@@ -131,26 +126,10 @@ export class TableEditorComponent implements OnInit {
         if (event.action === 'set-configuration') {
             this._configuration = event.configuration;
             this.updateHostObject();
-
-            // Update page configuration only if updatePageConfiguration
-            if (event.updatePageConfiguration) {
-                this.updatePageConfigurationObject();
-            }
         }
+		if (event.action === 'set-page-configuration') {
+			this.blockHelperService.updateParametersToConsumeForCards(this.hostEvents, this.configuration);
+		}
     }
-  }
-
-  private updatePageConfigurationObject() {
-    this._pageConfiguration = this.defaultPageConfiguration;
-    this._pageConfiguration.Parameters.push({
-        Key: 'AccountUUID',
-        Type: 'String',
-        Consume: true,
-        Produce: false
-    });
-    this.hostEvents.emit({
-        action: 'set-page-configuration',
-        pageConfiguration: this._pageConfiguration
-    });
   }
 }

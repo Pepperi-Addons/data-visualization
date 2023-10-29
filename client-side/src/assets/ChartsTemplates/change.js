@@ -51,29 +51,51 @@ export default class MyChart {
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
 		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
 		
-		let value1Msg = 'No data';
-		let value2Msg = '';
+		let valueMsg = 'No data';
 		let color = '#000000';
 		
-		// calculate the totals of the first query
 		if (this.data.DataQueries && this.data.DataQueries[0].Series[0]) {
+			// calculate the totals of the first query
 			let series1 = this.data.DataQueries[0].Series[0];
 			let total1 = this.data.DataSet[0][series1];	// curr value
-			value1Msg = (Math.trunc(total1*100)/100).toLocaleString(undefined, compactNumberFormatter);
-		}
-		// calculate the totals of the second query
-		if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {
-			let series2 = this.data.Benchmark.DataQueries[0].Series[0];
-			let total2 = benchmarkSet[0][series2];	// prev value
-			value2Msg = (Math.trunc(total2*100)/100).toLocaleString(undefined, compactNumberFormatter);
+			
+			// find the change
+			if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {
+				// calculate the totals of the second query
+				let series2 = this.data.Benchmark.DataQueries[0].Series[0];
+				let total2 = benchmarkSet[0][series2];	// prev value
+				let change = 0;
+				if (total1 != 0) {
+					if (total2 != 0) {
+						change = Math.trunc(100*((total1-total2)/total2)*100)/100;
+					} else {
+						change = 100; 
+					}
+				} else {
+					if (total2 != 0) {
+						change = -100;
+					} else {
+						change = 0;
+					}
+				}
+				valueMsg = change.toString() + '%';
+				if (change > 0) {
+					valueMsg = '+' + valueMsg;
+					color = '#83B30C';
+				} else if (change < 0) {
+					color = '#CC0000';
+				}
+			} else {
+				// single query - show the value
+				valueMsg = (Math.trunc(total1*100)/100).toLocaleString(undefined, compactNumberFormatter);
+			}
 		}
 		
 		// update the card
 		this.canvas.innerHTML = 
 		    `<div style="height: 11rem; padding: 2.5rem 2rem 1.25rem 2rem">
 				<p style="text-align: center; padding: 0; margin: 0 0 0.25rem 0; height:1.25rem;font-size: 0.875rem;" class="color-dimmed font-family-body ellipsis">` + this.title + `</p>
-				<p style="text-align: center; padding: 0; margin: 0; font-size: 2.5rem; font-weight: 700; line-height: 1.2;" class="font-family-title ellipsis">` + value1Msg + `</p>
-				<p style="text-align: center; padding: 0; font-size: 1.25rem; font-weight: 600; line-height: 1.2;" class="bold color-dimmed font-family-body ellipsis">` + value2Msg + `</p>
+				<p style="text-align: center; padding: 0; color: ` + color + `; font-size: 2.5rem; font-weight: 700; line-height: 1.2;" class="font-family-title ellipsis">` + valueMsg + `</p>				
 			</div>`;
     }
 }

@@ -1,6 +1,4 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import 'systemjs'
-import 'systemjs-babel'
 import { Color } from '../models/color';
 import { DataVisualizationService } from 'src/services/data-visualization.service';
 import { ChartConfiguration } from '../models/chart-configuration';
@@ -17,7 +15,7 @@ export class ChartComponent implements OnInit {
   set hostObject(value) {
     console.log("AccountUUID from page = " + value.pageParameters?.AccountUUID)
     if (value.configuration?.chart && value.configuration?.query) {
-      if (this.drawRequired(value) || this.parameters?.AccountUUID != value.pageParameters?.AccountUUID) {
+      if (this.drawRequired(value) || this.dataVisualizationService.pageParametersChanged(this.parameters, value.pageParameters)) {
         this.parameters = value.pageParameters;
         this.drawChart(value.configuration);
       }
@@ -38,6 +36,7 @@ export class ChartComponent implements OnInit {
   isLibraryAlreadyLoaded = {};
   oldDefine: any;
   parameters;
+  drawCounter: number = 0;
 
   constructor(
     private pluginService: AddonService,
@@ -50,22 +49,33 @@ export class ChartComponent implements OnInit {
 
   ngOnChanges(e: any): void {}
 
-  drawChart(configuration: any) {
+  async drawChart(configuration: any) {
     this.loaderService.show();
+
+	this.drawCounter++;
+	const currentDrawCounter = this.drawCounter;
+
     // sending variable names and values as body
     let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
-    System.import(configuration.chartCache).then((res) => {
+	const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
+	const chartTextFile = await chartFileBuffer.text();
+    this.dataVisualizationService.importTextAsModule(chartTextFile).then((res) => {
       const conf = {
         label: "Sales",
       };
       this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
         this.chartInstance = new res.default(this.divView.nativeElement,conf);
         this.pluginService.executeQuery(configuration.query, body).then((data) => {
-          this.chartInstance.data = data;
-          this.chartInstance.update();
-          window.dispatchEvent(new Event("resize"));
-          this.loaderService.hide();
+			if(currentDrawCounter == this.drawCounter) {
+				this.chartInstance.data = data;
+				this.chartInstance.update();
+				window.dispatchEvent(new Event("resize"));
+			}
+			else {
+				console.log("drawCounter changed, not updating chart");
+			}
+        	this.loaderService.hide();
         })
         .catch((err) => {
           this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
