@@ -194,6 +194,22 @@ export const charts: Chart[] = [
         Type: 'Value scorecard',
         Hidden: false,
         System: true
+    },
+	{
+        Name: "Benchmark stacked column",
+        Description: "Default benchmark stacked column",
+        ScriptURI: '',
+        Type: 'Benchmark chart',
+        Hidden: false,
+        System: true
+    },
+	{
+        Name: "Benchmark stacked bar",
+        Description: "Default benchmark stacked bar",
+        ScriptURI: '',
+        Type: 'Benchmark chart',
+        Hidden: false,
+        System: true
     }
 ]
 
