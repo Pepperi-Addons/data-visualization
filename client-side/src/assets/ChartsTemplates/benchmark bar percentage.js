@@ -88,11 +88,12 @@ export default class MyChart {
 		const hasBenchmarkGroups = benchmarkGroups.length > 0;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
 		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
+		const noBenchmarkColor = '#775DD0';
 		
 		const benchmarkObj = {
 			"name": benchmarkName,
 			"strokeHeight": 0,
-			"strokeColor": "#775DD0"
+			"strokeWidth": 0
 		}
 		
 		let ser = [];
@@ -128,8 +129,9 @@ export default class MyChart {
 										goal.value = compValue;
 										data["goals"] = [goal];
 									} else {
-										//no comparison data, treat is as 0
-										data["y"] = 0;
+										//no comparison data, treat is as 10 so the value will be seen
+										data["y"] = 10;
+										data["fillColor"] = noBenchmarkColor;
 									}
 								}
                                 return data;
@@ -164,8 +166,9 @@ export default class MyChart {
 							goal.value = compValue;
 							data["goals"] = [goal];
 						} else {
-							//no comparison data, treat is as 0
-							data["y"] = 0;
+							//no comparison data, treat is as 10 so the value will be seen
+							data["y"] = 10;
+							data["fillColor"] = noBenchmarkColor;
 						}
 					}
 					return data;
@@ -203,11 +206,14 @@ export default class MyChart {
 						// real series value
 						if (series) {
 							// comparison value - show the value and percentage
-							if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
+							if (w.config.series[seriesIndex].data[dataPointIndex].origin) {
 								let origin = w.config.series[seriesIndex].data[dataPointIndex].origin;
-								val = origin.toLocaleString(undefined, numberFormatter) + ' (' + Math.trunc(value*100)/100 + '%)';
+								val = origin.toLocaleString(undefined, numberFormatter);
+								if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
+									val = val + ' (' + Math.trunc(value*100)/100 + '%)';
+								}
 							} else {
-								// no comparison value - show the value as percentage
+								// no comparison series - show the value as percentage
 								val = Math.trunc(val*100)/100 + '%';
 							}
 						} else {
@@ -314,7 +320,11 @@ export default class MyChart {
 					return (value ==0) ? '' : (Math.trunc(value*100)/100).toLocaleString() + '%';
 				}
 			},
-            noData: {
+            tooltip: {
+				shared: true,
+				intersect: false
+			},
+			noData: {
                 text: 'Loading...'
             },
             series: []

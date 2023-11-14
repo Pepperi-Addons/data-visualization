@@ -50,9 +50,13 @@ export default class MyChart {
 		const benchmarkSet = this.data.Benchmark.DataSet || [];
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
 		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
+		const positiveColor = '#83B30C';
+		const negativeColor = '#CC0000';
 		
-		let valueMsg = 'No data';
+		let valueMsg = (0).toLocaleString(undefined, compactNumberFormatter);
+		let valueTooltipMsg = '';
 		let changeMsg = '';
+		let changeTooltipMsg = '';
 		let color = '#000000';
 		
 		if (this.data.DataQueries && this.data.DataQueries[0].Series[0]) {
@@ -61,20 +65,26 @@ export default class MyChart {
 			let total1 = dataSet[0][series1];	// curr value
 			
 			// round the value 
-			valueMsg = (Math.trunc(total1*100)/100).toLocaleString(undefined, compactNumberFormatter);
+			let value = Math.trunc(total1*100)/100;
+			valueMsg = value.toLocaleString(undefined, compactNumberFormatter);
+			valueTooltipMsg = value.toLocaleString(undefined, numberFormatter);
 		
 			// find the change
 			if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {
 				// calculate the totals of the second query
 				let series2 = this.data.Benchmark.DataQueries[0].Series[0];
-				let total2 = benchmarkSet[0][series2] || 0;	// prev value
+				let total2 = 0;
+				if (benchmarkSet[0] && benchmarkSet[0][series2]) {
+					total2 = benchmarkSet[0][series2];
+				}
 				let change = Math.trunc(100*(total1-total2))/100;
-				changeMsg = change.toString();
+				changeMsg = change.toLocaleString(undefined, compactNumberFormatter);
+				changeTooltipMsg = change.toLocaleString(undefined, numberFormatter);
 				if (change > 0) {
 					changeMsg = '+' + changeMsg;
-					color = '#83B30C';
+					color = positiveColor;
 				} else if (change < 0) {
-					color = '#CC0000';
+					color = negativeColor;
 				}
 			}
 		}
@@ -83,8 +93,8 @@ export default class MyChart {
 		this.canvas.innerHTML = 
 		    `<div style="height: 11rem; padding: 2.5rem 2rem 1.25rem 2rem">
 				<p style="text-align: center; padding: 0; margin: 0 0 0.25rem 0; height:1.25rem;font-size: 0.875rem;" class="color-dimmed font-family-body ellipsis">` + this.title + `</p>
-				<p style="text-align: center; padding: 0; margin: 0; font-size: 2.5rem; font-weight: 700; line-height: 1.2;" class="font-family-title ellipsis">` + valueMsg + `</p>
-				<p style="text-align: center; padding: 0; color: ` + color + `; font-size: 1.25rem; font-weight: 600; line-height: 1.2;" class="bold color-dimmed font-family-body ellipsis">` + changeMsg + `</p>
+				<p title="` + valueTooltipMsg + `" style="text-align: center; padding: 0; margin: 0; font-size: 2.5rem; font-weight: 700; line-height: 1.2;" class="font-family-title ellipsis">` + valueMsg + `</p>
+				<p title="` + changeTooltipMsg + `" style="text-align: center; padding: 0; color: ` + color + `; font-size: 1.25rem; font-weight: 600; line-height: 1.2;" class="bold color-dimmed font-family-body ellipsis">` + changeMsg + `</p>
 			</div>`;		
     }
 }

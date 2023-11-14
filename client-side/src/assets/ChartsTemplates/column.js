@@ -219,6 +219,10 @@ export default class MyChart {
                 },
                 offsetY: -20
             },
+			tooltip: {
+				shared: true,
+				intersect: false
+			},
             noData: {
                 text: 'Loading...'
             },

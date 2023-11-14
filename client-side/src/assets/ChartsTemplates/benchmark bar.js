@@ -88,10 +88,12 @@ export default class MyChart {
 		const hasBenchmarkGroups = benchmarkGroups.length > 0;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
 		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
+		const positiveColor = '#83B30C';
+		const negativeColor = '#CC0000';
 		
 		const benchmarkObj = {
 			"name": benchmarkName,
-			"strokeHeight": 5,
+			"strokeWidth": 5,
 			"strokeColor": "#775DD0"
 		}
 		
@@ -151,6 +153,23 @@ export default class MyChart {
 			}];
 		}
 
+		if (ser.length == 1) {
+			ser = ser.map(function(obj) {
+				for (var el of obj.data) {
+					if (el && el["goals"] && el["goals"][0]) {
+						if (el["goals"][0]["value"] && el["goals"][0]["value"]>el["y"]) {
+							el["fillColor"] = negativeColor;
+						} else {
+							el["fillColor"] = positiveColor;
+						}
+					} else {
+						el["fillColor"] = positiveColor;
+					}
+				}
+				return obj;
+			});
+		}
+		
 		// calculate the optimal bar height (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
 		// 20: minimum should be close to 20 (when only one item)
 		// 20+60: maximum should be close 80
@@ -275,6 +294,10 @@ export default class MyChart {
 				style: {
                     colors: dataLabelsColors
                 }
+			},
+			tooltip: {
+				shared: true,
+				intersect: false
 			},
 			noData: {
                 text: 'Loading...'
