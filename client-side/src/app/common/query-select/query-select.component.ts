@@ -9,7 +9,7 @@ import { QuerySelectService } from "./query-select.service";
 })
 export class QuerySelectComponent implements OnInit {
   @Input() inputVars = [];
-  @Input() variablesData = {};
+  @Input() variablesData = undefined;
   @Input() pageParametersOptions = [];
 
   @Output() variablesDataChange = new EventEmitter<any>();
