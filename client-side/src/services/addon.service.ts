@@ -51,7 +51,7 @@ export class AddonService {
     }
 
     async getAllQueries(){
-        return this.papiClient.get(`/data_queries`);
+        return this.papiClient.get(`/data_queries?fields=Key,Name&page_size=-1`);
     }
 
     async getCharts() {
