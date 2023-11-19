@@ -88,6 +88,8 @@ export default class MyChart {
 		const hasBenchmarkGroups = benchmarkGroups.length > 0;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
 		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
+		const positiveColor = '#83B30C';
+		const negativeColor = '#CC0000';
 		
 		const benchmarkObj = {
 			"name": benchmarkName,
@@ -96,7 +98,7 @@ export default class MyChart {
 		}
 		
         let ser = [];
-        // the data has multiple group by DataSet -> show them in the y-axis
+        // the data has multiple group by DataSet -> show them in the x-axis
         if (hasMultipleRecords) {
             ser = uniqueSeries.map(seriesName => {
                 return {
@@ -128,7 +130,7 @@ export default class MyChart {
                 }
             });
         } else {
-			// the data has no group by -> show the Series in the y-axis
+			// the data has no group by -> show the Series in the x-axis
 			ser = [{
 				"data": uniqueSeries.map(seriesName => {
 					let data = {
@@ -149,6 +151,24 @@ export default class MyChart {
 					return data;
 				})
 			}];
+		}
+
+		// Color the data based on the goal (only if there are not multiple series and multiple categories)
+		if (ser.length == 1) {
+			ser = ser.map(function(obj) {
+				for (var el of obj.data) {
+					if (el && el["goals"] && el["goals"][0]) {
+						if (el["goals"][0]["value"] && el["goals"][0]["value"]>el["y"]) {
+							el["fillColor"] = negativeColor;
+						} else {
+							el["fillColor"] = positiveColor;
+						}
+					} else {
+						el["fillColor"] = positiveColor;
+					}
+				}
+				return obj;
+			});
 		}
 
 		// calculate the optimal column width (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
@@ -265,7 +285,11 @@ export default class MyChart {
                 },
                 offsetY: -20
             },
-            noData: {
+            tooltip: {
+				shared: true,
+				intersect: false
+			},
+			noData: {
                 text: 'Loading...'
             },
             series: []

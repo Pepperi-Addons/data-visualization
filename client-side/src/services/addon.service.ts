@@ -42,6 +42,7 @@ export class AddonService {
 
     async executeQuery(queryID, body = {}) {
         if(!queryID || queryID=='None') return undefined;
+		this.setTimeZoneOffsetOnBody(body);
         return this.papiClient.post(`/data_queries/${queryID}/execute`, body);
 
     }
@@ -51,7 +52,7 @@ export class AddonService {
     }
 
     async getAllQueries(){
-        return this.papiClient.get(`/data_queries`);
+        return this.papiClient.get(`/data_queries?fields=Key,Name&page_size=-1`);
     }
 
     async getCharts() {
@@ -79,4 +80,8 @@ export class AddonService {
         }
         return true;
     }
+
+	setTimeZoneOffsetOnBody(body) {
+		body["TimeZoneOffset"] = (new Date().getTimezoneOffset()) * (-1); // offset in minutes
+	}
 }

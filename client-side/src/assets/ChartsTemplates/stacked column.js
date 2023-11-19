@@ -204,6 +204,10 @@ export default class MyChart {
                     colors: dataLabelsColors
                 }
 			},
+			tooltip: {
+				shared: true,
+				intersect: false
+			},
             noData: {
                 text: 'Loading...'
             },

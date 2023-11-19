@@ -66,27 +66,75 @@ export default class MyChart {
 	 * the embedder calls this function when there are changes to the chart data
 	 */
 	update() {
+		// if there is no benchmark data, then create empty object
+		if (!this.data.Benchmark)
+			this.data.Benchmark = {}
+		if (!this.data.Benchmark.DataQueries || this.data.Benchmark.DataQueries.length==0) {
+			this.data.Benchmark.DataQueries = [{
+				Name: '',
+				Groups: [],
+				Series: []
+			}];
+		}
 		
 		const uniqueGroups = this.data.DataQueries.map((data) => data.Groups).flat().filter((elem,index,self) => self.indexOf(elem) === index);
 		const uniqueSeries = this.data.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
 		const dataSet = this.data.DataSet;
+		const benchmarkName = this.data.Benchmark.DataQueries[0].Name;
+		const benchmarkGroups = this.data.Benchmark.DataQueries.map((data) => data.Groups).flat();
+		const uniqueBenchmarkSeries = this.data.Benchmark.DataQueries.map((data) => data.Series).flat().filter((elem,index,self) => self.indexOf(elem) === index);
+		const benchmarkSet = this.data.Benchmark.DataSet || [];
 		const hasMultipleRecords = uniqueGroups.length > 0;
+		const hasBenchmarkGroups = benchmarkGroups.length > 0;
 		const numberFormatter = this.data.NumberFormatter ? this.data.NumberFormatter : {};
 		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
+
+		const benchmarkObj = {
+			"name": "",
+			"strokeWidth": 5,
+			"strokeColor": "#775DD0"
+		}
 		
 		let ser = [];
+		let actualSer = [];
+		let benchmarkSer = [{
+			"name": benchmarkName,
+			"data": []
+		}];
+		let benchmarkTotal = {};
 		// the data has multiple group by DataSet -> show them in the y-axis
 		if (hasMultipleRecords) {
-			ser = uniqueSeries.map(seriesName => {
+			actualSer = uniqueSeries.map(seriesName => {
 				return {
 					"name": seriesName,
 					"data": uniqueGroups.map(groupName => {
 						return [
 							dataSet.map(ds => {
-								return {
-									"x": ds[groupName],
-									"y": Math.trunc((ds[seriesName] || 0)*100)/100
+								let data = {
+                                    "x": ds[groupName],
+                                    "y": Math.trunc((ds[seriesName] || 0)*100)/100
+                                };
+								// Sum the benchmark
+								if (benchmarkSet.length>0) {
+									if (!benchmarkTotal[data.x]) {
+										benchmarkTotal[data.x] = 0;
+									}
+									// if there are no groups in the benchmark groups then use the single record value always, otherwise find the value of the same group
+									// if there is only one benchmark series then use it always, otherwise check if there is a value to the series and sum them
+									let compData = benchmarkSet.find(comp => ((!hasBenchmarkGroups || comp[groupName] === ds[groupName]) && (uniqueBenchmarkSeries.length == 1 || comp[seriesName])))
+									if (compData) {
+										let benchmark = uniqueBenchmarkSeries.length == 1 ? compData[uniqueBenchmarkSeries[0]] : compData[seriesName];
+										let benchmarkRounded = Math.trunc((benchmark || 0)*100)/100;
+										if (compData[seriesName]) {
+											// benchmark per series - sum it
+											benchmarkTotal[data.x] += benchmarkRounded || 0;
+										} else {
+											// generic benchmark - use it as the total
+											benchmarkTotal[data.x] = benchmarkRounded || 0;
+										}
+									}
 								}
+								return data;
 							})
 						]
 					}).flat(2)
@@ -94,16 +142,60 @@ export default class MyChart {
 			});
 		} else {
 			// the data has no group by -> add them to one group
-			ser = uniqueSeries.map(seriesName => {
-				return {
-					"name": seriesName,
-					"data": [{
-						"x": '',
-						"y": Math.trunc((dataSet[0][seriesName] || 0)*100)/100
-					}]
+			actualSer = uniqueSeries.map(seriesName => {
+				let data = {
+					"x": '',
+					"y": Math.trunc((dataSet[0][seriesName] || 0)*100)/100
+				};
+				// Sum the benchmark
+				if (benchmarkSet.length>0) {
+					if (!benchmarkTotal[data.x]) {
+						benchmarkTotal[data.x] = 0;
+					}
+					// check that the benchmark is not per group. if there is only one benchmark series then use it always.
+					if ((!hasBenchmarkGroups) && (benchmarkSet.length > 0) && (uniqueBenchmarkSeries.length == 1 || benchmarkSet[0][seriesName])) {
+						let benchmark = uniqueBenchmarkSeries.length == 1 ? benchmarkSet[0][uniqueBenchmarkSeries[0]] : benchmarkSet[0][seriesName];
+						let benchmarkRounded = Math.trunc((benchmark || 0)*100)/100;
+						if (benchmarkSet[0][seriesName]) {
+							// benchmark per series - sum it
+							benchmarkTotal[data.x] += benchmarkRounded || 0;
+						} else {
+							// generic benchmark - use it as the total
+							benchmarkTotal[data.x] = benchmarkRounded || 0;
+						}
+					}
 				}
+                return {
+                    "name": seriesName,
+                    "data": [data]
+                }
 			});
 		}
+
+		// create the benchmark group series for the x values of the actual
+		if (benchmarkSet.length>0) {
+			for (let key in benchmarkTotal) {
+				let data = {
+					"x": key,
+					"y": null
+				}
+				let goal = Object.assign({}, benchmarkObj);
+				goal.value = benchmarkTotal[key];
+				if (goal.value) {
+					data["goals"] = [goal];
+				}
+				benchmarkSer[0].data.push(data);
+			}
+					
+			// join the series
+			ser = actualSer.concat(benchmarkSer);
+		} else {
+			ser = actualSer;
+		}
+		
+		// set the color for the benchmark series to be as the target color
+		let colors = this.chart.opts.colors;
+		colors[actualSer.length] = benchmarkObj.strokeColor;
 
 		// calculate the optimal bar height (using f(x) = c / (1 + a*exp(-x*b)) -> LOGISTIC GROWTH MODEL)
 		// 20: minimum should be close to 20 (when only one item)
@@ -113,6 +205,7 @@ export default class MyChart {
 		const optimalPercent = 20 + (60 / (1 + 10*Math.exp(-seriesLength /2)));
 		
 		let optionsToSet = {
+			colors: colors,
 			plotOptions: {
 				bar: {
 					barHeight: optimalPercent + "%"	// set the bar height
@@ -134,7 +227,18 @@ export default class MyChart {
 			tooltip: {
 				y: {
 					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {		// sets the formatter
-						return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter);
+						let val = value;
+						// real series value
+						if (series) {
+							// goal exists, so this is the target series - set its value from the goal
+							if (w.config.series[seriesIndex].data[dataPointIndex].goals) {
+								val = w.config.series[seriesIndex].data[dataPointIndex].goals[0].value;
+							}
+						} else {
+							//goal value - hide it
+							val = null;
+						}
+						return (val == null) ? '' : val.toLocaleString(undefined, numberFormatter);
 					}
 				}
 			},
