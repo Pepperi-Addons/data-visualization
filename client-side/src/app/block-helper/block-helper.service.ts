@@ -151,6 +151,9 @@ export class BlockHelperService {
 
   public updateParametersToConsume(hostEvents: EventEmitter<any>, configuration = this.configuration) {
 	let paramsToConsume = new Set<string>();
+
+	paramsToConsume.add("AccountUUID");
+
 	for(let varData of Object.values(configuration.variablesData ?? {})) {
 		if(varData["source"] == "Variable" && varData["value"]) {
 			paramsToConsume.add(varData["value"]);

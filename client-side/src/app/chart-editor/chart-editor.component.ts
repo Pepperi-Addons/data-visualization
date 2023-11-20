@@ -24,7 +24,6 @@ export class ChartEditorComponent implements OnInit {
                 this.loadDefaultConfiguration();
             }
         }
-
 		this.blockHelperService.setPageParametersOptions(value.page.Parameters);
     }
 
