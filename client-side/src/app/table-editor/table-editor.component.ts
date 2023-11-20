@@ -33,7 +33,7 @@ export class TableEditorComponent implements OnInit {
               this.loadDefaultConfiguration();
           }
       }
-	this.blockHelperService.setPageParametersOptions(value.pageParameters);
+	this.blockHelperService.setPageParametersOptions(value.page.Parameters);
 	this.pageParametersOptions = this.blockHelperService.pageParametersOptions;
 
   }

@@ -28,7 +28,7 @@ export class BenchmarkChartEditorComponent implements OnInit {
                 this.loadDefaultConfiguration();
             }
         }
-        this.blockHelperService.setPageParametersOptions(value.pageParameters);
+        this.blockHelperService.setPageParametersOptions(value.page.Parameters);
     }
 
     @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();

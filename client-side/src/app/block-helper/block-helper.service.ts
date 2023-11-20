@@ -144,16 +144,16 @@ export class BlockHelperService {
 
   public setPageParametersOptions(pageParameters) {
 	this.pageParametersOptions = [];
-	for(let paramName in pageParameters) {
-		this.pageParametersOptions.push({key: paramName, value: paramName});
+	for(let param of pageParameters) {
+		this.pageParametersOptions.push({key: param.Key, value: param.Key});
 	};
-	if(!Object.keys(pageParameters).includes("AccountUUID")) {
-		this.pageParametersOptions.push({key: "AccountUUID", value: "AccountUUID"});
-	}
   }
 
   public updateParametersToConsume(hostEvents: EventEmitter<any>, configuration = this.configuration) {
 	let paramsToConsume = new Set<string>();
+
+	paramsToConsume.add("AccountUUID");
+
 	for(let varData of Object.values(configuration.variablesData ?? {})) {
 		if(varData["source"] == "Variable" && varData["value"]) {
 			paramsToConsume.add(varData["value"]);
