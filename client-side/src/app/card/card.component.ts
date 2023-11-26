@@ -19,6 +19,8 @@ export class CardComponent implements OnInit {
     @Input() scorecardsConfig: IScorecardsEditor;
     @Input() card : ICardEditor;
     @Input() parameters;
+	@Input() executeResponse: any[];
+	@Input() executeFinished: boolean;
 
     chartInstance: any;
     isLibraryAlreadyLoaded = {};
@@ -33,10 +35,11 @@ export class CardComponent implements OnInit {
     ) { }
          
 
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
         this.boxShadow = this.scorecardsConfig?.useDropShadow === true ? this.dataVisualizationService.getCardShadow(this.scorecardsConfig?.dropShadow?.intensity / 100, this.scorecardsConfig?.dropShadow?.type) : 'unset';
-        if (this.card?.chart && this.card?.query)
-            this.drawScorecard(this.card)
+        if (this.card?.chart && this.card?.query && this.executeFinished) {
+            await this.drawScorecard(this.card)
+		}
     }
 
     async drawScorecard(card: ICardEditor) {
@@ -45,37 +48,22 @@ export class CardComponent implements OnInit {
 	  this.drawCounter++;
 	  const currentDrawCounter = this.drawCounter;
 
-      // sending variable names and values as body
-      let values = this.dataVisualizationService.buildVariableValues(card.variablesData, this.parameters);
-      let benchmarkValues = this.dataVisualizationService.buildVariableValues(card.benchmarkVariablesData, this.parameters);
-      const body = { VariableValues: values } ?? {};
-      const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
       const chartFileBuffer = await fetch(card.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
 	  const chartTextFile = await chartFileBuffer.text();
       this.dataVisualizationService.importTextAsModule(chartTextFile).then(async (res) => {
         const conf = {Title: card.title};
         await this.dataVisualizationService.loadSrcJSFiles(res.deps).then(async () => {
             this.chartInstance = new res.default(this.divView.nativeElement, conf);
-            await this.pluginService.executeQuery(card.query, body).then(async (data) => {
-              await this.pluginService.executeQuery(card.secondQuery, benchmarkBody).then(async (benchmarkData) => {
-				if(currentDrawCounter == this.drawCounter) {
-					this.chartInstance.data = data;
-					this.chartInstance.data["Benchmark"] = benchmarkData;
-					this.chartInstance.update();
-					window.dispatchEvent(new Event('resize'));
-				}
-				else {
-					console.log("drawCounter changed, not updating chart");
-				}
-                this.loaderService.hide();
-              }).catch((err) => {
-                this.divView.nativeElement.innerHTML = `Failed to execute second query: ${card.secondQuery} , error: ${err}`;
-                this.loaderService.hide();
-              })
-            }).catch((err) => {
-              this.divView.nativeElement.innerHTML = `Failed to execute query: ${card.query} , error: ${err}`;
-              this.loaderService.hide();
-            })
+			if(currentDrawCounter == this.drawCounter) {
+				this.chartInstance.data = this.executeResponse[0];
+				this.chartInstance.data["Benchmark"] = (this.executeResponse.length > 1) ? this.executeResponse[1] : undefined;
+				this.chartInstance.update();
+				window.dispatchEvent(new Event('resize'));
+			}
+			else {
+				console.log("drawCounter changed, not updating chart");
+			}
+			this.loaderService.hide();
         }).catch(err => {
           this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
           this.loaderService.hide();
