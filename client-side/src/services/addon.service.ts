@@ -44,7 +44,13 @@ export class AddonService {
         if(!queryID || queryID=='None') return undefined;
 		this.setTimeZoneOffsetOnBody(body);
         return this.papiClient.post(`/data_queries/${queryID}/execute`, body);
+	}
 
+	async executeMultipleQueries(queriesData: any[]) {
+		const body = {QueriesData: queriesData};
+		this.setTimeZoneOffsetOnBody(body);
+		return this.papiClient.post(`/addons/api/c7544a9d-7908-40f9-9814-78dc9c03ae77/elastic/execute_bulk`, body);
+        // return this.papiClient.post(`/data_queries/execute/bulk`, body);
     }
 
     async getDataQueryByKey(Key: string) {
@@ -84,4 +90,30 @@ export class AddonService {
 	setTimeZoneOffsetOnBody(body) {
 		body["TimeZoneOffset"] = (new Date().getTimezoneOffset()) * (-1); // offset in minutes
 	}
+
+	async executeAllCards(cards, parameters): Promise<any[]> {
+		let queriesData = [];
+		 cards.forEach(card => {
+			const values = this.buildVariableValues(card.variablesData, parameters);
+			queriesData.push({Key: card.query, VariableValues: values});
+			if(card.secondQuery) {
+				const benchmarkValues = this.buildVariableValues(card.benchmarkVariablesData, parameters);
+				queriesData.push({Key: card.secondQuery, VariableValues: benchmarkValues});
+			}
+		});
+		return await this.executeMultipleQueries(queriesData);
+	}
+
+	buildVariableValues(variablesData, parameters) {
+        let values = {}
+        for(const varName in variablesData) {
+            const varData = variablesData[varName];
+            if(varData.source == 'Variable') {
+                values[varName] = (parameters && parameters[varData.value]) ? parameters[varData.value] : '0';
+            } else {
+                values[varName] = varData.value ?? '0';
+            }
+        }
+        return values;
+    }
 }

@@ -147,19 +147,6 @@ export class DataVisualizationService {
         return Promise.all(promises);
     }
 
-    buildVariableValues(variablesData, parameters) {
-        let values = {}
-        for(const varName in variablesData) {
-            const varData = variablesData[varName];
-            if(varData.source == 'Variable') {
-                values[varName] = (parameters && parameters[varData.value]) ? parameters[varData.value] : '0';
-            } else {
-                values[varName] = varData.value ?? '0';
-            }
-        }
-        return values;
-    }
-
     getShadowStyles() {
         return [
             { key: 'Soft', value: this.translate.instant('Soft') },

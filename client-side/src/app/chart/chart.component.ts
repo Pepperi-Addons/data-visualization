@@ -56,7 +56,7 @@ export class ChartComponent implements OnInit {
 	const currentDrawCounter = this.drawCounter;
 
     // sending variable names and values as body
-    let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
+    let values = this.pluginService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
 	const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
 	const chartTextFile = await chartFileBuffer.text();
