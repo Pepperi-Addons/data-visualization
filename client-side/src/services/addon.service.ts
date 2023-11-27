@@ -91,7 +91,7 @@ export class AddonService {
 		body["TimeZoneOffset"] = (new Date().getTimezoneOffset()) * (-1); // offset in minutes
 	}
 
-	async executeAllCards(cards, parameters): Promise<any> {
+	async executeAllCards(cards, parameters): Promise<any[]> {
 		let queriesData = [];
 		 cards.forEach(card => {
 			const values = this.buildVariableValues(card.variablesData, parameters);

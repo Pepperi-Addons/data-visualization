@@ -55,8 +55,8 @@ export class CardComponent implements OnInit {
         await this.dataVisualizationService.loadSrcJSFiles(res.deps).then(async () => {
             this.chartInstance = new res.default(this.divView.nativeElement, conf);
 			if(currentDrawCounter == this.drawCounter) {
-				this.chartInstance.data = this.executeResponse[0];
-				this.chartInstance.data["Benchmark"] = (this.executeResponse.length > 1) ? this.executeResponse[1] : undefined;
+				this.chartInstance.data = this.executeResponse[0]; // main query execution response
+				this.chartInstance.data["Benchmark"] = (this.executeResponse.length > 1) ? this.executeResponse[1] : undefined; // benchmark query execution response
 				this.chartInstance.update();
 				window.dispatchEvent(new Event('resize'));
 			}

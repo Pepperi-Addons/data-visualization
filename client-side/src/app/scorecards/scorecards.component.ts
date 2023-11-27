@@ -61,12 +61,19 @@ export class ScorecardsComponent implements OnInit {
 
   async buildDataForCards(configuration: any) {
     this.loaderService.show();
-	const executeResponses = await this.pluginService.executeAllCards(configuration.cards, this.parameters)
+	// executeAllCards executes all the queries (including benchmark queries) according to the order of the cards
+	const executeResponses = await this.pluginService.executeAllCards(configuration.cards, this.parameters);
 	// here we relay on the fact that execute responses are returned in the same order as the given queries
 	configuration.cards.forEach((card: ICardEditor) => {
+
+		// intialize the responses slot for this card, it can contain 1 or 2 responses (main and benchmark)
 		this.executeResponses[card.id] = [];
+
+		// take the main query response from the execute responses array
 		this.executeResponses[card.id].push(executeResponses.shift());
+
 		if(card.secondQuery) {
+			// take the benchmark query response from the execute responses array
 			this.executeResponses[card.id.toString()].push(executeResponses.shift());
 		}
 	});
@@ -81,7 +88,7 @@ export class ScorecardsComponent implements OnInit {
     }
     else {
       for(let i=0; i < this.configuration?.cards.length; i++) {
-        if(this.isDiff(this.configuration?.cards[i],value.configuration?.cards[i])) {
+        if(this.notEqual(this.configuration?.cards[i],value.configuration?.cards[i])) {
           isRequired = true;
           break;
         }
@@ -90,7 +97,7 @@ export class ScorecardsComponent implements OnInit {
     return isRequired;
   }
 
-  isDiff(card1: ICardEditor, card2: ICardEditor) {
+  notEqual(card1: ICardEditor, card2: ICardEditor) {
     return (card1.query != card2.query ||
 			card1.secondQuery != card2.secondQuery ||
 			card1.chart != card2.chart ||
