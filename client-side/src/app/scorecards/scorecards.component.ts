@@ -62,6 +62,7 @@ export class ScorecardsComponent implements OnInit {
   async buildDataForCards(configuration: any) {
     this.loaderService.show();
 	const executeResponses = await this.pluginService.executeAllCards(configuration.cards, this.parameters)
+	// here we relay on the fact that execute responses are returned in the same order as the given queries
 	configuration.cards.forEach((card: ICardEditor) => {
 		this.executeResponses[card.id] = [];
 		this.executeResponses[card.id].push(executeResponses.shift());

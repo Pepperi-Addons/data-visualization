@@ -66,6 +66,7 @@ export class TableComponent implements OnInit {
       this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
         this.chartInstance = new res.default(this.divView.nativeElement, conf);
         this.pluginService.executeAllCards(configuration.cards, this.parameters).then((data) => {
+			// here we relay on the fact that execute responses are returned in the same order as the given queries
 			if(currentDrawCounter == this.drawCounter) {
 				this.chartInstance.data = data;
 				this.chartInstance.update();

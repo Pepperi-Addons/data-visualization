@@ -75,6 +75,7 @@ export class BenchmarkChartComponent implements OnInit {
                 this.chartInstance = new res.default(this.divView.nativeElement, conf);
                 this.pluginService.executeMultipleQueries(queriesData).then((executeResponses) => {
 						if(currentDrawCounter == this.drawCounter) {
+							// here we relay on the fact that execute responses are returned in the same order as the given queries
 							this.chartInstance.data = executeResponses[0];
 							this.chartInstance.data["Benchmark"] = executeResponses[1];
 							this.chartInstance.update();
