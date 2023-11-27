@@ -74,7 +74,7 @@ export class ScorecardsComponent implements OnInit {
 
 		if(card.secondQuery) {
 			// take the benchmark query response from the execute responses array
-			this.executeResponses[card.id.toString()].push(executeResponses.shift());
+			this.executeResponses[card.id].push(executeResponses.shift());
 		}
 	});
 	this.loaderService.hide();
