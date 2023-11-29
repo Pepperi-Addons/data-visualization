@@ -285,4 +285,16 @@ export class DataVisualizationService {
 		const binString = String.fromCodePoint(...bytes);
 		return btoa(binString);
 	}
+
+	extractFaultstringFromError(err): string {
+		let faultstring = undefined;
+		if(err.message) {
+			const tmp = err.message.indexOf("{");
+			if(tmp > -1) {
+				const faultObject = JSON.parse(err.message.substr(tmp, err.message.length - tmp));
+				faultstring = faultObject.fault.faultstring;
+			}
+		}
+		return faultstring;
+	}
 }

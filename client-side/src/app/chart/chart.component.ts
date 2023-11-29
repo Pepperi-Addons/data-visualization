@@ -78,17 +78,20 @@ export class ChartComponent implements OnInit {
         	this.loaderService.hide();
         })
         .catch((err) => {
-          this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
+		  const errorMessage = this.dataVisualizationService.extractFaultstringFromError(err) ?? err;
+		  this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${errorMessage}`;
           this.loaderService.hide();
         });
       })
       .catch((err) => {
-        this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+		const errorMessage = this.dataVisualizationService.extractFaultstringFromError(err) ?? err;
+        this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${errorMessage}`;
         this.loaderService.hide();
       });
     })
     .catch((err) => {
-      this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
+	  const errorMessage = this.dataVisualizationService.extractFaultstringFromError(err) ?? err;
+      this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${errorMessage}`;
       this.loaderService.hide();
     });      
   }

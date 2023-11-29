@@ -65,11 +65,13 @@ export class CardComponent implements OnInit {
 			}
 			this.loaderService.hide();
         }).catch(err => {
-          this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
+		  const errorMessage = this.dataVisualizationService.extractFaultstringFromError(err) ?? err;
+          this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${errorMessage}`;
           this.loaderService.hide();
         })
       }).catch(err => {
-          this.divView.nativeElement.innerHTML = `Failed to load chart file: ${card.chartCache}, error: ${err}`;
+		  const errorMessage = this.dataVisualizationService.extractFaultstringFromError(err) ?? err;
+          this.divView.nativeElement.innerHTML = `Failed to load chart file: ${card.chartCache}, error: ${errorMessage}`;
           this.loaderService.hide();
       });
     }
