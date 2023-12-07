@@ -23,5 +23,9 @@
       "dimx": "0.7.24"
     },
     "CPISide": []
+  },
+  "AddonPackage":{
+    "ClientZip":false
   }
+  
 }
