@@ -78,18 +78,15 @@ export class TableComponent implements OnInit {
 			this.loaderService.hide();
         })
         .catch((err) => {
-          this.divView.nativeElement.innerHTML = `Failed to execute cards: ${JSON.stringify(configuration.cards)}, error: ${err}`;
-          this.loaderService.hide();
+		  this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to execute cards: ${JSON.stringify(configuration.cards)}`)
         });
       })
       .catch((err) => {
-        this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
-        this.loaderService.hide();
+		this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load libraries chart: ${res.deps}`)
       });
     })
     .catch((err) => {
-      this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.scorecardsConfig.chartCache}, error: ${err}`;
-      this.loaderService.hide();
+	  this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load chart file: ${configuration.scorecardsConfig.chartCache}`)
     });
   }
 

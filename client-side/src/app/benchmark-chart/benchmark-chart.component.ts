@@ -61,12 +61,13 @@ export class BenchmarkChartComponent implements OnInit {
 		const currentDrawCounter = this.drawCounter;
 
         // sending variable names and values as body
-        let values = this.pluginService.buildVariableValues(configuration.variablesData, this.parameters);
-        let benchmarkValues = this.pluginService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
-        const queriesData = [
-			{Key: configuration.query, VariableValues: values},
-			{Key: configuration.secondQuery, VariableValues: benchmarkValues}
-		];
+        const values = this.pluginService.buildVariableValues(configuration.variablesData, this.parameters);
+        const queriesData = [{Key: configuration.query, VariableValues: values}];
+		
+		if(configuration.secondQuery) {
+			const benchmarkValues = this.pluginService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
+			queriesData.push({Key: configuration.secondQuery, VariableValues: benchmarkValues});
+		}
         const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
 		const chartTextFile = await chartFileBuffer.text();
     	this.dataVisualizationService.importTextAsModule(chartTextFile).then((res) => {
@@ -85,17 +86,14 @@ export class BenchmarkChartComponent implements OnInit {
 							console.log("drawCounter changed, not updating chart");
 						}
 						this.loaderService.hide();
-                }).catch((err) => {
-                    this.divView.nativeElement.innerHTML = `Failed to execute queries: ${configuration.query} , ${configuration.secondQuery} , error: ${err}`;
-                    this.loaderService.hide();
+                }).catch(err => {
+					this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to execute queries: ${configuration.query} , ${configuration.secondQuery}`)
                 })
             }).catch(err => {
-                this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
-                this.loaderService.hide();
+				this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load libraries chart: ${res.deps}`)
             })
         }).catch(err => {
-            this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
-            this.loaderService.hide();
+			this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load chart file: ${configuration.chartCache}`)
         });
 
     }
