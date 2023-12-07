@@ -2,7 +2,7 @@ import { CdkDragDrop, CdkDragEnd, CdkDragStart, moveItemInArray } from "@angular
 import { EventEmitter, Injectable } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
 import { TranslateService } from "@ngx-translate/core";
-import { PepColorService } from "@pepperi-addons/ngx-lib";
+import { PepColorService, PepLoaderService } from "@pepperi-addons/ngx-lib";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { ICardEditor } from "src/app/card.model";
 import { Color } from "src/app/models/color";
@@ -17,6 +17,7 @@ export class DataVisualizationService {
     constructor(private pepColorService: PepColorService,
         private dialogService: PepDialogService,
         protected translate: TranslateService,
+		private loaderService: PepLoaderService
         ) { };
 
     getRGBAcolor(colObj: Color, opac = null) {
@@ -296,5 +297,11 @@ export class DataVisualizationService {
 			}
 		}
 		return faultstring;
+	}
+
+	showErrorOnBlock(err, divView, messagePrefix: string): void {
+		const errorMessage = this.extractFaultstringFromError(err) ?? err;
+		divView.nativeElement.innerHTML = `${messagePrefix} , error: ${errorMessage}`;
+        this.loaderService.hide();
 	}
 }
