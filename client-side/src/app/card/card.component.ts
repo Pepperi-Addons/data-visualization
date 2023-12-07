@@ -19,7 +19,19 @@ export class CardComponent implements OnInit {
     @Input() scorecardsConfig: IScorecardsEditor;
     @Input() card : ICardEditor;
     @Input() parameters;
-	@Input() executeResponse: any[];
+	private _executeResponse: any[];
+	@Input('executeResponse')
+  	set executeResponse(value) {
+		this._executeResponse = value;
+		if (this.card?.chart && this.executeResponse) {
+            this.drawScorecard(this.card)
+		}
+	}
+	get executeResponse(): any[] {
+		return this._executeResponse;
+	}
+
+
 	@Input() executeFinished: boolean;
 
     chartInstance: any;
@@ -27,6 +39,7 @@ export class CardComponent implements OnInit {
     oldDefine: any;
     boxShadow: any;
 	drawCounter: number = 0;
+	chartTextFile: string;
 
     constructor (private translate: TranslateService,
         private pluginService: AddonService,
@@ -35,10 +48,10 @@ export class CardComponent implements OnInit {
     ) { }
          
 
-    async ngOnInit(): Promise<void> {
+    ngOnInit(): void {
         this.boxShadow = this.scorecardsConfig?.useDropShadow === true ? this.dataVisualizationService.getCardShadow(this.scorecardsConfig?.dropShadow?.intensity / 100, this.scorecardsConfig?.dropShadow?.type) : 'unset';
-        if (this.card?.chart && this.card?.query && this.executeFinished) {
-            await this.drawScorecard(this.card)
+        if (this.card?.chart) {
+            this.drawScorecard(this.card)
 		}
     }
 
@@ -47,14 +60,17 @@ export class CardComponent implements OnInit {
 	  
 	  this.drawCounter++;
 	  const currentDrawCounter = this.drawCounter;
-
-      const chartFileBuffer = await fetch(card.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
-	  const chartTextFile = await chartFileBuffer.text();
-      this.dataVisualizationService.importTextAsModule(chartTextFile).then(async (res) => {
+	
+	  if(!this.chartTextFile) {
+		const chartFileBuffer = await fetch(card.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
+		this.chartTextFile = await chartFileBuffer.text();
+	  }
+    
+      this.dataVisualizationService.importTextAsModule(this.chartTextFile).then(async (res) => {
         const conf = {Title: card.title};
         await this.dataVisualizationService.loadSrcJSFiles(res.deps).then(async () => {
             this.chartInstance = new res.default(this.divView.nativeElement, conf);
-			if(currentDrawCounter == this.drawCounter) {
+			if(currentDrawCounter == this.drawCounter && this.executeFinished) {
 				this.chartInstance.data = this.executeResponse[0]; // main query execution response
 				this.chartInstance.data["Benchmark"] = (this.executeResponse.length > 1) ? this.executeResponse[1] : undefined; // benchmark query execution response
 				this.chartInstance.update();
