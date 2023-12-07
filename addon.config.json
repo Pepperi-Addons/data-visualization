@@ -17,7 +17,7 @@
     "Editors": [],
     "Dependencies": {
       "charts": "1.1.14",
-      "pages": "2.0.43",
+      "pages": "1.0.53",
       "query_manager": "0.5.125",
       "webapp": "17.14.75",
       "dimx": "0.7.24"
