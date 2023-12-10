@@ -30,7 +30,7 @@ export class TableComponent implements OnInit {
 
   @Input('hostObject')
   set hostObject(value) {
-    console.log("AccountUUID from page = " + this.parameters?.AccountUUID);
+    console.log("AccountUUID from page = " + value.pageParameters?.AccountUUID);
     if (value.configuration?.cards?.length > 0 && !value.configuration?.cards.some(c => !c.query)) {
       if (this.drawRequired(value) || this.dataVisualizationService.pageParametersChanged(this.parameters, value.pageParameters)) {
         this.parameters = value.pageParameters;
@@ -65,7 +65,8 @@ export class TableComponent implements OnInit {
       const conf = {label: "Sales"};
       this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
         this.chartInstance = new res.default(this.divView.nativeElement, conf);
-        this.executeAllQueries(configuration.cards).then((data) => {
+        this.pluginService.executeAllCards(configuration.cards, this.parameters).then((data: any[]) => {
+			// here we relay on the fact that execute responses are returned in the same order as the given queries
 			if(currentDrawCounter == this.drawCounter) {
 				this.chartInstance.data = data;
 				this.chartInstance.update();
@@ -77,18 +78,15 @@ export class TableComponent implements OnInit {
 			this.loaderService.hide();
         })
         .catch((err) => {
-          this.divView.nativeElement.innerHTML = `Failed to execute cards: ${JSON.stringify(configuration.scorecardsConfig.cards)}, error: ${err}`;
-          this.loaderService.hide();
+		  this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to execute cards: ${JSON.stringify(configuration.cards)}`)
         });
       })
       .catch((err) => {
-        this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
-        this.loaderService.hide();
+		this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load libraries chart: ${res.deps}`)
       });
     })
     .catch((err) => {
-      this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.scorecardsConfig.chartCache}, error: ${err}`;
-      this.loaderService.hide();
+	  this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load chart file: ${configuration.scorecardsConfig.chartCache}`)
     });
   }
 
@@ -112,13 +110,6 @@ export class TableComponent implements OnInit {
   isDiff(card1, card2) {
     return (card1.query != card2.query || 
       !this.pluginService.variableDatasEqual(card1.variablesData,card2.variablesData));
-  }
-
-  async executeAllQueries(cards): Promise<any> {
-    return Promise.all(cards.map(card => {
-      const values = this.dataVisualizationService.buildVariableValues(card.variablesData, this.parameters);
-      return this.pluginService.executeQuery(card.query, { VariableValues: values })
-    }));
   }
 
   deleteChart() {

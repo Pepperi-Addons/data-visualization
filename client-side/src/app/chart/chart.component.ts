@@ -56,7 +56,7 @@ export class ChartComponent implements OnInit {
 	const currentDrawCounter = this.drawCounter;
 
     // sending variable names and values as body
-    let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
+    let values = this.pluginService.buildVariableValues(configuration.variablesData, this.parameters);
     const body = { VariableValues: values } ?? {};
 	const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
 	const chartTextFile = await chartFileBuffer.text();
@@ -78,18 +78,15 @@ export class ChartComponent implements OnInit {
         	this.loaderService.hide();
         })
         .catch((err) => {
-          this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
-          this.loaderService.hide();
+		  this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to execute query: ${configuration.query}`)
         });
       })
       .catch((err) => {
-        this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
-        this.loaderService.hide();
+		this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load libraries chart: ${res.deps}`)
       });
     })
     .catch((err) => {
-      this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
-      this.loaderService.hide();
+	  this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load chart file: ${configuration.chartCache}`)
     });      
   }
 

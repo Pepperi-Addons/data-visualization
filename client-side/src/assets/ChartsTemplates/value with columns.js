@@ -186,7 +186,7 @@ export default class MyChart {
 				}
 			},
 			noData: {
-				text: 'No data'		// update the initial message to be seen if there is no data
+				text: ''		// update the initial message to be seen if there is no data
 			}
 		}
 		
@@ -272,6 +272,10 @@ export default class MyChart {
 					right: 16,
 					left: 16
 				}
+			},
+			tooltip: {
+				shared: true,
+				intersect: false
 			},
             noData: {
                 text: 'Loading...'

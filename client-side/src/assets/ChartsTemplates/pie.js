@@ -80,10 +80,18 @@ export default class MyChart {
 			labels: uniqueSeries,		// set the labels
 			tooltip: {
 				y: {
-					formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {		// sets the formatter
-						return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter);
+					formatter: function(value, opts) {
+						const sum = opts.config.series.reduce((a, b) => a + b, 0);
+						const percent = (value / sum) * 100;
+						return (value == null) ? '' : value.toLocaleString(undefined, numberFormatter) + ' (' +percent.toFixed(0) + '%)';
 					}
 				}
+			},
+			dataLabels: {
+				enabled: true,
+				formatter: function (value, { series, seriesIndex, dataPointIndex, w }) {
+					return  w.config.series[seriesIndex].toLocaleString(undefined, compactNumberFormatter);;
+				},
 			},
 			noData: {
 				text: 'No data'		// update the initial message to be seen if there is no data

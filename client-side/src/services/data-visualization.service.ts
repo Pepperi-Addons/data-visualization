@@ -2,7 +2,7 @@ import { CdkDragDrop, CdkDragEnd, CdkDragStart, moveItemInArray } from "@angular
 import { EventEmitter, Injectable } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
 import { TranslateService } from "@ngx-translate/core";
-import { PepColorService } from "@pepperi-addons/ngx-lib";
+import { PepColorService, PepLoaderService } from "@pepperi-addons/ngx-lib";
 import { PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { ICardEditor } from "src/app/card.model";
 import { Color } from "src/app/models/color";
@@ -17,6 +17,7 @@ export class DataVisualizationService {
     constructor(private pepColorService: PepColorService,
         private dialogService: PepDialogService,
         protected translate: TranslateService,
+		private loaderService: PepLoaderService
         ) { };
 
     getRGBAcolor(colObj: Color, opac = null) {
@@ -145,19 +146,6 @@ export class DataVisualizationService {
             }));
         });
         return Promise.all(promises);
-    }
-
-    buildVariableValues(variablesData, parameters) {
-        let values = {}
-        for(const varName in variablesData) {
-            const varData = variablesData[varName];
-            if(varData.source == 'Variable') {
-                values[varName] = (parameters && parameters[varData.value]) ? parameters[varData.value] : '0';
-            } else {
-                values[varName] = varData.value ?? '0';
-            }
-        }
-        return values;
     }
 
     getShadowStyles() {
@@ -297,5 +285,23 @@ export class DataVisualizationService {
 	bytesToBase64(bytes) {
 		const binString = String.fromCodePoint(...bytes);
 		return btoa(binString);
+	}
+
+	extractFaultstringFromError(err): string {
+		let faultstring = undefined;
+		if(err.message) {
+			const tmp = err.message.indexOf("{");
+			if(tmp > -1) {
+				const faultObject = JSON.parse(err.message.substr(tmp, err.message.length - tmp));
+				faultstring = faultObject.fault.faultstring;
+			}
+		}
+		return faultstring;
+	}
+
+	showErrorOnBlock(err, divView, messagePrefix: string): void {
+		const errorMessage = this.extractFaultstringFromError(err) ?? err;
+		divView.nativeElement.innerHTML = `${messagePrefix} , error: ${errorMessage}`;
+        this.loaderService.hide();
 	}
 }

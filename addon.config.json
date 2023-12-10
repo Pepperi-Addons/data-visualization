@@ -1,6 +1,6 @@
 {
   "AddonUUID": "00000000-0000-0000-0000-0da1a0de41e5",
-  "AddonVersion": "1.1.40",
+  "AddonVersion": "1.2.7",
   "DebugPort": 4500,
   "WebappBaseUrl": "https://app.sandbox.pepperi.com",
   "DefaultEditor": "main",
@@ -17,7 +17,7 @@
     "Editors": [],
     "Dependencies": {
       "charts": "1.1.14",
-      "pages": "0.7.120",
+      "pages": "1.0.53",
       "query_manager": "0.5.125",
       "webapp": "17.14.75",
       "dimx": "0.7.24"

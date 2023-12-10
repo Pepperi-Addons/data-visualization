@@ -84,49 +84,51 @@ export default class MyChart {
 		const compactNumberFormatter = {'notation':'compact', ...numberFormatter};
 
 		let ser = [];
+		let series1 = "";
+		let total1 = 0;
+		let data = { 'x': "" };
 		let valueMsg = '';
 		if (this.data.DataQueries && this.data.DataQueries[0].Series[0]) {
 			// calculate the totals of the first query
-			let series1 = this.data.DataQueries[0].Series[0];
-			let total1 = dataSet[0][series1];
+			series1 = this.data.DataQueries[0].Series[0];
+			total1 = dataSet[0][series1];
 			total1 = Math.trunc((total1 || 0)*100)/100;
-			
-			let data = { 'x': "" };
-			if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {
-				// calculate the totals of the second query
-				let series2 = this.data.Benchmark.DataQueries[0].Series[0];
-				let total2 = benchmarkSet[0][series2];
-				if (total2>0) {
-					total2 = Math.trunc((total2 || 0)*100)/100;
-					let percentage = Math.trunc(100*total1/total2*10)/10;
-					data['y'] = percentage>100 ? 100 : percentage;
-					data["origin"] = total1;
-					data["percentage"] = percentage;
-					// add the benchmark as goal so it will be seen in the tooltip
-					let goal = {
-						"name": benchmarkName,
-						"strokeHeight": 0,
-						"strokeColor": "#775DD0",
-						"value": total2
-					}
-					data["goals"] = [goal];
-					valueMsg = percentage +'%';
-				} else {
-					valueMsg = total1.toLocaleString(undefined, numberFormatter);
-				}
-			} else {
-				// no second query - use the 1st series as the percentage value
-				data['y'] = total1>100 ? 100 : total1;
-				data["origin"] = total1;
-				valueMsg = total1 + '%';
-			}
-			
-			// build the series data
-			ser = [{
-				name:series1,
-				data:[data]
-			}];
 		}
+		
+		if (this.data.Benchmark.DataQueries && this.data.Benchmark.DataQueries[0].Series[0]) {
+			// calculate the totals of the second query
+			let series2 = this.data.Benchmark.DataQueries[0].Series[0];
+			if (benchmarkSet[0] && benchmarkSet[0][series2]>0) {
+				let total2 = benchmarkSet[0][series2];
+				total2 = Math.trunc((total2 || 0)*100)/100;
+				let percentage = Math.trunc(100*total1/total2*10)/10;
+				data['y'] = percentage>100 ? 100 : percentage;
+				data["origin"] = total1;
+				data["percentage"] = percentage;
+				// add the benchmark as goal so it will be seen in the tooltip
+				let goal = {
+					"name": benchmarkName,
+					"strokeHeight": 0,
+					"strokeColor": "#775DD0",
+					"value": total2
+				}
+				data["goals"] = [goal];
+				valueMsg = percentage +'%';
+			} else {
+				valueMsg = total1.toLocaleString(undefined, numberFormatter);
+			}
+		} else {
+			// no second query - use the 1st series as the percentage value
+			data['y'] = total1>100 ? 100 : total1;
+			data["origin"] = total1;
+			valueMsg = total1 + '%';
+		}
+		
+		// build the series data
+		ser = [{
+			name:series1,
+			data:[data]
+		}];
 		
 		let optionsToSet = {
 			subtitle: {
@@ -156,7 +158,7 @@ export default class MyChart {
 				}
 			},
 			noData: {
-				text: 'No data'		// update the initial message to be seen if there is no data
+				text: ''		// update the initial message to be seen if there is no data
 			}
 		}
 		

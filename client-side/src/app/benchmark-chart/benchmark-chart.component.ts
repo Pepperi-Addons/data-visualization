@@ -61,21 +61,24 @@ export class BenchmarkChartComponent implements OnInit {
 		const currentDrawCounter = this.drawCounter;
 
         // sending variable names and values as body
-        let values = this.dataVisualizationService.buildVariableValues(configuration.variablesData, this.parameters);
-        let benchmarkValues = this.dataVisualizationService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
-        const body = { VariableValues: values } ?? {};
-        const benchmarkBody = { VariableValues: benchmarkValues } ?? {};
+        const values = this.pluginService.buildVariableValues(configuration.variablesData, this.parameters);
+        const queriesData = [{Key: configuration.query, VariableValues: values}];
+		
+		if(configuration.secondQuery) {
+			const benchmarkValues = this.pluginService.buildVariableValues(configuration.benchmarkVariablesData, this.parameters);
+			queriesData.push({Key: configuration.secondQuery, VariableValues: benchmarkValues});
+		}
         const chartFileBuffer = await fetch(configuration.chartCache, {headers: {"Access-Control-Allow-Origin": "*"}});
 		const chartTextFile = await chartFileBuffer.text();
     	this.dataVisualizationService.importTextAsModule(chartTextFile).then((res) => {
             const conf = {label: 'Sales'};
             this.dataVisualizationService.loadSrcJSFiles(res.deps).then(() => {
                 this.chartInstance = new res.default(this.divView.nativeElement, conf);
-                this.pluginService.executeQuery(configuration.query, body).then((firstQueryData) => {
-                    this.pluginService.executeQuery(configuration.secondQuery, benchmarkBody).then((secondQueryData) => {
+                this.pluginService.executeMultipleQueries(queriesData).then((executeResponses) => {
 						if(currentDrawCounter == this.drawCounter) {
-							this.chartInstance.data = firstQueryData;
-							this.chartInstance.data["Benchmark"] = secondQueryData;
+							// here we relay on the fact that execute responses are returned in the same order as the given queries
+							this.chartInstance.data = executeResponses[0];
+							this.chartInstance.data["Benchmark"] = executeResponses[1];
 							this.chartInstance.update();
 							window.dispatchEvent(new Event('resize'));
 						}
@@ -83,21 +86,14 @@ export class BenchmarkChartComponent implements OnInit {
 							console.log("drawCounter changed, not updating chart");
 						}
 						this.loaderService.hide();
-                    }).catch((err) => {
-                        this.divView.nativeElement.innerHTML = `Failed to execute second query: ${configuration.secondQuery} , error: ${err}`;
-                        this.loaderService.hide();
-                    })
-                }).catch((err) => {
-                    this.divView.nativeElement.innerHTML = `Failed to execute query: ${configuration.query} , error: ${err}`;
-                    this.loaderService.hide();
+                }).catch(err => {
+					this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to execute queries: ${configuration.query} , ${configuration.secondQuery}`)
                 })
             }).catch(err => {
-                this.divView.nativeElement.innerHTML = `Failed to load libraries chart: ${res.deps}, error: ${err}`;
-                this.loaderService.hide();
+				this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load libraries chart: ${res.deps}`)
             })
         }).catch(err => {
-            this.divView.nativeElement.innerHTML = `Failed to load chart file: ${configuration.chartCache}, error: ${err}`;
-            this.loaderService.hide();
+			this.dataVisualizationService.showErrorOnBlock(err, this.divView, `Failed to load chart file: ${configuration.chartCache}`)
         });
 
     }
