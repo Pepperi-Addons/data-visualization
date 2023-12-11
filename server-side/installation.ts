@@ -10,162 +10,97 @@ The error Message is importent! it will be written in the audit log and help the
 
 import { Client, Request } from '@pepperi-addons/debug-server'
 import { benchmarkChartBlockScheme, chartBlockScheme, charts, DimxBenchmarkChartImportRelation, DimxChartImportRelation, DimxScorecardsImportRelation, scorecardsBlockScheme, tableBlockScheme } from './meta-data';
-import { PapiClient, Relation } from '@pepperi-addons/papi-sdk'
+import { Relation } from '@pepperi-addons/papi-sdk'
 import MyService from './my.service';
 import semver from 'semver';
+import { AsyncResultObject } from './models/result-object';
 
-export async function install(client: Client, request: Request): Promise<any> {
-   
+export async function install(client: Client, request: Request): Promise<AsyncResultObject> {
+
     const service = new MyService(client)
 
-    const res = await setPageBlockAndDimxRelations(service);
+    const res = await set_page_block_and_dimx_relations(service);
 
-    const res2 = await setUsageMonitorRelation(service);
+    const res2 = await set_usage_monitor_relation(service);
 
-    const res3 = await upsertCharts(client,request, service, charts);
+    const res3 = await upsert_charts(client, request, service);
 
-    const res4 = await createBlockSchemes(service);
+    const res4 = await create_block_schemes(service);
 
-    let resultObject = {
-        pageBlockRelation:res,
-        usageMonitorRelation:res2,
-        upsertCharts:res3
+    const resultObject = {
+        pageBlockRelation: res,
+        usageMonitorRelation: res2,
+        upsertCharts: res3,
+		createBlockSchemes: res4
     };
 
-    let status = res.success && res2.success && res3.success
+    const status = res.success && res2.success && res3.success && res4.success;
 
-    return {success:status,resultObject:resultObject}
+    return {success: status, resultObject: resultObject}
 }
 
-export async function uninstall(client: Client, request: Request): Promise<any> {
-    try{
+export async function uninstall(client: Client, request: Request): Promise<AsyncResultObject> {
+    try {
         const service = new MyService(client)
-        var defCharts = await service.getCharts(charts.map(x => x.Name))
-        for(var dc of defCharts){
+        const defCharts = await service.getCharts(charts.map(x => x.Name))
+        for (const dc of defCharts){
             dc["Hidden"] = true;
             await service.upsertChart(dc);
         }
         return { success: true, resultObject: {} }
     }
-    catch(err){
+    catch (err){
         console.log('Failed to uninstall DV addon', err);
-        return handleException(err);
+        return handle_exception(err);
 
     }
 }
 
-export async function upgrade(client: Client, request: Request): Promise<any> {
-    if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.139') < 0) 
+export async function upgrade(client: Client, request: Request): Promise<AsyncResultObject> {
+    if (request.body.FromVersion && semver.compare(request.body.FromVersion, '0.6.139') < 0)
 	{
 		throw new Error('Upgarding from versions earlier than 0.6.139 is not supported. Please uninstall the addon and install it again.');
 	}
     const service = new MyService(client)
-    const res = await setPageBlockAndDimxRelations(service);
-    const res2 = await setUsageMonitorRelation(service);
-    const res3 = await createBlockSchemes(service);
-    const res4 = await upsertCharts(client,request, service, charts);
+    const res = await set_page_block_and_dimx_relations(service);
+    const res2 = await set_usage_monitor_relation(service);
+    const res3 = await create_block_schemes(service);
+    const res4 = await upsert_charts(client, request, service);
 
     // remove gauge chart if exists
     const gaugeChart = await service.getGaugeChart();
-    if(gaugeChart.length > 0) {
+    if (gaugeChart.length > 0) {
         gaugeChart[0]["Hidden"] = true;
         await service.upsertChart(gaugeChart[0]);
     }
 
-    let status = res.success && res2.success && res3.success && res4.success;
-    let resultObject = {
-        pageBlockRelation:res,
-        usageMonitorRelation:res2,
-        blockSchemes:res3,
-        upsertCharts:res4
+    const status = res.success && res2.success && res3.success && res4.success;
+    const resultObject = {
+        pageBlockRelation: res,
+        usageMonitorRelation: res2,
+        blockSchemes: res3,
+        upsertCharts: res4
     };
 	return { success: status, resultObject: resultObject }
-    
+
 }
 
-export async function downgrade(client: Client, request: Request): Promise<any> {
-    return {success:true,resultObject:{}}
+export async function downgrade(client: Client, request: Request): Promise<AsyncResultObject> {
+    return {success: true, resultObject: {}}
 }
 
-async function setPageBlockAndDimxRelations(service: MyService){
+async function set_page_block_and_dimx_relations(service: MyService): Promise<AsyncResultObject> {
     try {
-        let blockName = 'Chart';
 
-        const pageComponentRelation: Relation = {
-            RelationName: "PageBlock",
-            Name: blockName,
-            Description: "Chart",
-            Type: "NgComponent",
-            SubType: "NG14",
-            AddonUUID: service.addonUUID,
-            AddonRelativeURL: 'chart',
-            ComponentName: `${blockName}Component`, 
-            ModuleName: `${blockName}Module`, 
-            EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`,
-            ElementsModule: 'WebComponents',
-            ElementName: `chart-element-${service.addonUUID}`,
-            EditorElementName: `chart-editor-element-${service.addonUUID}`,
-        };
+        const chartComponentRelation: Relation = service.buildPageBlockRelation('Chart');
 
-        blockName = 'Scorecards';
+        const scorecardsComponentRelation: Relation = service.buildPageBlockRelation('Scorecards');
 
-        const scorecardsComponentRelation: Relation = {
-            RelationName: "PageBlock",
-            Name: blockName,
-            Description: `Scorecards`,
-            Type: "NgComponent",
-            SubType: "NG14",
-            AddonUUID: service.addonUUID,
-            AddonRelativeURL: 'scorecards', 
-            ComponentName: `${blockName}Component`, 
-            ModuleName: `${blockName}Module`, 
-            EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`,
-            ElementsModule: 'WebComponents',
-            ElementName: `scorecards-element-${service.addonUUID}`,
-            EditorElementName: `scorecards-editor-element-${service.addonUUID}`,
-        };
+        const tableComponentRelation: Relation = service.buildPageBlockRelation('Table');
 
-        blockName = 'Table';
+        const benchmarkChartComponentRelation: Relation = service.buildPageBlockRelation('BenchmarkChart', 'benchmark_chart');
 
-        const tableComponentRelation: Relation = {
-            RelationName: "PageBlock",
-            Name: blockName, 
-            Description: `Table`,
-            Type: "NgComponent",
-            SubType: "NG14",
-            AddonUUID: service.addonUUID,
-            AddonRelativeURL: 'table', 
-            ComponentName: `${blockName}Component`, 
-            ModuleName: `${blockName}Module`, 
-            EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`,
-            ElementsModule: 'WebComponents',
-            ElementName: `table-element-${service.addonUUID}`,
-            EditorElementName: `table-editor-element-${service.addonUUID}`
-        };
-
-        blockName = 'BenchmarkChart';
-     
-        const benchmarkChartComponentRelation: Relation = {
-            RelationName: "PageBlock",
-            Name: blockName, 
-            Description: `BenchmarkChart`,
-            Type: "NgComponent",
-            SubType: "NG14",
-            AddonUUID: service.addonUUID,
-            AddonRelativeURL: 'benchmark_chart', 
-            ComponentName: `${blockName}Component`, 
-            ModuleName: `${blockName}Module`, 
-            EditorComponentName: `${blockName}EditorComponent`, 
-            EditorModuleName: `${blockName}EditorModule`,
-            ElementsModule: 'WebComponents',
-            ElementName: `benchmark-chart-element-${service.addonUUID}`,
-            EditorElementName: `benchmark-chart-editor-element-${service.addonUUID}`,
-        };
-
-        await service.upsertRelation(pageComponentRelation);
+        await service.upsertRelation(chartComponentRelation);
         await service.upsertRelation(scorecardsComponentRelation);
         await service.upsertRelation(tableComponentRelation);
         await service.upsertRelation(benchmarkChartComponentRelation);
@@ -174,40 +109,40 @@ async function setPageBlockAndDimxRelations(service: MyService){
         await service.upsertRelation(DimxScorecardsImportRelation);
 
 
-        return { success:true, resultObject: null };
-    } catch(err) {
+        return { success: true, resultObject: null };
+    } catch (err) {
         return { success: false, resultObject: err };
     }
 }
 
 
-async function setUsageMonitorRelation(service: MyService){
+async function set_usage_monitor_relation(service: MyService): Promise<AsyncResultObject> {
     try {
 
         const usageMonitorRelation: Relation = {
             RelationName: "UsageMonitor",
-            Name: "", 
-            Description: `Data index and queries usage data`, 
+            Name: "",
+            Description: `Data index and queries usage data`,
             Type: "AddonAPI",
             AddonUUID: service.addonUUID,
             AddonRelativeURL: 'monitor/usage_data'
         };
-       
-       var res =  await service.upsertRelation(usageMonitorRelation);
 
-        return { success:true, resultObject: null };
-    } catch(err) {
+       const res = await service.upsertRelation(usageMonitorRelation);
+
+        return { success: true, resultObject: null };
+    } catch (err) {
         return { success: false, resultObject: err };
     }
 }
 
-async function upsertCharts(client: Client, request: Request, service: MyService, charts) {
+async function upsert_charts(client: Client, request: Request, service: MyService): Promise<AsyncResultObject> {
     try {
-        for (let chart of charts) {
+        for (const chart of charts) {
             chart.ScriptURI = `${client.AssetsBaseUrl}/assets/ChartsTemplates/${chart.Name.toLowerCase()}.js`
             console.log(`chart ScriptURI: ${chart.ScriptURI}`)
             await service.upsertChart(chart);
-            
+
         }
         return {
             success: true,
@@ -215,13 +150,13 @@ async function upsertCharts(client: Client, request: Request, service: MyService
         }
     }
     catch (err) {
-        console.log('Failed to upsert charts templates files',err)
+        console.log('Failed to upsert charts templates files', err)
         throw new Error('Failed to upsert charts templates files');
 
     }
 }
 
-function handleException(err) {
+function handle_exception(err): AsyncResultObject {
     let errorMessage = 'Unknown Error Occured';
     if (err instanceof Error) {
         errorMessage = err.message;
@@ -233,14 +168,14 @@ function handleException(err) {
     };
 }
 
-async function createBlockSchemes(service: MyService) {
+async function create_block_schemes(service: MyService): Promise<AsyncResultObject> {
     try {
         await service.papiClient.addons.data.schemes.post(chartBlockScheme);
         await service.papiClient.addons.data.schemes.post(benchmarkChartBlockScheme);
         await service.papiClient.addons.data.schemes.post(tableBlockScheme);
         await service.papiClient.addons.data.schemes.post(scorecardsBlockScheme);
         return { success: true, resultObject: null };
-    } catch(err) {
+    } catch (err) {
         return { success: false, resultObject: err };
     }
 }

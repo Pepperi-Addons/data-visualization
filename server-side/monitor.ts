@@ -1,11 +1,10 @@
 import { Client, Request } from '@pepperi-addons/debug-server'
 import MyService from './my.service';
-import jwtDecode from 'jwt-decode';
 
 
-export async function usage_data(client: Client, request: Request) {
-    var al_count = await count_aggregation(client,"all_activities");
-    var tl_count = await count_aggregation(client,"transaction_lines");
+export async function usage_data(client: Client, request: Request): Promise<any> {
+    const al_count = await count_aggregation(client, "all_activities");
+    const tl_count = await count_aggregation(client, "transaction_lines");
 
 
     return {
@@ -23,18 +22,17 @@ export async function usage_data(client: Client, request: Request) {
             }
         ]
     }
-};
+}
 
 
-
-  async function count_aggregation(client: Client,indexType:string){
-    const distributorUUID = (<any>jwtDecode(client.OAuthAccessToken))["pepperi.distributoruuid"];
+  async function count_aggregation(client: Client, indexType:string): Promise<number> {
+    // const distributorUUID = (<any>jwtDecode(client.OAuthAccessToken))["pepperi.distributoruuid"];
 
     const service = new MyService(client)
-    let endpoint = `${distributorUUID}/_search`;
-    const method = 'POST';
+    // let endpoint = `${distributorUUID}/_search`;
+    // const method = 'POST';
 
-    var body = {
+    const body = {
         "query": {
             "bool": {
               "must": [
@@ -49,13 +47,12 @@ export async function usage_data(client: Client, request: Request) {
         "size": 0,
 
         "aggs": {
-            "uuid_count" : { "value_count" : { "field" : "UUID" } 
+            "uuid_count": { "value_count": { "field": "UUID" }
             }
         }
-            
     };
 
-    var res = await service.papiClient.post(`/elasticsearch/search/${indexType}`,body);
+    const res = await service.papiClient.post(`/elasticsearch/search/${indexType}`, body);
 
     //const lambdaResponse = await callElasticSearchLambda(endpoint, method, JSON.stringify(body), null, true);
     console.log(`lambdaResponse: ${JSON.stringify(res)}`);
