@@ -12,7 +12,7 @@ export class SeriesData {
     Groups: string[];
     Series: string[];
 
-    constructor(seriesName) {
+    constructor(seriesName: string) {
         this.Name = seriesName;
         this.Groups = [];
         this.Series = [];
