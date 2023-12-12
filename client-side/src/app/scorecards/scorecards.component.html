@@ -1,4 +1,4 @@
-<div class="scorecardsCont" #scorecardsContainer id='cards' *ngIf="executeFinished"
+<div class="scorecardsCont" #scorecardsContainer id='cards'
     [ngClass]="['cardsGap_'+ configuration?.scorecardsConfig?.gap]">
     <gallery-card #cardContainer *ngFor="let currentCard of configuration?.cards"
                 [card]="currentCard"

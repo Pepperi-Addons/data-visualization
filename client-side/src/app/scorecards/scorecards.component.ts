@@ -61,22 +61,24 @@ export class ScorecardsComponent implements OnInit {
 
   async buildDataForCards(configuration: any) {
     this.loaderService.show();
+	const arr: {[cardID : number]: any[]} = [];
 	// executeAllCards executes all the queries (including benchmark queries) according to the order of the cards
 	const executeResponses = await this.pluginService.executeAllCards(configuration.cards, this.parameters);
 	// here we relay on the fact that execute responses are returned in the same order as the given queries
 	configuration.cards.forEach((card: ICardEditor) => {
 
 		// intialize the responses slot for this card, it can contain 1 or 2 responses (main and benchmark)
-		this.executeResponses[card.id] = [];
+		arr[card.id] = [];
 
 		// take the main query response from the execute responses array
-		this.executeResponses[card.id].push(executeResponses.shift());
+		arr[card.id].push(executeResponses.shift());
 
 		if(card.secondQuery) {
 			// take the benchmark query response from the execute responses array
-			this.executeResponses[card.id].push(executeResponses.shift());
+			arr[card.id].push(executeResponses.shift());
 		}
 	});
+	this.executeResponses = arr;
 	this.loaderService.hide();
 	return true;
   }
