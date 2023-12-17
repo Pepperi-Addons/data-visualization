@@ -26,8 +26,8 @@ export default class MyChart {
      */
     constructor(element, configuration) {
         this.data = {};
+        element.innerHTML = this.getHTML();
         this.canvas = element;
-		this.configuration = configuration;
     }
 
     /**
@@ -145,6 +145,15 @@ export default class MyChart {
 		this.canvas.innerHTML = "";
 		this.canvas.appendChild(table);
 	}
+	
+	/**
+     * This function returns an html which will be created in the embedder.
+     */
+    getHTML() {
+        return `<div id="canvas">
+				<p style="text-align: center; font-size: 0.875rem; font-weight: 400; padding:3rem" class="font-family-body ellipsis">Loading...</p>
+				</div>`;
+    }
 }
 
 // defines the dependencies required for the chart

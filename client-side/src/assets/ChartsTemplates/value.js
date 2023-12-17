@@ -26,8 +26,8 @@ export default class MyChart {
      */
     constructor(element, configuration) {
         this.data = {};
+		element.innerHTML = this.getHTML(configuration.Title || '');
         this.canvas = element;
-		this.title = configuration.Title || '';
     }
 
     /**
@@ -75,12 +75,23 @@ export default class MyChart {
 		}
 		
 		// update the card
-		this.canvas.innerHTML = 
-		    `<div style="height: 11rem; padding: 2.5rem 2rem 1.25rem 2rem">
-				<p style="text-align: center; padding: 0; margin: 0 0 0.25rem 0; height:1.25rem;font-size: 0.875rem;" class="color-dimmed font-family-body ellipsis">` + this.title + `</p>
+		const card = this.canvas.querySelector('#canvas');
+		card.innerHTML = `
 				<p title="` + value1TooltipMsg + `" style="text-align: center; padding: 0; margin: 0; font-size: 2.5rem; font-weight: 700; line-height: 1.2;" class="font-family-title ellipsis">` + value1Msg + `</p>
 				<p title="` + value2TooltipMsg + `" style="text-align: center; padding: 0; font-size: 1.25rem; font-weight: 600; line-height: 1.2;" class="bold color-dimmed font-family-body ellipsis">` + value2Msg + `</p>
-			</div>`;
+			`;
+    }
+	
+	/**
+     * This function returns an html which will be created in the embedder.
+     */
+    getHTML(title) {
+        return `<div style="height: 11rem; padding: 1.25rem 1.25rem 1.25rem 1.25rem">
+				<p style="text-align: center; padding: 0; margin: 0 0 0.25rem 0; height:1.25rem;font-size: 0.875rem;" class="color-dimmed font-family-body ellipsis">` + title + `</p>
+				<div id="canvas">
+				<p style="text-align: center; font-size: 0.875rem; font-weight: 400; padding:3rem" class="font-family-body ellipsis">Loading...</p>
+				</div>
+				</div>`;
     }
 }
 
