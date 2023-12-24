@@ -18,7 +18,7 @@
     "Dependencies": {
       "charts": "1.1.14",
       "pages": "1.0.55",
-      "query_manager": "0.5.125",
+      "query_manager": "1.2.36",
       "webapp": "17.14.75",
       "dimx": "0.7.24"
     },
